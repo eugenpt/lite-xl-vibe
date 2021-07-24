@@ -10,11 +10,13 @@ Module for all things keyboard
   )
 
 ]]--
+local keymap = require "core.keymap"
+
 
 local keyboard = {}
 
 -- I should probably take lite-xl one..
-local modkey_map = {
+keyboard.modkey_map = {
   ["left command"]   = "cmd",
   ["right command"]  = "cmd",
   ["left windows"]   = "cmd",
@@ -125,6 +127,25 @@ function keyboard.key_to_stroke(k)
     stroke = stroke .. escape_stroke(k)
   end
   return stroke
+end
+
+function keyboard.key_to_stroke__orig(k)
+  local stroke = ""
+  for _, mk in ipairs(modkeys) do
+    if keymap.modkeys[mk] then
+      stroke = stroke .. mk .. "+"
+    end
+  end
+  return stroke .. k
+end
+
+
+-- the other side of `the finer control`
+function keymap.on_key_released(k)
+  local mk = keyboard.modkey_map[k]
+  if mk then
+    keymap.modkeys[mk] = false
+  end
 end
 
 
