@@ -1,3 +1,9 @@
+--[[
+
+All things interface
+
+]]--
+
 local core = require "core"
 local config = require "core.config"
 local style = require "core.style"
@@ -55,6 +61,16 @@ function StatusView:get_items()
   }
 end
 
+status.draw_caret__orig = DocView.draw_caret
+function DocView:draw_caret(x, y)
+    local lh = self:get_line_height()
+    renderer.draw_rect(x, y, 
+      core.vibe.mode == 'insert'
+        and style.caret_width*4
+        or self:get_font():get_width(" "), -- monospace, right? 
+      lh, style.caret
+    )
+end
 
 
 return status

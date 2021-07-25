@@ -32,6 +32,9 @@ end
 
 keymap.add_nmap {
   ["i"] = "vibe:switch-to-insert-mode",
+  ["C-P"] = "core:find-command",
+  ["A-x"] = "core:find-command",
+  [":"] = "core:find-command",
 }
 
 -- some minor tweaks for isnert mode from emacs/vim/..

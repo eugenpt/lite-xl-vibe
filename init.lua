@@ -24,7 +24,7 @@ vibe.com = require "plugins.lite-xl-vibe.com"
 
 require "plugins.lite-xl-vibe.keymap"
 
-vibe.status = require "plugins.lite-xl-vibe.status"
+vibe.interface = require "plugins.lite-xl-vibe.interface"
 
 
 
@@ -79,7 +79,12 @@ function keymap.on_key_pressed(k)
       end
       return true
     end    
-    return false
+    
+    if vibe.mode=='insert' then
+      return false
+    else
+      return true -- no text input in normal mode
+    end
   end
 end
 
