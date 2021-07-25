@@ -11,6 +11,9 @@ local CommandView = require "core.commandview"
 
 local misc = require "plugins.lite-xl-vibe.misc"
 
+
+
+
 local vibe = {}
 core.vibe = vibe
 

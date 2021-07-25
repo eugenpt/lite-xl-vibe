@@ -5,10 +5,14 @@ All things interface
 ]]--
 
 local core = require "core"
+local command = require "core.command"
+local common = require "core.common"
 local config = require "core.config"
 local style = require "core.style"
 local StatusView = require "core.statusview"
 local DocView = require "core.docview"
+
+local com = require("plugins.lite-xl-vibe.com")
 
 local status = {}
 
@@ -61,16 +65,19 @@ function StatusView:get_items()
   }
 end
 
-status.draw_caret__orig = DocView.draw_caret
-function DocView:draw_caret(x, y)
-    local lh = self:get_line_height()
-    renderer.draw_rect(x, y, 
-      core.vibe.mode == 'insert'
-        and style.caret_width*4
-        or self:get_font():get_width(" "), -- monospace, right? 
-      lh, style.caret
-    )
-end
 
+status.caret_width__orig = style.caret_width
+
+command.add_hook("vibe:switch-to-insert-mode", { function() 
+  style.caret_width = status.caret_width__orig
+end })
+
+command.add_hook("vibe:switch-to-normal-mode", { function() 
+  style.caret_width = core.active_view:get_font():get_width(' ')
+end })
+
+
+
+core.log('interface loaded?')
 
 return status

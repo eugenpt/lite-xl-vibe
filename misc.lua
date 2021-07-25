@@ -69,6 +69,28 @@ function misc.append_line_if_last_line(line)
 end
 
 -------------------------------------------------------------------------------
+-- hooks, everyone?
+-------------------------------------------------------------------------------
+
+command.hooks = {}
+local command_perform = command.perform
+function command.perform(name)
+  local r = command_perform(name)
+  if command.hooks[name] then
+    for _,hook in ipairs(command.hooks[name]) do
+      -- TODO : predicates?
+      core.try(table.unpack(hook)) -- yeah, just add function and arguments as hooks
+    end
+  end
+end
+function command.add_hook(com_name, hook)
+   if command.hooks[com_name]==nil then
+     command.hooks[com_name] = {}
+   end
+   table.insert(command.hooks[com_name], hook)
+end
+
+-------------------------------------------------------------------------------
 -- commands
 -------------------------------------------------------------------------------
 
