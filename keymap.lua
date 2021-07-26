@@ -69,7 +69,7 @@ keymap.add_nmap {
   ["i"] = "vibe:switch-to-insert-mode",
   ["C-P"] = "core:find-command",
   ["A-x"] = "core:find-command",
-  [":"] = "core:find-command",
+--  [":"] = "core:find-command",
   -- navigation
   ["<left>"] = { "doc:move-to-previous-char", "dialog:previous-entry" },
   ["<right>"] = { "doc:move-to-next-char", "dialog:next-entry"},
@@ -108,8 +108,14 @@ keymap.add_nmap {
   -- the hint of Emacs (/ simple terminal bindings?)
   ["C-p"] = { "command:select-previous", "doc:move-to-previous-line" },
   ["C-n"] = { "command:select-next", "doc:move-to-next-line" },
+  ["C-xC-;"] = "doc:toggle-line-comments",
   -- misc
   ["C-\\\\"] = "treeview:toggle", -- yeah, single \ turns into \\\\ , thats crazy.
+  
+  -- commands as in vim, just bindings for now..
+  [":w<CR>"] = "doc:save",
+  [":q<CR>"] = "root:close",
+  [":so<space>%<CR>"] = "core:exec-file",
 
   -- personal preferences
   ["C-h"] = "root:switch-to-left",
@@ -130,6 +136,7 @@ keymap.add_direct {
   ["ctrl+e"] = "doc:move-to-end-of-line",
   ["ctrl+w"] = "doc:delete-to-previous-word-start",
   ["escape"] = { "autocomplete:cancel", "command:escape", "vibe:switch-to-normal-mode", "doc:select-none", "dialog:select-no" },
+  ["ctrl+shift+n"] = "core:new-doc",
 }
 
 

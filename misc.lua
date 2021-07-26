@@ -74,8 +74,11 @@ end
 
 command.hooks = {}
 local command_perform = command.perform
-function command.perform(name)
-  local r = command_perform(name)
+function command.perform(...)
+  local r = command_perform(...)
+  local list = {...}
+  local name = list[1]
+  core.log("com perform : " .. name)
   if command.hooks[name] then
     for _,hook in ipairs(command.hooks[name]) do
       -- TODO : predicates?
@@ -122,11 +125,19 @@ command.add(nil, {
   ["core:exec-file"] = function()
     assert(load(table.concat(doc().lines)))()
   end,
-  
+
+--[[  
   -- yeah, I do like vim
   ["so % core:exec-file"] = function()
     command.perform("core:exec-file")
   end,
+  ["w doc:save"] = function()
+    command.perform("doc:save")
+  end,  
+  ["q root:close"] = function()
+    command.perform("root:close")
+  end,
+]]--
 })
 
 return misc
