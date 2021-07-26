@@ -139,6 +139,28 @@ function keyboard.key_to_stroke__orig(k)
   return stroke .. k
 end
 
+keyboard.stroke_patterns = {
+  '<[^>]+>',
+  '\\.',
+  '.'
+}
+
+function keyboard.split_stroke_seq(seq)
+  local R = {}
+  local ts = seq
+  while #ts>0 do
+    local match = ''
+    for _,p in ipairs(keyboard.stroke_patterns) do
+      match = string.match(ts,'^' .. p)
+      if match then
+        break
+      end
+    end
+    table.insert(R,match)
+    ts = ts:sub(#match+1,#ts)
+  end
+  return R 
+end
 
 -- the other side of `the finer control`
 function keymap.on_key_released(k)
