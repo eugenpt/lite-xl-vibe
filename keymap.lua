@@ -35,6 +35,50 @@ keymap.add_nmap {
   ["C-P"] = "core:find-command",
   ["A-x"] = "core:find-command",
   [":"] = "core:find-command",
+  -- navigation
+  ["<left>"] = { "doc:move-to-previous-char", "dialog:previous-entry" },
+  ["<right>"] = { "doc:move-to-next-char", "dialog:next-entry"},
+  ["<up>"] = { "command:select-previous", "doc:move-to-previous-line" },
+  ["<down>"] = { "command:select-next", "doc:move-to-next-line" },
+  ["k"] = "doc:move-to-previous-line",
+  ["j"] = "doc:move-to-next-line",
+  ["h"] = "doc:move-to-previous-char",
+  ["<backspace>"] = "doc:move-to-previous-char",
+  ["l"] = "doc:move-to-next-char",
+  ["b"] = "doc:move-to-previous-word-start",
+  ["e"] = "doc:move-to-next-word-end",
+  ["0"] = "doc:move-to-start-of-line",
+  ["$"] = "doc:move-to-end-of-line",
+  ["C-u"] = "doc:move-to-previous-page",
+  ["C-d"] = "doc:move-to-next-page",
+  ["["] = "doc:move-to-previous-block-start",
+  ["]"] = "doc:move-to-next-block-end",
+  ["G"] = "doc:move-to-end-of-doc",
+  ["C-k"] = "root:switch-to-next-tab",
+  ["C-j"] = "root:switch-to-previous-tab",
+  -- well..  also sort of navigation?
+  ["C-m"] = { "autocomplete:complete", "command:submit", "doc:move-to-next-line", "dialog:select" },
+  -- simple editing
+  ["J"] = "doc:join-lines",
+  ["u"] = "doc:undo",
+  ["C-r"] = "doc:redo",
+  ["/"] = "find-replace:find",
+  ["n"] = "find-replace:repeat-find",
+  ["N"] = "find-replace:previous-find",
+  -- I do like Mac bindings
+  ["M-o"] = "core:open-file",
+  ["M-n"] = "core:new-doc",
+  ["M-s"] = "doc:save",
+  -- the hint of Emacs (/ simple terminal bindings?)
+  ["C-p"] = { "command:select-previous", "doc:move-to-previous-line" },
+  ["C-n"] = { "command:select-next", "doc:move-to-next-line" },
+  ["C-m"] = { "command:submit", "doc:newline", "dialog:select" },
+  -- misc
+  ["C-\\\\"] = "treeview:toggle", -- yeah, single \ turns into \\\\ , thats crazy.
+
+  -- personal preferences
+  ["C-h"] = "root:switch-to-left",
+  ["C-l"] = "root:switch-to-right",
 }
 
 -- some minor tweaks for isnert mode from emacs/vim/..

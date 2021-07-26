@@ -89,6 +89,7 @@ function keymap.on_key_pressed(k)
       return true -- no text input in normal mode
     end
   end
+  return false
 end
 
 
