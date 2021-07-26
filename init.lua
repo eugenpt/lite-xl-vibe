@@ -22,6 +22,7 @@ vibe.mode = 'insert'
 
 vibe.debug_str = 'test debug_str'
 vibe.last_stroke = ''
+vibe.stroke_seq = ''
 
 vibe.com = require "plugins.lite-xl-vibe.com"
 
@@ -44,6 +45,9 @@ local function doc()
   return core.active_view.doc
 end
 
+function vibe.reset_seq()
+  vibe.stroke_seq = ''
+end
 
 vibe.on_key_pressed__orig = keymap.on_key_pressed
 function keymap.on_key_pressed(k)
@@ -66,13 +70,34 @@ function keymap.on_key_pressed(k)
     -- first - current stroke
     vibe.last_stroke = vibe.kb.key_to_stroke(k)
     
+    vibe.stroke_seq = vibe.stroke_seq .. vibe.last_stroke
+    
     local stroke__orig = vibe.kb.key_to_stroke__orig(k)
     local commands = {}
     
     if vibe.mode == "insert" then
       commands = keymap.map[stroke__orig]
+      if commands then
+        vibe.debug_str = 'imapped ..?'
+      else
+        vibe.debug_str = 'simple input'
+      end
     elseif vibe.mode == "normal" then
-      commands = keymap.nmap[vibe.last_stroke]
+      commands = keymap.nmap_override[vibe.last_stroke]
+      if commands then 
+        vibe.debug_str = vibe.last_stroke .. ' nmap_override mappedd!'
+      else
+        commands = keymap.nmap[vibe.stroke_seq]
+        
+        if commands then
+          vibe.debug_str = vibe.stroke_seq .. ' nmapped!'
+        else  
+          if not keymap.have_nmap_starting_with(vibe.stroke_seq) then
+            vibe.debug_str = 'no commands for ' .. vibe.stroke_seq
+            vibe.reset_seq()
+          end
+        end
+      end
     end
     
     if commands then
@@ -80,6 +105,7 @@ function keymap.on_key_pressed(k)
         local performed = command.perform(cmd)
         if performed then break end
       end
+      vibe.reset_seq()
       return true
     end    
     

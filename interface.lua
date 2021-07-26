@@ -40,6 +40,8 @@ function StatusView:get_items()
       " ", -- self.separator,
       string.format("% 3d%%", line / #dv.doc.lines * 100),
       self.separator2,
+      core.vibe.stroke_seq,
+      self.separator2,
       core.vibe.debug_str,
     }, {
       style.text, indent_label, indent_size,

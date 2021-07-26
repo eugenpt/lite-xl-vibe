@@ -16,19 +16,54 @@ keymap.nmap = {}
 keymap.nmap_index = {} -- for sequence-based analysis
 keymap.reverse_nmap = {} -- not really sure where to go with this..
 
-function keymap.add_nmap(map)
-  for stroke, commands in pairs(map) do
-    if type(commands) == "string" then
-      commands = { commands }
-    end
-    keymap.nmap[stroke] = commands
-    for _, cmd in ipairs(commands) do
-      keymap.reverse_nmap[cmd] = stroke
-    end
+-- these are for single-stroke maps 
+--  to be executed even when they are part of sequence
+--    maybe I will use these for sth more than <ESC> and <C-g>
+keymap.nmap_override = {}
+keymap.reverse_nmap_override = {}
+
+local function prep_list(s)
+  return type(s) == "table" and s or {s}
+end
+
+local function fill_reverse(reverse, list, fill)
+  for _,cmd in ipairs(list) do
+    reverse[cmd] = fill
   end
 end
 
+function keymap.add_nmap(map)
+  for stroke, commands in pairs(map) do
+    commands = prep_list(commands)
+    keymap.nmap[stroke] = commands
+    fill_reverse(keymap.reverse_nmap, commands, stroke)
+  end
+end
 
+function keymap.add_nmap_override(map)
+  for stroke, commands in pairs(map) do
+    commands = prep_list(commands)
+    keymap.nmap_override[stroke] = commands
+    fill_reverse(keymap.reverse_nmap_override, commands, stroke)
+  end
+end
+
+function keymap.have_nmap_starting_with(seq)
+  -- crude but it'll do for now
+  for jseq,_ in pairs(keymap.nmap) do
+    if #jseq>#seq and jseq:sub(1,#seq)==seq then
+      return true
+    end
+  end
+  return false
+end
+
+
+-- These are to be executed even when strokes appear in a sequence
+keymap.add_nmap_override {
+  ["C-g"] = "vibe:escape",
+  ["<ESC>"] = "vibe:escape",
+}
 
 keymap.add_nmap {
   ["i"] = "vibe:switch-to-insert-mode",
@@ -53,6 +88,7 @@ keymap.add_nmap {
   ["C-d"] = "doc:move-to-next-page",
   ["["] = "doc:move-to-previous-block-start",
   ["]"] = "doc:move-to-next-block-end",
+  ["gg"] = "doc:move-to-start-of-doc",
   ["G"] = "doc:move-to-end-of-doc",
   ["C-k"] = "root:switch-to-next-tab",
   ["C-j"] = "root:switch-to-previous-tab",
@@ -72,7 +108,6 @@ keymap.add_nmap {
   -- the hint of Emacs (/ simple terminal bindings?)
   ["C-p"] = { "command:select-previous", "doc:move-to-previous-line" },
   ["C-n"] = { "command:select-next", "doc:move-to-next-line" },
-  ["C-m"] = { "command:submit", "doc:newline", "dialog:select" },
   -- misc
   ["C-\\\\"] = "treeview:toggle", -- yeah, single \ turns into \\\\ , thats crazy.
 
@@ -87,6 +122,8 @@ keymap.add_direct {
   ["ctrl+n"] = { "autocomplete:next", "command:select-next", "doc:move-to-next-line" },
   ["ctrl+h"] = "doc:backspace",
   ["ctrl+m"] = { "autocomplete:complete", "command:submit", "doc:newline", "dialog:select" },
+  ["return"] = { "autocomplete:complete", "command:submit", "doc:newline", "dialog:select" },
+  ["keypad enter"] = { "autocomplete:complete", "command:submit", "doc:newline", "dialog:select" },
   ["ctrl+["] = { "autocomplete:cancel", "command:escape", "vibe:switch-to-normal-mode", "doc:select-none", "dialog:select-no" },
   ["alt+x"] = "core:find-command",
   ["ctrl+a"] = "doc:move-to-start-of-line",

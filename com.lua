@@ -13,11 +13,12 @@ com.caret_width__orig = style.caret_width
 command.add(nil, {
   ["vibe:switch-to-insert-mode"] = function()
     core.vibe.mode = "insert"
-    --style.caret_width = com.caret_width__orig
   end,
   ["vibe:switch-to-normal-mode"] = function()
     core.vibe.mode = "normal"
-    
+  end,
+  ["vibe:escape"] = function()
+    core.vibe.reset_seq()
   end,
 })
 
