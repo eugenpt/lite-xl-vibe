@@ -78,7 +78,7 @@ function command.perform(...)
   local r = command_perform(...)
   local list = {...}
   local name = list[1]
-  core.log("com perform : " .. name)
+  core.vibe.debug_str = "com perform : " .. name
   if command.hooks[name] then
     for _,hook in ipairs(command.hooks[name]) do
       -- TODO : predicates?

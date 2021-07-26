@@ -101,6 +101,9 @@ keymap.add_nmap {
   ["/"] = "find-replace:find",
   ["n"] = "find-replace:repeat-find",
   ["N"] = "find-replace:previous-find",
+  ["dd"] = "doc:delete-lines",  
+  [">>"] = "doc:indent",
+  ["<<"] = "doc:unindent",
   -- I do like Mac bindings
   ["M-o"] = "core:open-file",
   ["M-n"] = "core:new-doc",
@@ -113,13 +116,21 @@ keymap.add_nmap {
   ["C-\\\\"] = "treeview:toggle", -- yeah, single \ turns into \\\\ , thats crazy.
   
   -- commands as in vim, just bindings for now..
-  [":w<CR>"] = "doc:save",
-  [":q<CR>"] = "root:close",
   [":so<space>%<CR>"] = "core:exec-file",
-
+  [":q<CR>"] = "root:close",
+  [":e"] = "core:find-file",
+  [":w<CR>"] = "doc:save",
+  [":w<space>"] = "doc:save-as",
+  -- may be ok?
+  [":s<CR>"] = "doc:save",
+  [":s<space>"] = "doc:save-as",
+  [":o"] = "core:find-file",
+  
   -- personal preferences
   ["C-h"] = "root:switch-to-left",
   ["C-l"] = "root:switch-to-right",
+  [":r"] = "core:restart",
+  [":r"] = "core:restart",
 }
 
 -- some minor tweaks for isnert mode from emacs/vim/..
@@ -137,6 +148,9 @@ keymap.add_direct {
   ["ctrl+w"] = "doc:delete-to-previous-word-start",
   ["escape"] = { "autocomplete:cancel", "command:escape", "vibe:switch-to-normal-mode", "doc:select-none", "dialog:select-no" },
   ["ctrl+shift+n"] = "core:new-doc",
+  -- personal preferences
+  ["ctrl+k"] = "root:switch-to-next-tab",
+  ["ctrl+j"] = "root:switch-to-previous-tab",  
 }
 
 
