@@ -35,11 +35,16 @@ local modkeys = { "ctrl", "alt", "altgr", "shift", "cmd"}
 
 local modkeys_sh = {
   [ "ctrl" ] = "C",
-  [ "alt" ] = "A",
   [ "altgr" ] = "A",
+  [ "alt" ] = "A",
   [ "shift" ] = "S",
   [ "cmd"  ] = "M",
 }
+local modkeys_sh__inv = {}
+for a,b in pairs(modkeys_sh) do
+  modkeys_sh__inv[b] = a
+end
+
 
 -- shift'ed keys to emulate shift (I know that's stupid but hey)
 local shift_keys = {
@@ -72,6 +77,11 @@ local letterstr = "qwertyuioopasdfghjklzxcvbnm"
 for i=1, #letterstr do
   shift_keys[letterstr:sub(i,i)] = letterstr:sub(i,i):upper()
 end
+-- inverse, F -> f
+local shift_keys_inv = {}
+for a,b in pairs(shift_keys) do
+  shift_keys_inv[b]=a
+end
 
 local escape_char_sub = {
   ["<"] = "\\<",   -- for <ESC> and <CR>
@@ -81,7 +91,8 @@ local escape_char_sub = {
   ["return"] = "<CR>",
   ["keypad enter"] = "<return>",
 } 
--- should be handy? I mean.. it is already, for f/F
+-- map back to symbol entered
+--  should be handy? I mean.. it is already, for f/F
 local un_escape_sub = {
   ["\\<"] = "<",
   ["\\\\"] = "\\",
@@ -89,7 +100,7 @@ local un_escape_sub = {
   ["<space>"] = " ",
 }
 local escape_simple_keys = {
- 'home','space','up','down','left','right','end','pageup','pagedown','delete','insert','tab','backspace'
+ 'home','space','up','down','left','right','end','pageup','pagedown','delete','insert','tab','backspace','return'
 }
 -- add Fs
 for i = 1, 64 do
@@ -97,6 +108,11 @@ for i = 1, 64 do
 end
 for _,str in ipairs(escape_simple_keys) do
   escape_char_sub[str] = "<" .. str .. ">"
+end
+
+local escape_char_sub__inv = {}
+for a,b in pairs(escape_char_sub) do
+  escape_char_sub[b] = a
 end
 
 local function escape_stroke(k)
@@ -139,11 +155,44 @@ function keyboard.key_to_stroke__orig(k)
   return stroke .. k
 end
 
+function keyboard.stroke_to_orig_stroke(stroke)
+  local lstroke = stroke
+  local R = ''
+  local s = ''
+  while #lstroke>2 and lstroke:sub(2,2)=='-' do
+    for sh,mod in pairs(modkeys_sh__inv) do
+      s = string.match(lstroke, '^' .. sh .. '%-')
+      if s then
+        R = R .. mod .. '+'
+        lstroke = lstroke:sub(#s+1,#lstroke)
+      end
+    end
+  end
+  -- if it's one of the escaped characters
+  s = escape_char_sub__inv[lstroke]
+  if s then
+    return R .. s
+  end
+  -- check if shift'ed
+  s = shift_keys_inv[lstroke]
+  if s then
+    R = R .. "shift+" .. s
+  else
+    R = R .. lstroke
+  end  
+  
+  return R
+end
+
 keyboard.stroke_patterns = {
   '<[^>]+>',
   '\\.',
-  '.'
 }
+for _,sh in pairs(modkeys_sh) do
+  table.insert(keyboard.stroke_patterns, sh .. '%-')
+end
+table.insert(keyboard.stroke_patterns, '.')
+
 
 function keyboard.split_stroke_seq(seq)
   local R = {}
@@ -152,7 +201,7 @@ function keyboard.split_stroke_seq(seq)
     local match = ''
     for _,p in ipairs(keyboard.stroke_patterns) do
       match = string.match(ts,'^' .. p)
-      if match then
+      if match then        
         break
       end
     end
