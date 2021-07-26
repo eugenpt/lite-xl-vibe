@@ -12,8 +12,6 @@ local CommandView = require "core.commandview"
 local misc = require "plugins.lite-xl-vibe.misc"
 
 
-
-
 local vibe = {}
 core.vibe = vibe
 
@@ -23,6 +21,7 @@ vibe.mode = 'insert'
 vibe.debug_str = 'test debug_str'
 vibe.last_stroke = ''
 vibe.stroke_seq = ''
+vibe.last_executed_seq = ''
 
 vibe.com = require "plugins.lite-xl-vibe.com"
 
@@ -49,7 +48,13 @@ function vibe.reset_seq()
   vibe.stroke_seq = ''
 end
 
+
+vibe.flags = {}
+vibe.flags['run_stroke_seq'] = false
+
 function vibe.run_stroke_seq(seq)
+  vibe.last_executed_seq = seq
+  vibe.flags['run_stroke_seq'] = true
   if type(seq) ~= 'table' then
     seq = vibe.kb.split_stroke_seq(seq)
   end
@@ -57,13 +62,23 @@ function vibe.run_stroke_seq(seq)
   for _,stroke in ipairs(seq) do
     did_input = vibe.process_stroke(stroke)
     if not did_input then
-      local line,col = doc():get_selection()
-      doc():insert(line, col, vibe.kb.stroke_to_symbol(stroke))
-      doc():set_selection(line, col+1)
-      doc()
+      local symbol = vibe.kb.stroke_to_symbol(stroke)
+      if symbol then
+        local line,col = doc():get_selection()
+        doc():insert(line, col, vibe.kb.stroke_to_symbol(stroke))
+        doc():set_selection(line, col+1)
+        doc()
+      end
     end
   end
+  vibe.flags['run_stroke_seq'] = false
 end
+
+command.add_hook("vibe:switch-to-insert-mode", function()
+  if vibe.flags['run_stroke_seq'] == false then
+    vibe.last_executed_seq = vibe.last_stroke
+  end
+end)
 
 vibe.on_key_pressed__orig = keymap.on_key_pressed
 function keymap.on_key_pressed(k)
@@ -92,6 +107,16 @@ function vibe.process_stroke(stroke)
     -- first - current stroke
     vibe.last_stroke = stroke
     
+    if vibe.flags['run_stroke_seq'] == false then
+      vibe.last_executed_seq = vibe.last_executed_seq .. stroke
+    end
+    
+    if stroke=='C-g' then
+      vibe.last_executed_seq = ''
+    end
+    
+    vibe.debug_str =     vibe.last_executed_seq
+    
     vibe.stroke_seq = vibe.stroke_seq .. vibe.last_stroke
     
     local stroke__orig = vibe.kb.stroke_to_orig_stroke(stroke)
@@ -100,22 +125,23 @@ function vibe.process_stroke(stroke)
     if vibe.mode == "insert" then
       commands = keymap.map[stroke__orig]
       if commands then
-        vibe.debug_str = 'imapped ..?'
+        -- vibe.debug_str = 'imapped ..?'
       else
-        vibe.debug_str = 'simple input'
+        core.log_quiet('insert,no coms')
+        -- vibe.debug_str = 'simple input'
       end
     elseif vibe.mode == "normal" then
       commands = keymap.nmap_override[vibe.last_stroke]
       if commands then 
-        vibe.debug_str = vibe.last_stroke .. ' nmap_override mappedd!'
+        -- vibe.debug_str = vibe.last_stroke .. ' nmap_override mappedd!'
       else
         commands = keymap.nmap[vibe.stroke_seq]
         
         if commands then
-          vibe.debug_str = vibe.stroke_seq .. ' nmapped!'
+          -- vibe.debug_str = vibe.stroke_seq .. ' nmapped!'
         else  
           if not keymap.have_nmap_starting_with(vibe.stroke_seq) then
-            vibe.debug_str = 'no commands for ' .. vibe.stroke_seq
+            -- vibe.debug_str = 'no commands for ' .. vibe.stroke_seq
             vibe.reset_seq()
           end
         end
@@ -123,17 +149,20 @@ function vibe.process_stroke(stroke)
     end
     
     if commands then
+      vibe.reset_seq()
       for _, cmd in ipairs(commands) do
         local performed = command.perform(cmd)
         if performed then break end
       end
-      vibe.reset_seq()
+      core.log_quiet('have commands, return true')
       return true
     end    
     
     if vibe.mode=='insert' then
+      core.log_quiet('mode==insert , return false')
       return false
     else
+      core.log_quiet('return true')
       return true -- no text input in normal mode
     end
 end

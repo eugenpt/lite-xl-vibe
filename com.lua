@@ -25,7 +25,21 @@ command.add(nil, {
     core.command_view:enter("Strokes to run:", function(text)
       core.vibe.run_stroke_seq(text)
     end)
-  end
+  end,
+  ["vibe:repeat"] = function()
+    -- first - remove the last command (the `vibe:repeat` one)
+    core.vibe.last_executed_seq = core.vibe.kb.split_stroke_seq(
+            core.vibe.last_executed_seq
+          )
+    core.vibe.last_executed_seq = table.concat(
+        {table.unpack(
+          core.vibe.last_executed_seq,
+          1,
+          #core.vibe.last_executed_seq - 1
+        )}
+      )
+    core.vibe.run_stroke_seq(core.vibe.last_executed_seq)
+  end,
 })
 
 return com
