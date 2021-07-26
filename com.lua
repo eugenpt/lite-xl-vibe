@@ -4,6 +4,7 @@ local command = require "core.command"
 local keymap = require "core.keymap"
 local style = require "core.style"
 
+local misc = require "plugins.lite-xl-vibe.misc"
 
 
 local com = {}
@@ -20,6 +21,11 @@ command.add(nil, {
   ["vibe:escape"] = function()
     core.vibe.reset_seq()
   end,
+  ["vibe:run-strokes"] = function()
+    core.command_view:enter("Strokes to run:", function(text)
+      core.vibe.run_stroke_seq(text)
+    end)
+  end
 })
 
 return com

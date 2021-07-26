@@ -49,6 +49,22 @@ function vibe.reset_seq()
   vibe.stroke_seq = ''
 end
 
+function vibe.run_stroke_seq(seq)
+  if type(seq) ~= 'table' then
+    seq = vibe.kb.split_stroke_seq(seq)
+  end
+  local did_input = false
+  for _,stroke in ipairs(seq) do
+    did_input = vibe.process_stroke(stroke)
+    if not did_input then
+      local line,col = doc():get_selection()
+      doc():insert(line, col, vibe.kb.stroke_to_symbol(stroke))
+      doc():set_selection(line, col+1)
+      doc()
+    end
+  end
+end
+
 vibe.on_key_pressed__orig = keymap.on_key_pressed
 function keymap.on_key_pressed(k)
   if dv():is(CommandView) then
@@ -66,13 +82,19 @@ function keymap.on_key_pressed(k)
     if mk == "altgr" then
       keymap.modkeys["ctrl"] = false
     end
-  else
+    return false
+  end
+  -- now finally parse and process the stroke
+  return vibe.process_stroke(vibe.kb.key_to_stroke(k))
+end
+
+function vibe.process_stroke(stroke)
     -- first - current stroke
-    vibe.last_stroke = vibe.kb.key_to_stroke(k)
+    vibe.last_stroke = stroke
     
     vibe.stroke_seq = vibe.stroke_seq .. vibe.last_stroke
     
-    local stroke__orig = vibe.kb.key_to_stroke__orig(k)
+    local stroke__orig = vibe.kb.stroke_to_orig_stroke(stroke)
     local commands = {}
     
     if vibe.mode == "insert" then
@@ -114,8 +136,6 @@ function keymap.on_key_pressed(k)
     else
       return true -- no text input in normal mode
     end
-  end
-  return false
 end
 
 

@@ -98,6 +98,7 @@ local un_escape_sub = {
   ["\\\\"] = "\\",
   ["\\-"] = "-",
   ["<space>"] = " ",
+  ["<CR>"] = "\n",
 }
 local escape_simple_keys = {
  'home','space','up','down','left','right','end','pageup','pagedown','delete','insert','tab','backspace'
@@ -155,7 +156,13 @@ function keyboard.key_to_stroke__orig(k)
   return stroke .. k
 end
 
-function keyboard.stroke_to_orig_stroke(stroke)
+
+local function stroke_strip_mod(stroke)
+  -- strips C/A/M/S- from stroke
+  --  returns:
+  --    - old-style stroke mod-string (ctrl+/..)
+  --    - stripped stroke
+  --
   local lstroke = stroke
   local R = ''
   local s = ''
@@ -168,8 +175,13 @@ function keyboard.stroke_to_orig_stroke(stroke)
       end
     end
   end
+  return R, lstroke 
+end
+
+function keyboard.stroke_to_orig_stroke(stroke)
+  local R, lstroke = stroke_strip_mod(stroke)
   -- if it's one of the escaped characters
-  s = escape_char_sub__inv[lstroke]
+  local s = escape_char_sub__inv[lstroke]
   if s then
     return R .. s
   end
@@ -183,6 +195,19 @@ function keyboard.stroke_to_orig_stroke(stroke)
   
   return R
 end
+
+function keyboard.stroke_to_symbol(stroke)
+  local R, lstroke = stroke_strip_mod(stroke)
+  local s = un_escape_sub[lstroke]
+  if s then
+    return s
+  else
+    -- if it is one symbol, return it
+    --  otherwise - nil
+    return #lstroke==1 and lstroke or nil
+  end
+end
+
 
 keyboard.stroke_patterns = {
   '<[^>]+>',
