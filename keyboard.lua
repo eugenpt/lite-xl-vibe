@@ -100,7 +100,7 @@ local un_escape_sub = {
   ["<space>"] = " ",
 }
 local escape_simple_keys = {
- 'home','space','up','down','left','right','end','pageup','pagedown','delete','insert','tab','backspace','return'
+ 'home','space','up','down','left','right','end','pageup','pagedown','delete','insert','tab','backspace'
 }
 -- add Fs
 for i = 1, 64 do
@@ -112,7 +112,7 @@ end
 
 local escape_char_sub__inv = {}
 for a,b in pairs(escape_char_sub) do
-  escape_char_sub[b] = a
+  escape_char_sub__inv[b] = a
 end
 
 local function escape_stroke(k)
