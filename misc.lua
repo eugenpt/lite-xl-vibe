@@ -16,6 +16,7 @@ local core = require "core"
 local command = require "core.command"
 local keymap = require "core.keymap"
 local DocView = require "core.docview"
+local Doc = require "core.doc"
 local CommandView = require "core.commandview"
 local style = require "core.style"
 local config = require "core.config"
@@ -23,6 +24,16 @@ local common = require "core.common"
 local translate = require "core.doc.translate"
 
 local misc = {}
+
+
+local function dv()
+  return core.active_view
+end
+
+local function doc()
+  return core.active_view.doc
+end
+
 
 function string:isUpperCase()
   return self:upper()==self and self:lower()~=self
@@ -50,12 +61,28 @@ function string:isNumber()
 end
 
 
+
 local function dv()
   return core.active_view
 end
 
 local function doc()
   return core.active_view.doc
+end
+
+function misc.str(a)
+  if type(a) == 'table' then
+    local R = '[ '
+    for j,ja in pairs(a) do
+      R = R .. (#R>2 and ', ' or '') .. '[' .. j .. '] = ' .. misc.str(ja)
+    end
+    R = R .. ' ]'
+    return R
+  elseif type(a) == 'string' then
+    return '"' .. a .. '"'
+  else
+    return tostring(a)
+  end
 end
 
 function misc.move_to_line(line)
@@ -65,6 +92,19 @@ end
 function misc.append_line_if_last_line(line)
   if line >= #doc().lines then
     doc():insert(line, math.huge, "\n")
+  end
+end
+
+
+-------------------------------------------------------------------------------
+-- vim-like save to clipboard of all deleted text
+
+local on_text_change__orig = Doc.on_text_change
+function Doc:on_text_change(type)
+  on_text_change__orig(self,type)
+  
+  if type == "remove" then
+    system.set_clipboard(self.undo_stack[self.undo_stack.idx-1][3])
   end
 end
 
