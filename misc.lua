@@ -82,6 +82,7 @@ function command.perform(name)
       core.try(table.unpack(hook)) -- yeah, just add function and arguments as hooks
     end
   end
+  return r -- wow, almost forgot this! man it took a long time to debug
 end
 function command.add_hook(com_name, hook)
    if command.hooks[com_name]==nil then
