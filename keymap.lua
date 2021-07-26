@@ -105,6 +105,16 @@ keymap.add_nmap {
   ["dd"] = "doc:delete-lines",  
   [">>"] = "doc:indent",
   ["\\<\\<"] = "doc:unindent",
+  
+  -- actions through sequences, huh? I do like that.
+  ["x"] = "i<delete><ESC>",
+  ["o"] = "$i<CR>",
+  ["O"] = "0i<CR><ESC>ki<tab>",
+  ["a"] = "li",
+  ["A"] = "$i",
+  ["C"] = "iS-<end><delete>", -- huh. playing out the `usual` mappings
+  ["D"] = "C<ESC>",
+
   -- I do like Mac bindings
   ["M-o"] = "core:open-file",
   ["M-n"] = "core:new-doc",
@@ -133,7 +143,6 @@ keymap.add_nmap {
   -- personal preferences
   ["C-h"] = "root:switch-to-left",
   ["C-l"] = "root:switch-to-right",
-  [":r"] = "core:restart",
   [":r"] = "core:restart",
 }
 

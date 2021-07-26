@@ -151,8 +151,14 @@ function vibe.process_stroke(stroke)
     if commands then
       vibe.reset_seq()
       for _, cmd in ipairs(commands) do
-        local performed = command.perform(cmd)
-        if performed then break end
+        if command.map[cmd] then
+          local performed = command.perform(cmd)
+          if performed then break end
+        else
+          -- sequence!
+          core.log_quiet('sequence as command! [%s]',cmd)
+          vibe.run_stroke_seq(cmd)
+        end  
       end
       core.log_quiet('have commands, return true')
       return true
