@@ -214,7 +214,9 @@ keyboard.stroke_patterns = {
   '\\.',
 }
 for _,sh in pairs(modkeys_sh) do
-  table.insert(keyboard.stroke_patterns, sh .. '%-')
+  table.insert(keyboard.stroke_patterns, sh .. '%-<[^>]+>')
+  table.insert(keyboard.stroke_patterns, sh .. '%-\\.')
+  table.insert(keyboard.stroke_patterns, sh .. '%-.')
 end
 table.insert(keyboard.stroke_patterns, '.')
 

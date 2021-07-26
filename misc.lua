@@ -78,7 +78,6 @@ function command.perform(...)
   local r = command_perform(...)
   local list = {...}
   local name = list[1]
-  core.vibe.debug_str = "com perform : " .. name
   if command.hooks[name] then
     for _,hook in ipairs(command.hooks[name]) do
       -- TODO : predicates?
@@ -90,6 +89,9 @@ end
 function command.add_hook(com_name, hook)
    if command.hooks[com_name]==nil then
      command.hooks[com_name] = {}
+   end
+   if type(hook) == 'function' then
+     hook = { hook }
    end
    table.insert(command.hooks[com_name], hook)
 end

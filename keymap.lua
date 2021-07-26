@@ -62,6 +62,7 @@ end
 -- These are to be executed even when strokes appear in a sequence
 keymap.add_nmap_override {
   ["C-g"] = "vibe:escape",
+  ["C-["] = "vibe:escape",
   ["<ESC>"] = "vibe:escape",
 }
 
@@ -103,7 +104,7 @@ keymap.add_nmap {
   ["N"] = "find-replace:previous-find",
   ["dd"] = "doc:delete-lines",  
   [">>"] = "doc:indent",
-  ["<<"] = "doc:unindent",
+  ["\\<\\<"] = "doc:unindent",
   -- I do like Mac bindings
   ["M-o"] = "core:open-file",
   ["M-n"] = "core:new-doc",
@@ -114,6 +115,9 @@ keymap.add_nmap {
   ["C-xC-;"] = "doc:toggle-line-comments",
   -- misc
   ["C-\\\\"] = "treeview:toggle", -- yeah, single \ turns into \\\\ , thats crazy.
+  
+  -- 
+  ["."] = "vibe:repeat",
   
   -- commands as in vim, just bindings for now..
   [":so<space>%<CR>"] = "core:exec-file",
