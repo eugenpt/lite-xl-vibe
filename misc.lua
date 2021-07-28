@@ -14,6 +14,7 @@ main intentions are
 ]]--
 local core = require "core"
 local command = require "core.command"
+local config = require "core.config"
 local keymap = require "core.keymap"
 local DocView = require "core.docview"
 local Doc = require "core.doc"
@@ -34,6 +35,33 @@ local function doc()
   return core.active_view.doc
 end
 
+-------------------------------------------------------------------------------
+-- clipboard ring                                                            --
+-------------------------------------------------------------------------------
+
+core.vibe.clipboard_ring = {}
+core.vibe.clipboard_ring_ix = 0
+misc.system__set_clipboard = system.set_clipboard
+misc.system__set_clipboard_ix = 0
+function system.set_clipboard(s)
+  core.vibe.clipboard_ring[#core.vibe.clipboard_ring + 1] = s
+  core.vibe.clipboard_ring_ix = #core.vibe.clipboard_ring
+  core.vibe.clipboard_ring[#core.vibe.clipboard_ring - config.vibe.clipboard_ring_max] = nil
+  misc.system__set_clipboard(s)
+end 
+
+
+function misc.clipboard_ring_rotate()
+  doc():undo()
+  core.vibe.clipboard_ring_ix = core.vibe.clipboard_ring_ix - 1
+  if core.vibe.clipboard_ring[core.vibe.clipboard_ring_ix] == nil then
+    core.vibe.clipboard_ring_ix = #core.vibe.clipboard_ring
+  end
+  misc.system__set_clipboard(core.vibe.clipboard_ring[core.vibe.clipboard_ring_ix])
+  command.perform("doc:paste")
+end
+
+-------------------------------------------------------------------------------
 
 function string:isUpperCase()
   return self:upper()==self and self:lower()~=self
@@ -115,6 +143,12 @@ function misc.find_in_line(symbol, backwards)
     line, col = line2, col2
   end    
 end
+
+-------------------------------------------------------------------------------
+--
+
+
+
 
 -------------------------------------------------------------------------------
 -- vim-like save to clipboard of all deleted text

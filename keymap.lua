@@ -147,6 +147,8 @@ keymap.add_nmap {
   ["C-p"] = { "command:select-previous", "doc:move-to-previous-line" },
   ["C-n"] = { "command:select-next", "doc:move-to-next-line" },
   ["C-xC-;"] = "doc:toggle-line-comments",
+  ["A-y"] = "vibe:rotate-clipboard-ring",
+  ["C-y"] = "vibe:rotate-clipboard-ring",
   -- misc
   ["C-\\\\"] = "treeview:toggle", -- yeah, single \ turns into \\\\ , thats crazy.
   
@@ -220,6 +222,8 @@ keymap.add_direct {
   -- personal preferences
   ["ctrl+k"] = "root:switch-to-next-tab",
   ["ctrl+j"] = "root:switch-to-previous-tab",  
+  ["ctrl+y"] = "vibe:rotate-clipboard-ring",
+  ["alt+y"] = "vibe:rotate-clipboard-ring",
 }
 
 

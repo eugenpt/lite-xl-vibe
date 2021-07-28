@@ -9,11 +9,15 @@ local DocView = require "core.docview"
 local CommandView = require "core.commandview"
 
 
-local misc = require "plugins.lite-xl-vibe.misc"
+local config = require "plugins.lite-xl-vibe.config"
 
 
 local vibe = {}
 core.vibe = vibe
+
+
+local misc = require "plugins.lite-xl-vibe.misc"
+
 
 vibe.kb = require "plugins.lite-xl-vibe.keyboard"
 vibe.mode = 'insert'

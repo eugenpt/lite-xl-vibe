@@ -47,6 +47,9 @@ command.add(nil, {
     end
     misc.find_in_line(core.vibe.last_line_find["symbol"], core.vibe.last_line_find["backwards"])
   end,
+  ["vibe:rotate-clipboard-ring"] = function()
+    misc.clipboard_ring_rotate()
+  end,
 })
 
 return com
