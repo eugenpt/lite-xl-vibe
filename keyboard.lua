@@ -83,6 +83,13 @@ for a,b in pairs(shift_keys) do
   shift_keys_inv[b]=a
 end
 
+keyboard.all_typed_symbols = {' '} -- I know.
+for a,b in pairs(shift_keys) do
+  table.insert(keyboard.all_typed_symbols, a)
+  table.insert(keyboard.all_typed_symbols, b)
+end
+
+
 local escape_char_sub = {
   ["<"] = "\\<",   -- for <ESC> and <CR>
   ["\\"] = "\\\\", -- for the escaping "\" itself -- it's a good thing I don't need triple escaping..
@@ -90,6 +97,7 @@ local escape_char_sub = {
   ["escape"] = "<ESC>",
   ["return"] = "<CR>",
   ["keypad enter"] = "<return>",
+  [" "] = "<space>", -- I know.
 } 
 -- map back to symbol entered
 --  should be handy? I mean.. it is already, for f/F
@@ -116,7 +124,7 @@ for a,b in pairs(escape_char_sub) do
   escape_char_sub__inv[b] = a
 end
 
-local function escape_stroke(k)
+function keyboard.escape_stroke(k)
   local r = escape_char_sub[k]
   if r then
     return r
@@ -135,13 +143,13 @@ function keyboard.key_to_stroke(k)
   -- Shift is special - it may be unnecessary
   if keymap.modkeys["shift"] then
     if shift_keys[k] then
-      stroke = stroke .. escape_stroke(shift_keys[k])
+      stroke = stroke .. keyboard.escape_stroke(shift_keys[k])
     else
       -- when necessary, add Shift as S-
-      stroke = stroke .. 'S-' .. escape_stroke(k)
+      stroke = stroke .. 'S-' .. keyboard.escape_stroke(k)
     end
   else 
-    stroke = stroke .. escape_stroke(k)
+    stroke = stroke .. keyboard.escape_stroke(k)
   end
   return stroke
 end

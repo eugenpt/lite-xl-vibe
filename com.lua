@@ -40,6 +40,13 @@ command.add(nil, {
       )
     core.vibe.run_stroke_seq(core.vibe.last_executed_seq)
   end,
+  ["vibe:repeat-find-in-line"] = function()
+    if core.vibe.last_line_find == nil then
+      core.vibe.debug_str = 'no last line search..'
+      return
+    end
+    misc.find_in_line(core.vibe.last_line_find["symbol"], core.vibe.last_line_find["backwards"])
+  end,
 })
 
 return com

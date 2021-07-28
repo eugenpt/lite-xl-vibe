@@ -95,6 +95,26 @@ function misc.append_line_if_last_line(line)
   end
 end
 
+function misc.find_in_line(symbol, backwards)
+  core.vibe.last_line_find = { ["backwards"] = backwards, ["symbol"]=symbol }
+
+  local line = nil
+  local col = nil
+  line,col = doc():get_selection()
+  while true do
+    local line2, col2 = doc():position_offset(line, col, backwards and -1 or 1)
+    local char = doc():get_char(line2, col2)
+    if char==symbol then
+      doc():set_selection(line2,col2)
+      return
+    end
+    if line ~= line2 or col == col2 then
+      core.vibe.debug_str = symbol .. ' not found'
+      return
+    end
+    line, col = line2, col2
+  end    
+end
 
 -------------------------------------------------------------------------------
 -- vim-like save to clipboard of all deleted text

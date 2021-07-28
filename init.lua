@@ -104,6 +104,7 @@ function keymap.on_key_pressed(k)
 end
 
 function vibe.process_stroke(stroke)
+    core.log_quiet("process_stroke |%s|", stroke)
     -- first - current stroke
     vibe.last_stroke = stroke
     
@@ -125,23 +126,22 @@ function vibe.process_stroke(stroke)
     if vibe.mode == "insert" then
       commands = keymap.map[stroke__orig]
       if commands then
-        -- vibe.debug_str = 'imapped ..?'
+        -- core.log_quiet('imapped to ' .. misc.str(commands))
       else
-        core.log_quiet('insert,no coms')
-        -- vibe.debug_str = 'simple input'
+        -- core.log_quiet('insert,no coms')
       end
     elseif vibe.mode == "normal" then
       commands = keymap.nmap_override[vibe.last_stroke]
       if commands then 
-        -- vibe.debug_str = vibe.last_stroke .. ' nmap_override mappedd!'
+        -- core.log_quiet('nmap_override to ' .. misc.str(commands))
       else
         commands = keymap.nmap[vibe.stroke_seq]
         
         if commands then
-          -- vibe.debug_str = vibe.stroke_seq .. ' nmapped!'
+          -- core.log_quiet('nmapped to ' .. misc.str(commands))
         else  
           if not keymap.have_nmap_starting_with(vibe.stroke_seq) then
-            -- vibe.debug_str = 'no commands for ' .. vibe.stroke_seq
+            -- core.log_quiet('no commands for ' .. vibe.stroke_seq)
             vibe.reset_seq()
           end
         end

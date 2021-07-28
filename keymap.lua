@@ -9,7 +9,12 @@
  - some old-style i-maps for better experience
 
 ]]--
+local core = require "core"
+local command = require "core.command"
 local keymap = require "core.keymap"
+
+local kb = require "plugins.lite-xl-vibe.keyboard"
+local misc = require "plugins.lite-xl-vibe.misc"
 
 -- Good, funally some N freaking map
 keymap.nmap = {}
@@ -35,7 +40,12 @@ end
 function keymap.add_nmap(map)
   for stroke, commands in pairs(map) do
     commands = prep_list(commands)
-    keymap.nmap[stroke] = commands
+    if keymap.nmap[stroke] == nil then
+      keymap.nmap[stroke] = {}
+    end
+    for _,com in ipairs(commands) do
+      table.insert(keymap.nmap[stroke], com)
+    end
     fill_reverse(keymap.reverse_nmap, commands, stroke)
   end
 end
@@ -72,6 +82,7 @@ keymap.add_nmap {
   ["A-x"] = "core:find-command",
 --  [":"] = "core:find-command",
   -- navigation
+
   ["<left>"] = { "doc:move-to-previous-char", "dialog:previous-entry" },
   ["<right>"] = { "doc:move-to-next-char", "dialog:next-entry"},
   ["<up>"] = { "command:select-previous", "doc:move-to-previous-line" },
@@ -107,13 +118,26 @@ keymap.add_nmap {
   ["\\<\\<"] = "doc:unindent",
   
   -- actions through sequences, huh? I do like that.
-  ["x"] = "i<delete><ESC>",
+  ["x"] = "i<delete><ESC>", -- needs to be changed.. (deletes selection)
   ["o"] = "$i<CR>",
   ["O"] = "0i<CR><ESC>ki<tab>",
   ["a"] = "li",
   ["A"] = "$i",
   ["C"] = "iS-<end><delete>", -- huh. playing out the `usual` mappings
   ["D"] = "C<ESC>",
+  
+  ["v$"] = "iS-<end><ESC>",
+  ["y$"] = "v$C-c<ESC>",
+  ["Y"] = "y$",
+  ["C"] = "iS-<end><delete>",
+  ["yy"] = "0iS-<down>C-c<up><ESC>",
+  ["p"] = "doc:paste",
+  
+  ["viw"] = "doc:select-word",
+  ["diw"] = "viw<delete>",
+  ["ciw"] = "viw<delete>i",
+  ["<delete>"] = "doc:delete",
+  
 
   -- I do like Mac bindings
   ["M-o"] = "core:open-file",
@@ -128,6 +152,7 @@ keymap.add_nmap {
   
   -- 
   ["."] = "vibe:repeat",
+  [";"] = "vibe:repeat-find-in-line",
   
   -- commands as in vim, just bindings for now..
   [":so<space>%<CR>"] = "core:exec-file",
@@ -135,6 +160,7 @@ keymap.add_nmap {
   [":e"] = "core:find-file",
   [":w<CR>"] = "doc:save",
   [":w<space>"] = "doc:save-as",
+  [":l"] = "core:open-log",
   -- may be ok?
   [":s<CR>"] = "doc:save",
   [":s<space>"] = "doc:save-as",
@@ -146,7 +172,37 @@ keymap.add_nmap {
   [":r"] = "core:restart",
 }
 
--- some minor tweaks for isnert mode from emacs/vim/..
+-------------------------------------------------------------------------------
+-- project-search                                                            --
+-------------------------------------------------------------------------------
+keymap.add_nmap({
+  ["<f5>"] = "project-search:refresh",
+  ["C-/"]  = "project-search:find",
+  ["k"]                 = "project-search:select-previous",
+  ["j"]               = "project-search:select-next",
+  ["<CR>"]             = "project-search:open-selected",
+  ["C-u"]             = "project-search:move-to-previous-page",
+  ["C-d"]           = "project-search:move-to-next-page",
+  ["gg"]          = "project-search:move-to-start-of-doc",
+  ["G"]           = "project-search:move-to-end-of-doc",
+  -- also try'n'keep the usual mappings (why not?)
+  ["C-F"]       = "project-search:find",
+  ["<up>"]                 = "project-search:select-previous",
+  ["<down>"]               = "project-search:select-next",
+  ["<return>"]             = "project-search:open-selected",
+  ["C-m"]             = "project-search:open-selected",
+  ["<pageup>"]             = "project-search:move-to-previous-page",
+  ["<pagedown>"]           = "project-search:move-to-next-page",
+  ["C-<home>"]          = "project-search:move-to-start-of-doc",
+  ["C-<end>"]           = "project-search:move-to-end-of-doc",
+  ["<home>"]               = "project-search:move-to-start-of-doc",
+  ["<end>"]                = "project-search:move-to-end-of-doc"
+})
+
+
+-------------------------------------------------------------------------------
+-- some minor tweaks for isnert mode from emacs/vim/..                       --
+-------------------------------------------------------------------------------
 keymap.add_direct {
   ["ctrl+p"] = { "autocomplete:previous", "command:select-previous", "doc:move-to-previous-line" },
   ["ctrl+n"] = { "autocomplete:next", "command:select-next", "doc:move-to-next-line" },
@@ -166,4 +222,33 @@ keymap.add_direct {
   ["ctrl+j"] = "root:switch-to-previous-tab",  
 }
 
+
+-------------------------------------------------------------------------------
+-- I know this is ugly but.. hm. It kinda works                              --
+-- -- usually commands go to com.lua, but not commands with generated names  --
+-------------------------------------------------------------------------------
+
+local com_name = ''
+local com_name2 = ''
+for _,i in ipairs(kb.all_typed_symbols) do
+  com_name = 'vibe:find-in-line:' .. i
+  com_name2 = com_name .. ':backwards'
+
+  command.add(nil, {
+    [com_name] = function()
+      misc.find_in_line(i)
+    end,
+    [com_name2] = function()
+      misc.find_in_line(i, true)
+    end,
+  })
+
+  keymap.add_nmap({
+    ["f" .. kb.escape_stroke(i)] = com_name,
+    ["F" .. kb.escape_stroke(i)] = com_name2,
+  })
+  
+end
+
+-------------------------------------------------------------------------------
 
