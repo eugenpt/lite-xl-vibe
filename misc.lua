@@ -173,22 +173,45 @@ function misc.append_line_if_last_line(line)
   end
 end
 
-function misc.find_in_line(symbol, backwards)
-  core.vibe.last_line_find = { ["backwards"] = backwards, ["symbol"]=symbol }
+function misc.find_in_line(symbol, backwards, include, _doc, _line, _col)
+  core.vibe.last_line_find = { 
+    ["backwards"] = backwards, 
+    ["symbol"] = symbol, 
+    ["include"] = include,
+  }
+  if _doc == nil then
+    _doc = doc()
+    _line, _col = doc():get_selection()
+  end
 
-  local line = nil
-  local col = nil
-  line,col = doc():get_selection()
+  local line = _line
+  local col = _col
+  local char
   while true do
-    local line2, col2 = doc():position_offset(line, col, backwards and -1 or 1)
-    local char = doc():get_char(line2, col2)
+    local line2, col2 = _doc:position_offset(line, col, backwards and -1 or 1)
+    if char == symbol and (not backwards) and include then
+      -- going forward we need to get this extra symbol
+      return line2, col2
+    end
+    char = _doc:get_char(line2, col2)
     if char==symbol then
-      doc():set_selection(line2,col2)
-      return
+      if backwards then
+        if include then
+          return line2, col2
+        else
+          return line, col
+        end
+      else  
+        if include then
+          -- pass
+        else
+          return line2, col2
+        end
+      end
     end
     if line ~= line2 or col == col2 then
       core.vibe.debug_str = symbol .. ' not found'
-      return
+      return _line, _col
     end
     line, col = line2, col2
   end    

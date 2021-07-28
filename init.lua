@@ -27,9 +27,11 @@ vibe.last_stroke = ''
 vibe.stroke_seq = ''
 vibe.last_executed_seq = ''
 
+vibe.translate = require "plugins.lite-xl-vibe.translate"
 vibe.com = require "plugins.lite-xl-vibe.com"
 
 require "plugins.lite-xl-vibe.keymap"
+
 
 vibe.interface = require "plugins.lite-xl-vibe.interface"
 

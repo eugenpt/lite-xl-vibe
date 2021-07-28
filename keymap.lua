@@ -223,35 +223,48 @@ keymap.add_direct {
   -- personal preferences
   ["ctrl+k"] = "root:switch-to-next-tab",
   ["ctrl+j"] = "root:switch-to-previous-tab",  
-  ["ctrl+y"] = "vibe:rotate-clipboard-ring",
+  -- ["ctrl+y"] = "vibe:rotate-clipboard-ring",
   ["alt+y"] = "vibe:rotate-clipboard-ring",
 }
 
 -------------------------------------------------------------------------------
 -- I know this is ugly but.. hm. It kinda works                              --
--- -- usually commands go to com.lua, but not commands with generated names  --
 -------------------------------------------------------------------------------
 
 local com_name = ''
 local com_name2 = ''
 for _,i in ipairs(kb.all_typed_symbols) do
-  com_name = 'vibe:find-in-line:' .. i
-  com_name2 = com_name .. ':backwards'
 
-  command.add(nil, {
-    [com_name] = function()
-      misc.find_in_line(i)
-    end,
-    [com_name2] = function()
-      misc.find_in_line(i, true)
-    end,
+  local tr = {
+    ['f'] = 'next-symbol',
+    ['F'] = 'previous-symbol',
+    ['t'] = 'next-symbol-excluded',
+    ['T'] = 'previous-symbol-excluded',
+  }
+  for c, cname in pairs(tr) do
+   keymap.add_nmap({
+    ["v" .. c .. kb.escape_stroke(i)] = 'doc:select-to-'..cname..'-'..i,
+    ["d" .. c .. kb.escape_stroke(i)] = 'doc:delete-to-'..cname..'-'..i,
+    ["c" .. c .. kb.escape_stroke(i)] = 'd'..c..kb.escape_stroke(i)..'i',
   })
+  end
 
+  local tr = {
+    ['F'] = 'previous-symbol',
+    ['T'] = 'previous-symbol-excluded',
+  }
+  for c, cname in pairs(tr) do
+   keymap.add_nmap({
+    [c .. kb.escape_stroke(i)] = 'doc:move-to-'..cname..'-'..i,
+  })
+  end
+
+  -- simple move works a bit differently ..
+  -- all since symbor under the cursor is not included in selection when going forward 
   keymap.add_nmap({
-    ["f" .. kb.escape_stroke(i)] = com_name,
-    ["F" .. kb.escape_stroke(i)] = com_name2,
-  })
-  
+    [ 'f' .. kb.escape_stroke(i)] = 'doc:move-to-next-symbol-excluded-'..i,
+    [ 't' .. kb.escape_stroke(i)] = 'f'..kb.escape_stroke(i)..'h', -- who uses this?
+   })
 end
 
 -------------------------------------------------------------------------------

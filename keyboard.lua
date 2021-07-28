@@ -35,8 +35,8 @@ local modkeys = { "ctrl", "alt", "altgr", "shift", "cmd"}
 
 local modkeys_sh = {
   [ "ctrl" ] = "C",
-  [ "altgr" ] = "A",
   [ "alt" ] = "A",
+  [ "altgr" ] = "A",
   [ "shift" ] = "S",
   [ "cmd"  ] = "M",
 }

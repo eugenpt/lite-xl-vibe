@@ -6,6 +6,14 @@ local style = require "core.style"
 
 local misc = require "plugins.lite-xl-vibe.misc"
 
+local function dv()
+  return core.active_view
+end
+
+local function doc()
+  return core.active_view.doc
+end
+
 
 local com = {}
 
@@ -45,7 +53,15 @@ command.add(nil, {
       core.vibe.debug_str = 'no last line search..'
       return
     end
-    misc.find_in_line(core.vibe.last_line_find["symbol"], core.vibe.last_line_find["backwards"])
+    doc():move_to(function(doc,line,col)
+      return misc.find_in_line(
+        core.vibe.last_line_find["symbol"], 
+        core.vibe.last_line_find["backwards"],
+        core.vibe.last_line_find["include"],
+        doc, line, col
+      )
+    end, dv())
+    
   end,
   ["vibe:rotate-clipboard-ring"] = function()
     misc.clipboard_ring_rotate()
