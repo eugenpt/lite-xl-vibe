@@ -93,6 +93,7 @@ keymap.add_nmap {
   ["<backspace>"] = "doc:move-to-previous-char",
   ["l"] = "doc:move-to-next-char",
   ["w"] = "doc:move-to-next-word-start",
+  ["W"] = "doc:move-to-next-WORD-start",
   ["b"] = "doc:move-to-previous-word-start",
   ["e"] = "doc:move-to-next-word-end",
   ["0"] = "doc:move-to-start-of-line",
@@ -138,6 +139,9 @@ keymap.add_nmap {
   ["diw"] = "viw<delete>",
   ["ciw"] = "viw<delete>i",
   ["<delete>"] = "doc:delete",
+  ["viW"] = "doc:select-WORD",
+  ["diW"] = "viW<delete>",
+  ["ciW"] = "viW<delete>i",
   
 
   -- I do like Mac bindings

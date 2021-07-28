@@ -75,43 +75,6 @@ function misc.clipboard_ring_rotate()
 end
 
 -------------------------------------------------------------------------------
--- Translations                                                              --
--------------------------------------------------------------------------------
-
-local function is_non_word(char)
-  return config.non_word_chars:find(char, nil, true)
-end
-
-function translate.next_word_start(doc, line, col)
-  local prev
-  local end_line, end_col = translate.end_of_doc(doc, line, col)
-  while line < end_line or col < end_col do
-    prev = doc:get_char(line, col)
-    local line2, col2 = doc:position_offset(line, col, 1)
-    local char = doc:get_char(line2, col2)
-    line, col = line2, col2
-    if is_non_word(prev) and not is_non_word(char)
-    -- or line == line2 and col == col2 
-    then
-      break
-    end
-  end
-  return line, col
-end
-
-local translations = {
-  ["next-word-start"] = translate.next_word_start,
-}
-
-local commands = {}
-for name, fn in pairs(translations) do
-  commands["doc:move-to-" .. name] = function() doc():move_to(fn, dv()) end
-  commands["doc:select-to-" .. name] = function() doc():select_to(fn, dv()) end
-  commands["doc:delete-to-" .. name] = function() doc():delete_to(fn, dv()) end
-end
-command.add("core.docview", commands)
-
--------------------------------------------------------------------------------
 
 function string:isUpperCase()
   return self:upper()==self and self:lower()~=self
