@@ -92,6 +92,7 @@ keymap.add_nmap {
   ["h"] = "doc:move-to-previous-char",
   ["<backspace>"] = "doc:move-to-previous-char",
   ["l"] = "doc:move-to-next-char",
+  ["w"] = "doc:move-to-next-word-start",
   ["b"] = "doc:move-to-previous-word-start",
   ["e"] = "doc:move-to-next-word-end",
   ["0"] = "doc:move-to-start-of-line",
@@ -225,7 +226,6 @@ keymap.add_direct {
   ["ctrl+y"] = "vibe:rotate-clipboard-ring",
   ["alt+y"] = "vibe:rotate-clipboard-ring",
 }
-
 
 -------------------------------------------------------------------------------
 -- I know this is ugly but.. hm. It kinda works                              --
