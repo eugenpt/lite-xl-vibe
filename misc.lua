@@ -182,4 +182,45 @@ command.add(nil, {
 ]]--
 })
 
+-------------------------------------------------------------------------------
+-- Keyboard-only confirm close
+
+misc.core__confirm_close_all__orig = core.confirm_close_all
+function core.confirm_close_all(close_fn, ...)
+  local dirty_count = 0
+  local dirty_name
+  for _, doc in ipairs(core.docs) do
+    if doc:is_dirty() then
+      dirty_count = dirty_count + 1
+      dirty_name = doc:get_name()
+    end
+  end
+  if dirty_count > 0 then
+    local text
+    if dirty_count == 1 then
+      text = string.format("\"%s\" has", dirty_name)
+    else
+      text = string.format("%d docs have", dirty_count)
+    end
+    text = text .. " unsaved changes. Quit anyway? [Yes / No]"
+    local args = {...}
+    core.command_view:enter(text, function(_, item)
+      if item.text:match("^[yY]") then
+        close_fn(table.unpack(args))
+      elseif item.text:match("^[nN]") then
+        -- nop
+      end
+    end, function(text)
+      local items = {}
+      if not text:find("^[^yY]") then table.insert(items, "Yes (Close Without Saving)") end
+      if not text:find("^[^nN]") then table.insert(items, "No (Cancel close)") end
+      return items
+    end)
+  else
+    close_fn(...)
+  end
+end
+  
+-------------------------------------------------------------------------------
+
 return misc
