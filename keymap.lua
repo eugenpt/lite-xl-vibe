@@ -143,7 +143,6 @@ keymap.add_nmap {
   ["diW"] = "viW<delete>",
   ["ciW"] = "viW<delete>i",
   
-
   -- I do like Mac bindings
   ["M-o"] = "core:open-file",
   ["M-n"] = "core:new-doc",
@@ -179,6 +178,29 @@ keymap.add_nmap {
   [":r"] = "core:restart",
 }
 
+-------------------------------------------------------------------------------
+-- simple objects, no matching                                               --
+-------------------------------------------------------------------------------
+-- Seriously, for just ' and " this is so much overkill)).. 
+local actions = {'v','d','c'}
+
+local nmts = {
+  ['i'] = {'T','t'},
+  ['a'] = {'F','f'},
+}
+
+local objects = {'"',"'"}
+
+for _,o in ipairs(objects) do
+  for _,a in ipairs(actions) do
+    for c,nmt in pairs(nmts) do
+      keymap.add_nmap {
+        [a..c..o] = nmt[1]..o..a..nmt[2]..o,
+      }
+    end
+  end
+end
+  
 -------------------------------------------------------------------------------
 -- project-search                                                            --
 -------------------------------------------------------------------------------
