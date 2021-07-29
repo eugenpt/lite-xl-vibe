@@ -164,8 +164,8 @@ end
 -- matching
 
 for _,objects in ipairs(misc.matching_objectss) do
-  local symbol = objects[i]
-  local symbol_match = objects[3-i]
+  local symbol = objects[1]
+  local symbol_match = objects[2]
   for include=0,1 do
     translations['previous-unmatched-'..(include==0 and 'excluded-' or '')..symbol] = function(doc, line, col)
       return misc.find_in_line_unmatched(symbol, symbol_match, true, include==1, doc, line, col)
