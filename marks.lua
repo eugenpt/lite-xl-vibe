@@ -189,5 +189,37 @@ command.add(nil, {
   ["vibe: Load Marks"] = marks.load,
 })
 
+-------------------------------------------------------------------------------
+-- MarksView
+-------------------------------------------------------------------------------
+
+local View = require "core.view"
+
+
+local MarksView = View:extend()
+
+function MarksView:new(text, fn)
+  MarksView.super.new(self)
+  self.scrollable = true
+  self.brightness = 0
+  self:begin_search(text, fn)
+end
+
+
+function MarksView:get_name()
+  return "(book-)Marks List"
+end
+
+
+local function begin_search(text, fn)
+  if text == "" then
+    core.error("Expected non-empty string")
+    return
+  end
+  local mv = MarksView(text, fn)
+  core.root_view:get_active_node_default():add_view(mv)
+end
+
+-------------------------------------------------------------------------------
 
 return marks

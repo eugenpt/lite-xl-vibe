@@ -180,7 +180,56 @@ function misc.find_in_line(symbol, backwards, include, _doc, _line, _col)
   end    
 end
 
+-- these are used later for translations and such
+--  must be in order
+misc.matching_objectss = {{'<','>'},{'(',')'},{'[',']'},{'{','}'}}
 
+function misc.find_in_line_unmatched(symbol,symbol_match,backwards,include,_doc,_line,_col)
+  if _doc == nil then
+    _doc = doc()
+    _line, _col = doc():get_selection()
+  end
+
+  local line = _line
+  local col = _col
+  local char
+  
+  local n_unmatched = 0
+  while true do
+    local line2, col2 = _doc:position_offset(line, col, backwards and -1 or 1)
+    if char == symbol and n_unmatched==0 and (not backwards) and include then
+      -- going forward we need to get this extra symbol
+      return line2, col2
+    end
+    if char==symbol then
+      n_unmatched = n_unmatched - 1
+    end
+    char = _doc:get_char(line2, col2)
+    if char==symbol_match then
+      n_unmatched = n_unmatched + 1
+    end
+    if char==symbol and n_unmatched == 0 then
+      if backwards then
+        if include then
+          return line2, col2
+        else
+          return line, col
+        end
+      else  
+        if include then
+          -- pass
+        else
+          return line2, col2
+        end
+      end
+    end
+    if line ~= line2 or col == col2 then
+      core.vibe.debug_str = symbol .. ' not found'
+      return _line, _col
+    end
+    line, col = line2, col2
+  end    
+end
 
 -------------------------------------------------------------------------------
 -- hooks, everyone?

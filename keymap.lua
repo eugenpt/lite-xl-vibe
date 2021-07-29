@@ -201,6 +201,10 @@ for _,o in ipairs(objects) do
   end
 end
 
+-- matching objects?
+local objectss = {{'(',')'},{'[',']'},{'{','}'}}
+
+
 -------------------------------------------------------------------------------
 -- project-search                                                            --
 -------------------------------------------------------------------------------
@@ -292,6 +296,22 @@ for _,i in ipairs(kb.all_typed_symbols) do
     [ 't' .. kb.escape_stroke(i)] = 'f'..kb.escape_stroke(i)..'h', -- who uses this?
    })
 end
+
+-- matching?
+
+
+for _,objects in misc.matching_objectss do
+  local symbol = objects[1]
+  local symbol_match = objects[2]
+  for include=0,1 do
+    translations['previous-unmatched-'..(include==0 and 'excluded-' or '')..symbol] = function(doc, line, col)
+    keymap.add_nmap({
+      [ 'X-C-'..(include==0 and 'M-' or '')..symbol ] = "doc:move-to-previous-unmatched-"..(include==0 and 'excluded-' or '')..symbol,
+      [ 'X-A-'..(include==0 and 'M-' or '')..symbol_match ] = "doc:move-to-next-unmatched-"..(include==0 and 'excluded-' or '')..symbol_match,
+    })
+  end 
+end
+
 
 -------------------------------------------------------------------------------
 

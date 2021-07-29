@@ -31,7 +31,7 @@ keyboard.modkey_map = {
   ["right alt"]   = "altgr",
 }
 
-local modkeys = { "ctrl", "alt", "altgr", "shift", "cmd"}
+local modkeys = { "ctrl", "alt", "altgr", "shift", "cmd", "vibe_magic"}
 
 local modkeys_sh = {
   [ "ctrl" ] = "C",
@@ -39,6 +39,7 @@ local modkeys_sh = {
   [ "altgr" ] = "A",
   [ "shift" ] = "S",
   [ "cmd"  ] = "M",
+  [ "vibe_magic" ] = "X-", -- imaginary keystroke, only for nmaps
 }
 local modkeys_sh__inv = {}
 for a,b in pairs(modkeys_sh) do

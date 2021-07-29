@@ -42,7 +42,11 @@ function StatusView:get_items()
       self.separator2,
       core.vibe.stroke_seq,
       self.separator2,
-      core.vibe.debug_str,
+     (core.vibe.debug_str and (#core.vibe.debug_str > config.vibe.debug_str_max ))
+        and (core.vibe.debug_str:sub(1, math.floor(config.vibe.debug_str_max/2))
+              .. core.vibe.debug_str:sub(#core.vibe.debug_str - math.ceil(config.vibe.debug_str_max/2)
+                                        ,#core.vibe.debug_str))
+        or core.vibe.debug_str,
     }, {
       style.text, indent_label, indent_size,
       style.dim, self.separator2, style.text,

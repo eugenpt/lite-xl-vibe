@@ -160,6 +160,23 @@ for _,i in ipairs(kb.all_typed_symbols) do
   end
 end
 
+
+-- matching
+
+for _,objects in ipairs(misc.matching_objectss) do
+  local symbol = objects[i]
+  local symbol_match = objects[3-i]
+  for include=0,1 do
+    translations['previous-unmatched-'..(include==0 and 'excluded-' or '')..symbol] = function(doc, line, col)
+      return misc.find_in_line_unmatched(symbol, symbol_match, true, include==1, doc, line, col)
+    end
+    translations['next-unmatched-'..(include==0 and 'excluded-' or '')..symbol_match] = function(doc, line, col)
+      return misc.find_in_line_unmatched(symbol_match, symbol, false, include==1, doc, line, col)
+    end
+  end
+end
+
+
 -------------------------------------------------------------------------------
 
 local commands = {}
