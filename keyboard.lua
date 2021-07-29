@@ -73,10 +73,16 @@ local shift_keys = {
   ["/"] = "?",
 }
 -- also add letters
+keyboard.letters = {}
+keyboard.LETTERS = {}
+keyboard.digits = {'0','1','2','3','4','5','6','7','8','9'}
 local letterstr = "qwertyuioopasdfghjklzxcvbnm"
 for i=1, #letterstr do
   shift_keys[letterstr:sub(i,i)] = letterstr:sub(i,i):upper()
+  table.insert(keyboard.letters, letterstr:sub(i,i))
+  table.insert(keyboard.LETTERS, letterstr:sub(i,i):upper())
 end
+keyboard.shift_keys = shift_keys
 -- inverse, F -> f
 local shift_keys_inv = {}
 for a,b in pairs(shift_keys) do

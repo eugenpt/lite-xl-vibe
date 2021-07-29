@@ -32,6 +32,7 @@ vibe.com = require "plugins.lite-xl-vibe.com"
 
 require "plugins.lite-xl-vibe.keymap"
 
+vibe.marks = require "plugins.lite-xl-vibe.marks"
 
 vibe.interface = require "plugins.lite-xl-vibe.interface"
 
@@ -122,12 +123,11 @@ function vibe.process_stroke(stroke)
       vibe.last_executed_seq = ''
     end
     
-    vibe.debug_str =     vibe.last_executed_seq
-    
-    vibe.stroke_seq = vibe.stroke_seq .. vibe.last_stroke
-    
     local stroke__orig = vibe.kb.stroke_to_orig_stroke(stroke)
     local commands = {}
+    
+    vibe.debug_str = vibe.last_executed_seq
+    vibe.stroke_seq = vibe.stroke_seq .. stroke
     
     if vibe.mode == "insert" then
       commands = keymap.map[stroke__orig]
