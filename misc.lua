@@ -101,7 +101,41 @@ function string:isNumber()
   return true
 end
 
+function misc.slice(table,i0,i1)
+  i0 = i0 or 1
+  i1 = i1 or #table
+  local r = {}
+  for i=i0,i1 do
+    r[#r+1]=table[i]
+  end
+  return r
+end
 
+function misc.copy(table, deep)
+  local r = {}
+  if type(table) ~= 'table' then
+    return table
+  end
+  for k,v in pairs(table) do
+    r[k] = deep and misc.copy(v, deep) or v
+  end
+  return r
+end
+
+function misc.keys(table)
+  local r = {}
+  for a,_ in pairs(table) do
+    r[#r+1]=a
+  end
+  return r
+end
+
+function misc.values(table)
+  local r = {}
+  for _,a in pairs(table) do
+    r[#r+1]=a
+  end
+end
 
 local function dv()
   return core.active_view
@@ -182,7 +216,12 @@ end
 
 -- these are used later for translations and such
 --  must be in order
-misc.matching_objectss = {{'<','>'},{'(',')'},{'[',']'},{'{','}'}}
+misc.matching_objectss = {
+  ['<>'] = {'<','>'},
+  ['()'] = {'(',')'},
+  ['[]'] = {'[',']'},
+  ['{}'] = {'{','}'},
+}
 
 function misc.find_in_line_unmatched(symbol,symbol_match,backwards,include,_doc,_line,_col)
   if _doc == nil then

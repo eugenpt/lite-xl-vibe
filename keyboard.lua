@@ -84,6 +84,7 @@ for i=1, #letterstr do
   table.insert(keyboard.LETTERS, letterstr:sub(i,i):upper())
 end
 keyboard.shift_keys = shift_keys
+
 -- inverse, F -> f
 local shift_keys_inv = {}
 for a,b in pairs(shift_keys) do

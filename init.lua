@@ -139,15 +139,15 @@ function vibe.process_stroke(stroke)
     elseif vibe.mode == "normal" then
       commands = keymap.nmap_override[vibe.last_stroke]
       if commands then 
-        -- core.log_quiet('nmap_override to ' .. misc.str(commands))
+        core.log_quiet('nmap_override to ' .. misc.str(commands))
       else
         commands = keymap.nmap[vibe.stroke_seq]
         
         if commands then
-          -- core.log_quiet('nmapped to ' .. misc.str(commands))
+          core.log_quiet('nmapped to ' .. misc.str(commands))
         else  
           if not keymap.have_nmap_starting_with(vibe.stroke_seq) then
-            -- core.log_quiet('no commands for ' .. vibe.stroke_seq)
+            core.log_quiet('no commands for ' .. vibe.stroke_seq)
             vibe.reset_seq()
           end
         end
@@ -155,16 +155,22 @@ function vibe.process_stroke(stroke)
     end
     
     if commands then
-      vibe.reset_seq()
+      local performed = false
       for _, cmd in ipairs(commands) do
         if command.map[cmd] then
-          local performed = command.perform(cmd)
+          performed = command.perform(cmd)
           if performed then break end
         else
           -- sequence!
+          vibe.reset_seq()
           core.log_quiet('sequence as command! [%s]',cmd)
           vibe.run_stroke_seq(cmd)
+          -- for now let's think of sequences as default-performed
+          performed = true
         end  
+      end
+      if performed then
+        vibe.reset_seq()
       end
       core.log_quiet('have commands, return true')
       return true
@@ -174,7 +180,7 @@ function vibe.process_stroke(stroke)
       core.log_quiet('mode==insert , return false')
       return false
     else
-      core.log_quiet('return true')
+      core.log_quiet('mode != insert, return true')
       return true -- no text input in normal mode
     end
 end

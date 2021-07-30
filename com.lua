@@ -14,6 +14,10 @@ local function doc()
   return core.active_view.doc
 end
 
+local function is_mode(mode)
+  return function() return core.vibe.mode==mode end
+end
+
 local function has_selection()
   return doc():has_selection()
 end
@@ -74,6 +78,10 @@ command.add(has_selection, {
   ["vibe:copy"] = function()
     core.log('vibe:copy')
     command.perform("doc:copy")
+  end,
+  ["vibe:delete"] = function()
+    core.log('vibe:delete')
+    command.perform("doc:delete")
   end,
 })
 

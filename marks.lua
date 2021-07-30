@@ -40,6 +40,8 @@ function marks.set_mark(symbol)
     ["abs_filename"] = abs_filename,
     ["line"] = line,
     ["col"] = col,
+    ["line_text"] = doc():lines[line],
+    ["symbol"] = symbol,
   }
   if symbol:isUpperCase() then
     -- global
@@ -195,31 +197,202 @@ command.add(nil, {
 
 local View = require "core.view"
 
-
 local MarksView = View:extend()
 
-function MarksView:new(text, fn)
+function MarksView:new()
   MarksView.super.new(self)
   self.scrollable = true
   self.brightness = 0
-  self:begin_search(text, fn)
+  self:fill_marksview()
 end
 
+function MarksView:fill_marksview()
+  self.results = {}
+  self.last_file_idx = 1
+  self.selected_idx = 0
+  -- global
+  for symbol, mark in pairs(marks.global) do
+    table.insert(self.results, { file=core.normalize_to_project_dir(mark.abs_filename) , text=mark.line_text , line=mark.line, col=line.col, data=mark } )
+  end
+  -- local..
+  for filename, markss in pairs(marks._local) do
+    for symbol, mark in pairs(markss) do
+      table.insert(self.results, { file=core.normalize_to_project_dir(mark.abs_filename) , text=mark.line_text , line=mark.line, col=line.col, data=mark } )
+    end
+  end
+end
 
 function MarksView:get_name()
   return "(book-)Marks List"
 end
 
+function MarksView:refresh()
+  self:fill_marksview()
+end
 
-local function begin_search(text, fn)
-  if text == "" then
-    core.error("Expected non-empty string")
+
+function ResultsView:on_mouse_moved(mx, my, ...)
+  ResultsView.super.on_mouse_moved(self, mx, my, ...)
+  self.selected_idx = 0
+  for i, item, x,y,w,h in self:each_visible_result() do
+    if mx >= x and my >= y and mx < x + w and my < y + h then
+      self.selected_idx = i
+      break
+    end
+  end
+end
+
+function ResultsView:on_mouse_pressed(...)
+  local caught = ResultsView.super.on_mouse_pressed(self, ...)
+  if not caught then
+    self:open_selected_result()
+  end
+end
+
+function ResultsView:open_selected_result()
+  local res = self.results[self.selected_idx]
+  if not res then
     return
   end
-  local mv = MarksView(text, fn)
+  core.try(function()
+    local dv = core.root_view:open_doc(core.open_doc(res.file))
+    core.root_view.root_node:update_layout()
+    dv.doc:set_selection(res.line, res.col)
+    dv:scroll_to_line(res.line, false, true)
+  end)
+end
+
+function ResultsView:update()
+  self:move_towards("brightness", 0, 0.1)
+  ResultsView.super.update(self)
+end
+
+
+function ResultsView:get_results_yoffset()
+  return style.font:get_height() + style.padding.y * 3
+end
+
+
+function ResultsView:get_line_height()
+  return style.padding.y + style.font:get_height()
+end
+
+
+function ResultsView:get_scrollable_size()
+  return self:get_results_yoffset() + #self.results * self:get_line_height()
+end
+
+
+function ResultsView:get_visible_results_range()
+  local lh = self:get_line_height()
+  local oy = self:get_results_yoffset()
+  local min = math.max(1, math.floor((self.scroll.y - oy) / lh))
+  return min, min + math.floor(self.size.y / lh) + 1
+end
+
+
+function ResultsView:each_visible_result()
+  return coroutine.wrap(function()
+    local lh = self:get_line_height()
+    local x, y = self:get_content_offset()
+    local min, max = self:get_visible_results_range()
+    y = y + self:get_results_yoffset() + lh * (min - 1)
+    for i = min, max do
+      local item = self.results[i]
+      if not item then break end
+      coroutine.yield(i, item, x, y, self.size.x, lh)
+      y = y + lh
+    end
+  end)
+end
+
+
+function ResultsView:scroll_to_make_selected_visible()
+  local h = self:get_line_height()
+  local y = self:get_results_yoffset() + h * (self.selected_idx - 1)
+  self.scroll.to.y = math.min(self.scroll.to.y, y)
+  self.scroll.to.y = math.max(self.scroll.to.y, y + h - self.size.y)
+end
++
+function ResultsView:draw()
+  self:draw_background(style.background)
+
+
+  -- horizontal line
+  local yoffset = self:get_results_yoffset()
+  local x = ox + style.padding.x
+  local w = self.size.x - style.padding.x * 2
+  local h = style.divider_size
+  local color = common.lerp(style.dim, style.text, self.brightness / 100)
+  renderer.draw_rect(x, oy + yoffset - style.padding.y, w, h, color)
+  if self.searching then
+    renderer.draw_rect(x, oy + yoffset - style.padding.y, w * per, h, style.text)
+  end
+
+  -- results
+  local y1, y2 = self.position.y, self.position.y + self.size.y
+  for i, item, x,y,w,h in self:each_visible_result() do
+    local color = style.text
+    if i == self.selected_idx then
+      color = style.accent
+      renderer.draw_rect(x, y, w, h, style.line_highlight)
+    end
+    x = x + style.padding.x
+    local text = string.format("%s at line %d (col %d): ", item.file, item.line, item.col)
+    x = common.draw_text(style.font, style.dim, text, "left", x, y, w, h)
+    x = common.draw_text(style.code_font, color, item.text, "left", x, y, w, h)
+  end
+
+  self:draw_scrollbar()
+end
+
+local function fill_marksview()
+  local mv = MarksView()
   core.root_view:get_active_node_default():add_view(mv)
 end
 
+
+command.add(MarksView, {
+  ["vibe:marks:list:select-previous"] = function()
+    local view = core.active_view
+    view.selected_idx = math.max(view.selected_idx - 1, 1)
+    view:scroll_to_make_selected_visible()
+  end,
+
+  ["vibe:marks:list:select-next"] = function()
+    local view = core.active_view
+    view.selected_idx = math.min(view.selected_idx + 1, #view.results)
+    view:scroll_to_make_selected_visible()
+  end,
+
+  ["vibe:marks:list:open-selected"] = function()
+    core.active_view:open_selected_result()
+  end,
+
+  ["vibe:marks:list:refresh"] = function()
+    core.active_view:refresh()
+  end,
+  
+  ["vibe:marks:list:move-to-previous-page"] = function()
+    local view = core.active_view
+    view.scroll.to.y = view.scroll.to.y - view.size.y
+  end,
+  
+  ["vibe:marks:list:move-to-next-page"] = function()
+    local view = core.active_view
+    view.scroll.to.y = view.scroll.to.y + view.size.y
+  end,
+  
+  ["vibe:marks:list:move-to-start-of-doc"] = function()
+    local view = core.active_view
+    view.scroll.to.y = 0
+  end,
+  
+  ["vibe:marks:list:move-to-end-of-doc"] = function()
+    local view = core.active_view
+    view.scroll.to.y = view:get_scrollable_size()
+  end,
+})
 -------------------------------------------------------------------------------
 
 return marks

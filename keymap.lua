@@ -120,7 +120,9 @@ keymap.add_nmap {
   [">>"] = "doc:indent",
   ["\\<\\<"] = "doc:unindent",
   
+  -- these probably should be in vmap. if only someone created it.. ;)
   ["y"] = "vibe:copy",
+  ["d"] = "vibe:delete",
   
   -- actions through sequences, huh? I do like that.
   ["x"] = "i<delete><ESC>", -- needs to be changed.. (deletes selection)
@@ -205,10 +207,6 @@ for _,o in ipairs(objects) do
     end
   end
 end
-
--- matching objects?
-local objectss = {{'(',')'},{'[',']'},{'{','}'}}
-
 
 -------------------------------------------------------------------------------
 -- project-search                                                            --
@@ -302,7 +300,6 @@ for _,i in ipairs(kb.all_typed_symbols) do
    })
 end
 
--- matching?
 -- r/R
 
 for _,c in ipairs(kb.all_typed_symbols) do
@@ -322,16 +319,24 @@ for _,c in ipairs(kb.all_typed_symbols) do
   }) 
 end
 
-for _,objects in misc.matching_objectss do
-  local symbol = objects[1]
-  local symbol_match = objects[2]
-  for include=0,1 do
-    translations['previous-unmatched-'..(include==0 and 'excluded-' or '')..symbol] = function(doc, line, col)
+-- matching? WIP!
+
+local object_letters = misc.copy(misc.matching_objectss)
+object_letters['word'] = {'w'}
+object_letters['WORD'] = {'W'}
+object_letters['block'] = {'b','B'}
+
+
+for obj_name,obj_lets in pairs(object_letters) do
+  for _,symbol in ipairs(obj_lets) do
+    local stroke = kb.escape_stroke(symbol)
     keymap.add_nmap({
-      [ 'X-C-'..(include==0 and 'M-' or '')..symbol ] = "doc:move-to-previous-unmatched-"..(include==0 and 'excluded-' or '')..symbol,
-      [ 'X-A-'..(include==0 and 'M-' or '')..symbol_match ] = "doc:move-to-next-unmatched-"..(include==0 and 'excluded-' or '')..symbol_match,
+      ['vi'..stroke] = "doc:select-"..obj_name,
+      ['yi'..stroke] = "vi"..stroke .. "y",
+      ['di'..stroke] = "vi"..stroke .. "d",
+      ['ci'..stroke] = "di"..stroke .. "i",
     })
-  end 
+  end
 end
 
 

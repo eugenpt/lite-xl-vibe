@@ -133,14 +133,6 @@ translations["previous-WORD-start"] = translate.previous_WORD_start
 translations["next-WORD-end"] = translate.next_WORD_end
 translations["next-WORD-start"] = translate.next_WORD_start
 
-command.add("core.docview",{
-  ["doc:select-WORD"] = function()
-    local line1, col1 = doc():get_selection(true)
-    local line1, col1 = translate.start_of_WORD(doc(), line1, col1)
-    local line2, col2 = translate.end_of_WORD(doc(), line1, col1)
-    doc():set_selection(line2, col2, line1, col1)
-  end,
-})
 -------------------------------------------------------------------------------
 -- symbols
 -------------------------------------------------------------------------------
@@ -160,22 +152,22 @@ for _,i in ipairs(kb.all_typed_symbols) do
   end
 end
 
-
 -- matching
 
-for _,objects in ipairs(misc.matching_objectss) do
+for _,objects in pairs(misc.matching_objectss) do
   local symbol = objects[1]
   local symbol_match = objects[2]
+  local object_name = symbol..symbol_match
   for include=0,1 do
-    translations['previous-unmatched-'..(include==0 and 'excluded-' or '')..symbol] = function(doc, line, col)
+    local include_suffix = include==1 and '-inluded' or ''
+    translations['previous-'..object_name..'-start'..include_suffix] = function(doc, line, col)
       return misc.find_in_line_unmatched(symbol, symbol_match, true, include==1, doc, line, col)
     end
-    translations['next-unmatched-'..(include==0 and 'excluded-' or '')..symbol_match] = function(doc, line, col)
+    translations['next-'..object_name..'-end'..include_suffix] = function(doc, line, col)
       return misc.find_in_line_unmatched(symbol_match, symbol, false, include==1, doc, line, col)
     end
   end
 end
-
 
 -------------------------------------------------------------------------------
 
@@ -189,5 +181,19 @@ end
 
 command.add("core.docview", commands)
 
+-- 
 
+local objects = misc.keys(misc.matching_objectss)
+-- objects[#objects+1] = 'word' -- this one exists already
+objects[#objects+1] = 'block'   -- Why doesn't this one exist?
+objects[#objects+1] = 'WORD'
+
+for _, obj in ipairs(objects) do
+command.add("core.docview",{
+  ["doc:select-"..obj] = function()
+    command.perform("doc:move-to-previous-"..obj.."-start")
+    command.perform("doc:select-to-next-"..obj.."-end")
+  end,
+})
+end
 
