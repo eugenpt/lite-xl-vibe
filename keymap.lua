@@ -12,6 +12,7 @@
 local core = require "core"
 local command = require "core.command"
 local keymap = require "core.keymap"
+local translate = require "core.doc.translate"
 
 local kb = require "plugins.lite-xl-vibe.keyboard"
 local misc = require "plugins.lite-xl-vibe.misc"
@@ -119,6 +120,8 @@ keymap.add_nmap {
   [">>"] = "doc:indent",
   ["\\<\\<"] = "doc:unindent",
   
+  ["y"] = "vibe:copy",
+  
   -- actions through sequences, huh? I do like that.
   ["x"] = "i<delete><ESC>", -- needs to be changed.. (deletes selection)
   ["o"] = "$i<CR>",
@@ -136,10 +139,12 @@ keymap.add_nmap {
   ["p"] = "doc:paste",
   
   ["viw"] = "doc:select-word",
+  ["yiw"] = "viwy",
   ["diw"] = "viw<delete>",
   ["ciw"] = "viw<delete>i",
   ["<delete>"] = "doc:delete",
   ["viW"] = "doc:select-WORD",
+  ["yiW"] = "viWy",
   ["diW"] = "viW<delete>",
   ["ciW"] = "viW<delete>i",
   
@@ -298,7 +303,24 @@ for _,i in ipairs(kb.all_typed_symbols) do
 end
 
 -- matching?
+-- r/R
 
+for _,c in ipairs(kb.all_typed_symbols) do
+  local com_name ='vibe:replace-symbol-with-'..c 
+  command.add(nil, {
+    [ com_name ] = function()
+      local doc = core.active_view.doc
+      local line,col,line2,col2 = doc:get_selection()
+      doc:set_selection(line,col)
+      doc:delete_to(translate.next_char)
+      doc:insert(line, col, c)
+      doc:set_selection(line,col,line2,col2)
+    end,
+  })
+  keymap.add_nmap({
+    [ 'r'..kb.escape_stroke(c) ] = com_name,
+  }) 
+end
 
 for _,objects in misc.matching_objectss do
   local symbol = objects[1]

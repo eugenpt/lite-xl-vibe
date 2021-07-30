@@ -14,6 +14,9 @@ local function doc()
   return core.active_view.doc
 end
 
+local function has_selection()
+  return doc():has_selection()
+end
 
 local com = {}
 
@@ -61,10 +64,16 @@ command.add(nil, {
         doc, line, col
       )
     end, dv())
-    
   end,
   ["vibe:rotate-clipboard-ring"] = function()
     misc.clipboard_ring_rotate()
+  end,
+})
+
+command.add(has_selection, {
+  ["vibe:copy"] = function()
+    core.log('vibe:copy')
+    command.perform("doc:copy")
   end,
 })
 
