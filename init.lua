@@ -167,6 +167,7 @@ function vibe.process_stroke(stroke)
           vibe.run_stroke_seq(cmd)
           -- for now let's think of sequences as default-performed
           performed = true
+          break
         end  
       end
       if performed then

@@ -137,18 +137,10 @@ keymap.add_nmap {
   ["y$"] = "v$C-c<ESC>",
   ["Y"] = "y$",
   ["C"] = "iS-<end><delete>",
-  ["yy"] = "0iS-<down>C-c<up><ESC>",
+  ["yy"] = "0iS-<down><ESC>y<up>",
   ["p"] = "doc:paste",
   
-  ["viw"] = "doc:select-word",
-  ["yiw"] = "viwy",
-  ["diw"] = "viw<delete>",
-  ["ciw"] = "viw<delete>i",
   ["<delete>"] = "doc:delete",
-  ["viW"] = "doc:select-WORD",
-  ["yiW"] = "viWy",
-  ["diW"] = "viW<delete>",
-  ["ciW"] = "viW<delete>i",
   
   -- I do like Mac bindings
   ["M-o"] = "core:open-file",
@@ -172,6 +164,7 @@ keymap.add_nmap {
   [":q<CR>"] = "root:close",
   [":e"] = "core:find-file",
   [":w<CR>"] = "doc:save",
+  [":wC-m"] = "doc:save",
   [":w<space>"] = "doc:save-as",
   [":l"] = "core:open-log",
   -- may be ok?
