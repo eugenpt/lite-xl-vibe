@@ -8,40 +8,27 @@ local style = require "core.style"
 local DocView = require "core.docview"
 local CommandView = require "core.commandview"
 
-
 local config = require "plugins.lite-xl-vibe.config"
-
 
 local vibe = {}
 core.vibe = vibe
-
-
-local misc = require "plugins.lite-xl-vibe.misc"
-
-
 vibe.kb = require "plugins.lite-xl-vibe.keyboard"
 vibe.mode = 'insert'
-
 vibe.debug_str = 'test debug_str'
 vibe.last_stroke = ''
 vibe.stroke_seq = ''
 vibe.last_executed_seq = ''
+vibe.flags = {}
+vibe.flags['run_stroke_seq'] = false
 
+
+local misc = require "plugins.lite-xl-vibe.misc"
 vibe.translate = require "plugins.lite-xl-vibe.translate"
 vibe.com = require "plugins.lite-xl-vibe.com"
-
-require "plugins.lite-xl-vibe.keymap"
-
 vibe.marks = require "plugins.lite-xl-vibe.marks"
-
 vibe.interface = require "plugins.lite-xl-vibe.interface"
 
-
-
-
--- yeah, this is a test
-core.error(vibe.mode:isUpperCase() and "true" or "false")
-
+require "plugins.lite-xl-vibe.keymap"
 
 local function dv()
   return core.active_view
@@ -51,13 +38,11 @@ local function doc()
   return core.active_view.doc
 end
 
+-------------------------------------------------------------------------------
+
 function vibe.reset_seq()
   vibe.stroke_seq = ''
 end
-
-
-vibe.flags = {}
-vibe.flags['run_stroke_seq'] = false
 
 function vibe.run_stroke_seq(seq)
   vibe.last_executed_seq = seq
@@ -132,9 +117,9 @@ function vibe.process_stroke(stroke)
     if vibe.mode == "insert" then
       commands = keymap.map[stroke__orig]
       if commands then
-        -- core.log_quiet('imapped to ' .. misc.str(commands))
+        core.log_quiet('imapped to ' .. misc.str(commands))
       else
-        -- core.log_quiet('insert,no coms')
+        core.log_quiet('insert,no coms')
       end
     elseif vibe.mode == "normal" then
       commands = keymap.nmap_override[vibe.last_stroke]

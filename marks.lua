@@ -2,7 +2,20 @@
 
 All things marks.
 
-I think I will make all marks global for now.
+Type "mx" while in normal mode to make a mark for "x"
+Type "'x" or "`x" while in normal mode to go ot a mark for "x"
+
+if x is a lowercase letter - the mark is local to this file
+  (you can have marks for one letter in different files)
+  (but you will only be able to go to local mark of the current file)
+  
+if x is an UPPERCASE letter - the mark is global
+  (you will go to the mark from any file, opening the file if it is not opened)
+  (new mark for the same uppercase letter will owerwrite the previous one)
+  
+You can list all marks using command "vibe:marks:show-all"
+  
+For now all marks are kept between sessions in .config/marks.lua file
 
 ]]--
 
@@ -135,7 +148,9 @@ for c,C in pairs(kb.shift_keys) do
     ['m'..c] = 'vibe:marks:set-local-'..c,
     ['m'..C] = 'vibe:marks:set-global-'..C,
     ["'"..c] = 'vibe:marks:go-to-local-'..c,
+    ["`"..c] = 'vibe:marks:go-to-local-'..c,
     ["'"..C] = 'vibe:marks:go-to-global-'..C,
+    ["`"..C] = 'vibe:marks:go-to-global-'..C,
   })
 end
 
