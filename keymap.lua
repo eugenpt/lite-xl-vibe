@@ -234,7 +234,32 @@ keymap.add_nmap({
   ["<home>"]               = "project-search:move-to-start-of-doc",
   ["<end>"]                = "project-search:move-to-end-of-doc"
 })
-
+-------------------------------------------------------------------------------
+-- ±same for marks (should I make unified resultsview?                       --                                                         --
+-------------------------------------------------------------------------------
+keymap.add_nmap({
+  ["<f5>"] = "vibe:marks:list:refresh",
+  ["C-/"]  = "vibe:marks:list:find",
+  ["k"]                 = "vibe:marks:list:select-previous",
+  ["j"]               = "vibe:marks:list:select-next",
+  ["<CR>"]             = "vibe:marks:list:open-selected",
+  ["C-u"]             = "vibe:marks:list:move-to-previous-page",
+  ["C-d"]           = "vibe:marks:list:move-to-next-page",
+  ["gg"]          = "vibe:marks:list:move-to-start-of-doc",
+  ["G"]           = "vibe:marks:list:move-to-end-of-doc",
+  -- also try'n'keep the usual mappings (why not?)
+  ["C-F"]       = "vibe:marks:list:find",
+  ["<up>"]                 = "vibe:marks:list:select-previous",
+  ["<down>"]               = "vibe:marks:list:select-next",
+  ["<return>"]             = "vibe:marks:list:open-selected",
+  ["C-m"]             = "vibe:marks:list:open-selected",
+  ["<pageup>"]             = "vibe:marks:list:move-to-previous-page",
+  ["<pagedown>"]           = "vibe:marks:list:move-to-next-page",
+  ["C-<home>"]          = "vibe:marks:list:move-to-start-of-doc",
+  ["C-<end>"]           = "vibe:marks:list:move-to-end-of-doc",
+  ["<home>"]               = "vibe:marks:list:move-to-start-of-doc",
+  ["<end>"]                = "vibe:marks:list:move-to-end-of-doc"
+})
 
 -------------------------------------------------------------------------------
 -- some minor tweaks for isnert mode from emacs/vim/..                       --

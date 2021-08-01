@@ -40,7 +40,7 @@ function marks.set_mark(symbol)
     ["abs_filename"] = abs_filename,
     ["line"] = line,
     ["col"] = col,
-    ["line_text"] = doc():lines[line],
+    ["line_text"] = doc().lines[line],
     ["symbol"] = symbol,
   }
   if symbol:isUpperCase() then
@@ -212,12 +212,21 @@ function MarksView:fill_marksview()
   self.selected_idx = 0
   -- global
   for symbol, mark in pairs(marks.global) do
-    table.insert(self.results, { file=core.normalize_to_project_dir(mark.abs_filename) , text=mark.line_text , line=mark.line, col=line.col, data=mark } )
+    table.insert(self.results, { 
+      file=core.normalize_to_project_dir(mark.abs_filename) , 
+      text=mark.line_text , 
+      line=mark.line, 
+      col=mark.col, 
+      data=mark 
+    })
   end
   -- local..
   for filename, markss in pairs(marks._local) do
     for symbol, mark in pairs(markss) do
-      table.insert(self.results, { file=core.normalize_to_project_dir(mark.abs_filename) , text=mark.line_text , line=mark.line, col=line.col, data=mark } )
+      table.insert(self.results, {
+        file=core.normalize_to_project_dir(mark.abs_filename) ,
+        text=mark.line_text , 
+        line=mark.line, col=mark.col, data=mark } )
     end
   end
 end
@@ -231,8 +240,8 @@ function MarksView:refresh()
 end
 
 
-function ResultsView:on_mouse_moved(mx, my, ...)
-  ResultsView.super.on_mouse_moved(self, mx, my, ...)
+function MarksView:on_mouse_moved(mx, my, ...)
+  MarksView.super.on_mouse_moved(self, mx, my, ...)
   self.selected_idx = 0
   for i, item, x,y,w,h in self:each_visible_result() do
     if mx >= x and my >= y and mx < x + w and my < y + h then
@@ -242,14 +251,14 @@ function ResultsView:on_mouse_moved(mx, my, ...)
   end
 end
 
-function ResultsView:on_mouse_pressed(...)
-  local caught = ResultsView.super.on_mouse_pressed(self, ...)
+function MarksView:on_mouse_pressed(...)
+  local caught = MarksView.super.on_mouse_pressed(self, ...)
   if not caught then
     self:open_selected_result()
   end
 end
 
-function ResultsView:open_selected_result()
+function MarksView:open_selected_result()
   local res = self.results[self.selected_idx]
   if not res then
     return
@@ -262,28 +271,28 @@ function ResultsView:open_selected_result()
   end)
 end
 
-function ResultsView:update()
+function MarksView:update()
   self:move_towards("brightness", 0, 0.1)
-  ResultsView.super.update(self)
+  MarksView.super.update(self)
 end
 
 
-function ResultsView:get_results_yoffset()
+function MarksView:get_results_yoffset()
   return style.font:get_height() + style.padding.y * 3
 end
 
 
-function ResultsView:get_line_height()
+function MarksView:get_line_height()
   return style.padding.y + style.font:get_height()
 end
 
 
-function ResultsView:get_scrollable_size()
+function MarksView:get_scrollable_size()
   return self:get_results_yoffset() + #self.results * self:get_line_height()
 end
 
 
-function ResultsView:get_visible_results_range()
+function MarksView:get_visible_results_range()
   local lh = self:get_line_height()
   local oy = self:get_results_yoffset()
   local min = math.max(1, math.floor((self.scroll.y - oy) / lh))
@@ -291,7 +300,7 @@ function ResultsView:get_visible_results_range()
 end
 
 
-function ResultsView:each_visible_result()
+function MarksView:each_visible_result()
   return coroutine.wrap(function()
     local lh = self:get_line_height()
     local x, y = self:get_content_offset()
@@ -307,27 +316,16 @@ function ResultsView:each_visible_result()
 end
 
 
-function ResultsView:scroll_to_make_selected_visible()
+function MarksView:scroll_to_make_selected_visible()
   local h = self:get_line_height()
   local y = self:get_results_yoffset() + h * (self.selected_idx - 1)
   self.scroll.to.y = math.min(self.scroll.to.y, y)
   self.scroll.to.y = math.max(self.scroll.to.y, y + h - self.size.y)
 end
-+
-function ResultsView:draw()
+
+
+function MarksView:draw()
   self:draw_background(style.background)
-
-
-  -- horizontal line
-  local yoffset = self:get_results_yoffset()
-  local x = ox + style.padding.x
-  local w = self.size.x - style.padding.x * 2
-  local h = style.divider_size
-  local color = common.lerp(style.dim, style.text, self.brightness / 100)
-  renderer.draw_rect(x, oy + yoffset - style.padding.y, w, h, color)
-  if self.searching then
-    renderer.draw_rect(x, oy + yoffset - style.padding.y, w * per, h, style.text)
-  end
 
   -- results
   local y1, y2 = self.position.y, self.position.y + self.size.y
@@ -351,6 +349,9 @@ local function fill_marksview()
   core.root_view:get_active_node_default():add_view(mv)
 end
 
+command.add(nil, {
+  ["vibe:marks:show-all"] = fill_marksview,
+})
 
 command.add(MarksView, {
   ["vibe:marks:list:select-previous"] = function()
@@ -394,5 +395,19 @@ command.add(MarksView, {
   end,
 })
 -------------------------------------------------------------------------------
+
+keymap.add {
+  ["f5"]                 = "vibe:marks:list:refresh",
+  ["ctrl+shift+f"]       = "vibe:marks:list:find",
+  ["up"]                 = "vibe:marks:list:select-previous",
+  ["down"]               = "vibe:marks:list:select-next",
+  ["return"]             = "vibe:marks:list:open-selected",
+  ["pageup"]             = "vibe:marks:list:move-to-previous-page",
+  ["pagedown"]           = "vibe:marks:list:move-to-next-page",
+  ["ctrl+home"]          = "vibe:marks:list:move-to-start-of-doc",
+  ["ctrl+end"]           = "vibe:marks:list:move-to-end-of-doc",
+  ["home"]               = "vibe:marks:list:move-to-start-of-doc",
+  ["end"]                = "vibe:marks:list:move-to-end-of-doc"
+}
 
 return marks

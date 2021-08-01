@@ -79,7 +79,9 @@ command.add_hook("vibe:switch-to-insert-mode", { function()
 end })
 
 command.add_hook("vibe:switch-to-normal-mode", { function() 
-  style.caret_width = core.active_view:get_font():get_width(' ')
+  if core.active_view.get_font then
+    style.caret_width = core.active_view:get_font():get_width(' ')
+  end
 end })
 
 
