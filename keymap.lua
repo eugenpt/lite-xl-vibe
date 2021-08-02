@@ -152,6 +152,9 @@ keymap.add_nmap {
   ["C-xC-;"] = "doc:toggle-line-comments",
   ["A-y"] = "vibe:rotate-clipboard-ring",
   ["C-y"] = "vibe:rotate-clipboard-ring",
+  -- hint of Doom emacs?
+  ["<space>x"] = "vibe:open-scratch-buffer",
+  ["<space>:"] = "A-x",
   -- misc
   ["C-\\\\"] = "treeview:toggle", -- yeah, single \ turns into \\\\ , thats crazy.
   
