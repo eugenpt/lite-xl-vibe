@@ -389,4 +389,44 @@ keymap.add_nmap({
 })
 
 -------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- VISUAL mode. Kind of.
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+local ts = 'doc:move-to-'
+local ts2 = 'doc:select-to-'
+for bind,coms in pairs(keymap.nmap) do
+  local com_name = misc.find_in_list(coms, function(item) return (item:sub(1,#ts)==ts) end)
+  if com_name then
+    
+    core.log('[%s] -> %s', bind, misc.str(coms))
+    
+    local sel_name = ts2..com_name:sub(#ts+1)
+    
+    if command.map[sel_name] then
+      core.log(sel_name)
+      
+      -- make a command to do the same as sel- but only if we have selection
+      local vibe_sel_name = 'vibe:'..sel_name:sub(5)
+      if command.map[vibe_sel_name] == nil then
+        command.add(misc.has_selection, {
+          [vibe_sel_name] = function()
+            command.perform(sel_name)
+          end,
+        })
+      end
+      -- and map it to be tried first
+      table.insert(keymap.nmap[bind], 1, vibe_sel_name)
+      -- and map the v<stroke> to do selection itself
+      keymap.add_nmap({
+        ['v'..bind] = sel_name,
+      })
+    end
+  end
+end
 

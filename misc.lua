@@ -144,6 +144,24 @@ function misc.values(table)
   end
 end
 
+function misc.list_contains(list, fun)
+  for _,item in ipairs(list) do
+    if fun(item) then
+      return true
+    end
+  end
+  return false
+end
+
+function misc.find_in_list(list, fun)
+  for _,item in ipairs(list) do
+    if fun(item) then
+      return item
+    end
+  end
+  return nil
+end
+
 -- https://stackoverflow.com/a/4991602/2624911
 function misc.file_exists(name)
    local f=io.open(name,"r")
@@ -180,6 +198,15 @@ function misc.str(a)
   else
     return tostring(a)
   end
+end
+  
+function misc.has_selection()
+  return doc():has_selection()
+end
+
+function misc.drop_selection()
+  local line,col = doc():get_selection()
+  doc():set_selection(line,col)
 end
 
 function misc.move_to_line(line)

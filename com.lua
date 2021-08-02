@@ -35,7 +35,11 @@ command.add(nil, {
     core.vibe.mode = "normal"
   end,
   ["vibe:escape"] = function()
-    core.vibe.reset_seq()
+    if misc.has_selection() then
+      misc.drop_selection()
+    else
+      core.vibe.reset_seq()
+    end
   end,
   ["vibe:run-strokes"] = function()
     core.command_view:enter("Strokes to run:", function(text)
@@ -109,9 +113,13 @@ command.add(has_selection, {
     command.perform("doc:copy")
     if core.vibe.target_register then
       core.vibe.registers[core.vibe.target_register] = system.get_clipboard()
+      core.vibe.debug_str = "copied to "..core.vibe.target_register
       -- aand zero it back for further actions
       core.vibe.target_register = nil
+    else
+      core.vibe.debug_str = "copied"
     end
+    misc.drop_selection()
   end,
   ["vibe:delete"] = function()
     core.log('vibe:delete')
