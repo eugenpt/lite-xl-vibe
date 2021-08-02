@@ -117,7 +117,7 @@ keymap.add_nmap {
   [":s"] = "find-replace:replace",
   ["n"] = "find-replace:repeat-find",
   ["N"] = "find-replace:previous-find",
-  ["dd"] = "doc:delete-lines",  
+  ["dd"] = "0iS-<down><ESC>d",
   [">>"] = "doc:indent",
   ["\\<\\<"] = "doc:unindent",
   
@@ -135,12 +135,13 @@ keymap.add_nmap {
   ["D"] = "v$d",
   
   ["v$"] = "iS-<end><ESC>",
-  ["y$"] = "v$C-c<ESC>",
+  ["y$"] = "v$y<ESC>",
   ["Y"] = "y$",
-  ["C"] = "iS-<end><delete>",
+  ["C"] = "Ydi",
   ["yy"] = "0iS-<down><ESC>y<up>",
   ["p"] = "vibe:paste",
   
+  ["*"] = "viw/<CR>n",
   ["<delete>"] = "doc:delete",
   
   -- I do like Mac bindings

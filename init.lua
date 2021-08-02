@@ -106,8 +106,21 @@ function vibe.process_stroke(stroke)
     core.log_quiet("process_stroke |%s|", stroke)
     -- first - current stroke
     vibe.last_stroke = stroke
+    local stroke__orig = vibe.kb.stroke_to_orig_stroke(stroke)
     
-    if vibe.flags['run_stroke_seq'] == false then
+    if vibe.flags['run_stroke_seq'] then
+      if dv():is(CommandView) then
+        -- only original lite-xl mode in CommandViews
+        -- .. for now at least
+        if stroke=='<CR>' then
+          -- a hack for sure, but a welcome one
+          command.perform("command:submit")
+          return true
+        end
+        core.log_quiet('orig_stroke %s', stroke__orig)
+        return vibe.on_key_pressed__orig(stroke__orig)
+      end
+    else
       vibe.last_executed_seq = vibe.last_executed_seq .. stroke
       if vibe.flags['recording_macro'] then
         vibe.registers[vibe.recording_register] = 
@@ -120,7 +133,6 @@ function vibe.process_stroke(stroke)
       vibe.last_executed_seq = ''
     end
     
-    local stroke__orig = vibe.kb.stroke_to_orig_stroke(stroke)
     local commands = {}
     
     vibe.debug_str = vibe.last_executed_seq

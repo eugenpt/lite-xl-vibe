@@ -131,6 +131,8 @@ local escape_char_sub__inv = {}
 for a,b in pairs(escape_char_sub) do
   escape_char_sub__inv[b] = a
 end
+-- I thought this would help with commandview submit in sequence
+escape_char_sub__inv["<CR>"] = "return"
 
 function keyboard.escape_stroke(k)
   local r = escape_char_sub[k]
