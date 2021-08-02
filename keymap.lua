@@ -96,8 +96,10 @@ keymap.add_nmap {
   ["w"] = "doc:move-to-next-word-start",
   ["W"] = "doc:move-to-next-WORD-start",
   ["b"] = "doc:move-to-previous-word-start",
+  ["B"] = "doc:move-to-previous-WORD-start",
   ["e"] = "doc:move-to-next-word-end",
   ["0"] = "doc:move-to-start-of-line",
+  ["_"] = "0W",
   ["$"] = "doc:move-to-end-of-line",
   ["C-u"] = "doc:move-to-previous-page",
   ["C-d"] = "doc:move-to-next-page",
@@ -158,6 +160,10 @@ keymap.add_nmap {
   -- hint of Doom emacs?
   ["<space>x"] = "vibe:open-scratch-buffer",
   ["<space>:"] = "A-x",
+  ["<space>ol"] = "core:open-log",
+  ["<space>qr"] = "core:restart",
+  ["<space>bd"] = "root:close",
+  ["<space>bk"] = "root:close",
   -- misc
   ["C-\\\\"] = "treeview:toggle", -- yeah, single \ turns into \\\\ , thats crazy.
   
@@ -400,16 +406,27 @@ keymap.add_nmap({
 
 local ts = 'doc:move-to-'
 local ts2 = 'doc:select-to-'
+local ts3 = 'doc:delete-to-'
 for bind,coms in pairs(keymap.nmap) do
   local com_name = misc.find_in_list(coms, function(item) return (item:sub(1,#ts)==ts) end)
   if com_name then
     
+    local verbose = com_name:find_literal('-word-')
+    if verbose then
     core.log('[%s] -> %s', bind, misc.str(coms))
+    end
     
     local sel_name = ts2..com_name:sub(#ts+1)
     
+    if verbose then
+      core.log('sel_name=[%s]',sel_name)
+      core.log('command.map[sel_name]=%s',misc.str(command.map[sel_name]))
+    end
+    
     if command.map[sel_name] then
-      core.log(sel_name)
+      if verbose then
+        core.log(sel_name)
+      end
       
       -- make a command to do the same as sel- but only if we have selection
       local vibe_sel_name = 'vibe:'..sel_name:sub(5)
@@ -425,6 +442,7 @@ for bind,coms in pairs(keymap.nmap) do
       -- and map the v<stroke> to do selection itself
       keymap.add_nmap({
         ['v'..bind] = sel_name,
+        ['d'..bind] = 'v'..bind..'d',
       })
     end
   end

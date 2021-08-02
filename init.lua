@@ -21,19 +21,21 @@ vibe.last_executed_seq = ''
 vibe.num_arg = ''
 vibe.flags = {}
 vibe.flags['run_stroke_seq'] = false
+vibe.flags['run_repeat_seq'] = false
 vibe.flags['recording_macro'] = false
 
 vibe.target_register = nil
 vibe.target_register = nil
 vibe.registers = require("plugins.lite-xl-vibe.registers")
 
-require "plugins.lite-xl-vibe.keymap"
-
 local misc = require "plugins.lite-xl-vibe.misc"
 vibe.translate = require "plugins.lite-xl-vibe.translate"
+require "plugins.lite-xl-vibe.keymap"
 vibe.com = require "plugins.lite-xl-vibe.com"
 vibe.marks = require "plugins.lite-xl-vibe.marks"
 vibe.interface = require "plugins.lite-xl-vibe.interface"
+
+
 
 local function dv()
   return core.active_view
@@ -47,6 +49,19 @@ end
 
 function vibe.reset_seq()
   vibe.stroke_seq = ''
+  vibe.num_arg = ''
+end
+
+function vibe.run_repeat_seq(_seq, num)
+  local seq = ''
+  for j=1,num do
+    seq = seq .. _seq
+  end
+  local run_repeat_seq = vibe.flags['run_repeat_seq']
+  vibe.flags['run_repeat_seq'] = true
+  vibe.reset_seq()
+  vibe.run_stroke_seq(seq)
+  vibe.flags['run_repeat_seq'] = run_repeat_seq
 end
 
 function vibe.run_stroke_seq(seq)
@@ -132,6 +147,7 @@ function vibe.process_stroke(stroke)
     if stroke=='C-g' then
       vibe.last_executed_seq = ''
     end
+  
     
     local commands = {}
     
@@ -155,6 +171,12 @@ function vibe.process_stroke(stroke)
         if commands then
           core.log_quiet('|%s| nmapped to %s', vibe.stroke_seq, misc.str(commands))
         else  
+          if (stroke:isNumber() and not (vibe.num_arg=='' and stroke=='0')) then
+            vibe.num_arg = vibe.num_arg .. stroke
+            -- and also don't put it into seq
+            vibe.stroke_seq = vibe.stroke_seq:sub(1,#vibe.stroke_seq - 1)
+            return true
+          end
           if not keymap.have_nmap_starting_with(vibe.stroke_seq) then
             core.log_quiet('no commands for ' .. vibe.stroke_seq)
             vibe.reset_seq()
@@ -171,9 +193,13 @@ function vibe.process_stroke(stroke)
           if performed then break end
         else
           -- sequence!
-          vibe.reset_seq()
           core.log_quiet('sequence as command! [%s]',cmd)
-          vibe.run_stroke_seq(cmd)
+          if vibe.num_arg ~= '' then
+            vibe.run_repeat_seq(cmd, tonumber(vibe.num_arg))
+          else
+            vibe.reset_seq()
+            vibe.run_stroke_seq(cmd)
+          end
           -- for now let's think of sequences as default-performed
           performed = true
           break
