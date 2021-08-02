@@ -72,7 +72,11 @@ command.add(nil, {
   ["vibe:rotate-clipboard-ring"] = function()
     misc.clipboard_ring_rotate()
   end,
+  ["vibe:open-scratch-buffer"] = function()
+    core.root_view:open_doc(core.open_doc(misc.scratch_filepath()))
+  end,
 })
+
 
 command.add(has_selection, {
   ["vibe:copy"] = function()

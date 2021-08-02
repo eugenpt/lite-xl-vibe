@@ -137,6 +137,21 @@ function misc.values(table)
   end
 end
 
+-- https://stackoverflow.com/a/4991602/2624911
+function misc.file_exists(name)
+   local f=io.open(name,"r")
+   if f~=nil then io.close(f) return true else return false end
+end
+
+function misc.scratch_filepath()
+  return USERDIR .. PATHSEP .. "scratch.lua"
+end
+
+if not misc.file_exists(misc.scratch_filepath()) then
+  local fp = assert( io.open(misc.scratch_filepath(), "wb") )
+end
+
+
 local function dv()
   return core.active_view
 end
