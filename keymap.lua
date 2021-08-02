@@ -314,7 +314,7 @@ for _,i in ipairs(kb.all_typed_symbols) do
   end
 
   -- simple move works a bit differently ..
-  -- all since symbor under the cursor is not included in selection when going forward 
+  -- all since symbol under the cursor is not included in selection when going forward 
   keymap.add_nmap({
     [ 'f' .. kb.escape_stroke(i)] = 'doc:move-to-next-symbol-excluded-'..i,
     [ 't' .. kb.escape_stroke(i)] = 'f'..kb.escape_stroke(i)..'h', -- who uses this?
@@ -360,6 +360,18 @@ for obj_name,obj_lets in pairs(object_letters) do
   end
 end
 
+-------------------------------------------------------------------------------
+-- macroses
+
+for _,symbol in ipairs(kb.all_typed_symbols) do
+  keymap.add_nmap({
+    ["q"..kb.escape_stroke(symbol)] = "vibe:macro:start-recording-"..symbol,
+    ["@"..kb.escape_stroke(symbol)] = "vibe:macro:play-macro-"..symbol,
+  })
+end
+keymap.add_nmap({
+  ["q"] = "vibe:macro:stop-recording",
+})
 
 -------------------------------------------------------------------------------
 

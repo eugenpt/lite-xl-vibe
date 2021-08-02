@@ -351,7 +351,8 @@ function MarksView:draw()
       renderer.draw_rect(x, y, w, h, style.line_highlight)
     end
     x = x + style.padding.x
-    local text = string.format("%s at line %d (col %d): ", item.file, item.line, item.col)
+    local text = string.format("[%s] %s at line %d (col %d): ",
+                               item.data.symbol, item.file, item.line, item.col)
     x = common.draw_text(style.font, style.dim, text, "left", x, y, w, h)
     x = common.draw_text(style.code_font, color, item.text, "left", x, y, w, h)
   end
@@ -366,6 +367,11 @@ end
 
 command.add(nil, {
   ["vibe:marks:show-all"] = fill_marksview,
+  ["vibe:marks:clear-all"] = function()
+    marks.global = {}
+    marks._local = {}
+    marks.current_local = {}
+  end,
 })
 
 command.add(MarksView, {
@@ -380,6 +386,7 @@ command.add(MarksView, {
     view.selected_idx = math.min(view.selected_idx + 1, #view.results)
     view:scroll_to_make_selected_visible()
   end,
+
 
   ["vibe:marks:list:open-selected"] = function()
     core.active_view:open_selected_result()

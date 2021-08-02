@@ -18,17 +18,21 @@ vibe.debug_str = 'test debug_str'
 vibe.last_stroke = ''
 vibe.stroke_seq = ''
 vibe.last_executed_seq = ''
+vibe.num_arg = ''
 vibe.flags = {}
 vibe.flags['run_stroke_seq'] = false
+vibe.flags['recording_macro'] = false
 
+vibe.target_register = nil
+vibe.registers = require("plugins.lite-xl-vibe.registers")
+
+require "plugins.lite-xl-vibe.keymap"
 
 local misc = require "plugins.lite-xl-vibe.misc"
 vibe.translate = require "plugins.lite-xl-vibe.translate"
 vibe.com = require "plugins.lite-xl-vibe.com"
 vibe.marks = require "plugins.lite-xl-vibe.marks"
 vibe.interface = require "plugins.lite-xl-vibe.interface"
-
-require "plugins.lite-xl-vibe.keymap"
 
 local function dv()
   return core.active_view
@@ -102,6 +106,10 @@ function vibe.process_stroke(stroke)
     
     if vibe.flags['run_stroke_seq'] == false then
       vibe.last_executed_seq = vibe.last_executed_seq .. stroke
+      if vibe.flags['recording_macro'] then
+        vibe.registers[vibe.target_register] = 
+          vibe.registers[vibe.target_register]..stroke
+      end
     end
     
     if stroke=='C-g' then
@@ -117,19 +125,19 @@ function vibe.process_stroke(stroke)
     if vibe.mode == "insert" then
       commands = keymap.map[stroke__orig]
       if commands then
-        core.log_quiet('imapped to ' .. misc.str(commands))
+        core.log_quiet('|%s| imapped to %s',stroke__orig,  misc.str(commands))
       else
         core.log_quiet('insert,no coms')
       end
     elseif vibe.mode == "normal" then
       commands = keymap.nmap_override[vibe.last_stroke]
       if commands then 
-        core.log_quiet('nmap_override to ' .. misc.str(commands))
+        core.log_quiet('nmap_override |%s| to %s', vibe.last_stroke, misc.str(commands))
       else
         commands = keymap.nmap[vibe.stroke_seq]
         
         if commands then
-          core.log_quiet('nmapped to ' .. misc.str(commands))
+          core.log_quiet('|%s| nmapped to %s', vibe.stroke_seq, misc.str(commands))
         else  
           if not keymap.have_nmap_starting_with(vibe.stroke_seq) then
             core.log_quiet('no commands for ' .. vibe.stroke_seq)
