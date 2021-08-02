@@ -38,15 +38,17 @@ end
 -------------------------------------------------------------------------------
 -- vim-like save to clipboard of all deleted text                            --
 -------------------------------------------------------------------------------
+-- allright, it does work but damn it's useless when I use x
+--  maybe I should accumulate characters from xs into one ring item? hmm..
+--    for now moved all that to vibe:delete
 
-local on_text_change__orig = Doc.on_text_change
-function Doc:on_text_change(type)
-  on_text_change__orig(self,type)
-  
-  if type == "remove" then
-    system.set_clipboard(self.undo_stack[self.undo_stack.idx-1][3])
-  end
-end
+-- local on_text_change__orig = Doc.on_text_change
+-- function Doc:on_text_change(type)
+--   on_text_change__orig(self,type)
+--   if type == "remove" then
+--     system.set_clipboard(self.undo_stack[self.undo_stack.idx-1][3])
+--   end
+-- end
 
 -------------------------------------------------------------------------------
 -- clipboard ring                                                            --
@@ -56,10 +58,15 @@ core.vibe.clipboard_ring = {}
 core.vibe.clipboard_ring_ix = 0
 misc.system__set_clipboard = system.set_clipboard
 misc.system__set_clipboard_ix = 0
-function system.set_clipboard(s)
-  core.vibe.clipboard_ring[#core.vibe.clipboard_ring + 1] = s
-  core.vibe.clipboard_ring_ix = #core.vibe.clipboard_ring
-  core.vibe.clipboard_ring[#core.vibe.clipboard_ring - config.vibe.clipboard_ring_max] = nil
+function system.set_clipboard(s, skip_ring)
+  if skip_ring then
+    -- pass
+    
+  else
+    core.vibe.clipboard_ring[#core.vibe.clipboard_ring + 1] = s
+    core.vibe.clipboard_ring_ix = #core.vibe.clipboard_ring
+    core.vibe.clipboard_ring[#core.vibe.clipboard_ring - config.vibe.clipboard_ring_max] = nil
+  end
   misc.system__set_clipboard(s)
 end 
 

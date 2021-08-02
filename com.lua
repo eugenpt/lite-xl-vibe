@@ -3,6 +3,7 @@ local core = require "core"
 local command = require "core.command"
 local keymap = require "core.keymap"
 local style = require "core.style"
+local translate = require "core.doc.translate"
 
 local misc = require "plugins.lite-xl-vibe.misc"
 
@@ -75,6 +76,30 @@ command.add(nil, {
   ["vibe:open-scratch-buffer"] = function()
     core.root_view:open_doc(core.open_doc(misc.scratch_filepath()))
   end,
+  ["vibe:paste"] = function()
+    core.log('vibe:paste')
+    local text
+    if core.vibe.target_register
+       and core.vibe.registers[core.vibe.target_register] then
+      system.set_clipboard(core.vibe.registers[core.vibe.target_register], true)
+      -- aand zero it back for further actions
+      core.vibe.target_register = nil
+    end
+    if doc():has_selection() then
+      text = doc():get_text(doc():get_selection())
+    end
+    command.perform("doc:paste")
+    if text then
+      system.set_clipboard(text)
+    end
+  end,
+  ["vibe:delete-symbol-under-cursor"] = function()
+      local doc = core.active_view.doc
+      local line,col,line2,col2 = doc:get_selection()
+      doc:set_selection(line,col)
+      doc:delete_to(translate.next_char)
+      doc:set_selection(line,col,line2,col2)
+  end,
 })
 
 
@@ -82,9 +107,21 @@ command.add(has_selection, {
   ["vibe:copy"] = function()
     core.log('vibe:copy')
     command.perform("doc:copy")
+    if core.vibe.target_register then
+      core.vibe.registers[core.vibe.target_register] = system.get_clipboard()
+      -- aand zero it back for further actions
+      core.vibe.target_register = nil
+    end
   end,
   ["vibe:delete"] = function()
     core.log('vibe:delete')
+    local text = doc():get_text(doc():get_selection())
+    if core.vibe.target_register then
+      core.vibe.registers[core.vibe.target_register] = text
+      -- aand zero it back for further actions
+      core.vibe.target_register = nil
+    end
+    system.set_clipboard(text)
     command.perform("doc:delete")
   end,
 })

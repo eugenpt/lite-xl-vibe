@@ -24,6 +24,7 @@ vibe.flags['run_stroke_seq'] = false
 vibe.flags['recording_macro'] = false
 
 vibe.target_register = nil
+vibe.target_register = nil
 vibe.registers = require("plugins.lite-xl-vibe.registers")
 
 require "plugins.lite-xl-vibe.keymap"
@@ -50,6 +51,7 @@ end
 
 function vibe.run_stroke_seq(seq)
   vibe.last_executed_seq = seq
+  local previous_run_stroke_seq = vibe.flags['run_stroke_seq']
   vibe.flags['run_stroke_seq'] = true
   if type(seq) ~= 'table' then
     seq = vibe.kb.split_stroke_seq(seq)
@@ -67,7 +69,7 @@ function vibe.run_stroke_seq(seq)
       end
     end
   end
-  vibe.flags['run_stroke_seq'] = false
+  vibe.flags['run_stroke_seq'] = previous_run_stroke_seq
 end
 
 command.add_hook("vibe:switch-to-insert-mode", function()
@@ -78,6 +80,7 @@ end)
 
 vibe.on_key_pressed__orig = keymap.on_key_pressed
 function keymap.on_key_pressed(k)
+  core.log_quiet('key pressed : %s', k)
   if dv():is(CommandView) then
     -- only original lite-xl mode in CommandViews
     -- .. for now at least
@@ -107,8 +110,9 @@ function vibe.process_stroke(stroke)
     if vibe.flags['run_stroke_seq'] == false then
       vibe.last_executed_seq = vibe.last_executed_seq .. stroke
       if vibe.flags['recording_macro'] then
-        vibe.registers[vibe.target_register] = 
-          vibe.registers[vibe.target_register]..stroke
+        vibe.registers[vibe.recording_register] = 
+          vibe.registers[vibe.recording_register]..stroke
+        core.log_quiet('added,now reg = |%s|', vibe.registers[vibe.recording_register])
       end
     end
     

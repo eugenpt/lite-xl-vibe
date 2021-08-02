@@ -21,16 +21,23 @@ local registers = {}
 
 local function start_recording_macro(symbol)
   registers[symbol] = ''
-  core.vibe.target_register = symbol
+  core.vibe.recording_register = symbol
   core.vibe.flags['recording_macro'] = true
 end
 
 local function stop_recording_macro(symbol)
-  core.vibe.target_register = nil
+  core.vibe.recording_register = nil
   core.vibe.flags['recording_macro'] = false
 end
 
 for _,symbol in ipairs(kb.all_typed_symbols) do
+
+command.add(nil, {
+  ["vibe:target-register-"..symbol] = function()
+    core.log("vibe:target-register-"..symbol)
+    core.vibe.target_register = symbol
+  end,
+})
 
 command.add(function() return not core.vibe.flags['recording_macro'] end,{
   ["vibe:macro:start-recording-"..symbol] = function()
@@ -46,7 +53,7 @@ end
 
 command.add(function() return core.vibe.flags['recording_macro'] end,{
   ["vibe:macro:stop-recording"] = function()
-    core.vibe.target_register = nil
+    core.vibe.recording_register = nil
     core.vibe.flags['recording_macro'] = false
   end,
 })

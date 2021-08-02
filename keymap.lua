@@ -114,6 +114,7 @@ keymap.add_nmap {
   ["u"] = "doc:undo",
   ["C-r"] = "doc:redo",
   ["/"] = "find-replace:find",
+  [":s"] = "find-replace:replace",
   ["n"] = "find-replace:repeat-find",
   ["N"] = "find-replace:previous-find",
   ["dd"] = "doc:delete-lines",  
@@ -124,21 +125,21 @@ keymap.add_nmap {
   ["y"] = "vibe:copy",
   ["d"] = "vibe:delete",
   
+  ["x"] = "vibe:delete-symbol-under-cursor",
   -- actions through sequences, huh? I do like that.
-  ["x"] = "i<delete><ESC>", -- needs to be changed.. (deletes selection)
   ["o"] = "$i<CR>",
   ["O"] = "0i<CR><ESC>ki<tab>",
   ["a"] = "li",
   ["A"] = "$i",
-  ["C"] = "iS-<end><delete>", -- huh. playing out the `usual` mappings
-  ["D"] = "C<ESC>",
+  ["C"] = "Di", 
+  ["D"] = "v$d",
   
   ["v$"] = "iS-<end><ESC>",
   ["y$"] = "v$C-c<ESC>",
   ["Y"] = "y$",
   ["C"] = "iS-<end><delete>",
   ["yy"] = "0iS-<down><ESC>y<up>",
-  ["p"] = "doc:paste",
+  ["p"] = "vibe:paste",
   
   ["<delete>"] = "doc:delete",
   
@@ -170,6 +171,7 @@ keymap.add_nmap {
   [":wC-m"] = "doc:save",
   [":w<space>"] = "doc:save-as",
   [":l"] = "core:open-log",
+  [":s"] = "find-replace:replace",
   -- may be ok?
   [":s<CR>"] = "doc:save",
   [":s<space>"] = "doc:save-as",
@@ -208,6 +210,7 @@ end
 -- project-search                                                            --
 -------------------------------------------------------------------------------
 keymap.add_nmap({
+  ["r"] = "project-search:refresh",
   ["<f5>"] = "project-search:refresh",
   ["C-/"]  = "project-search:find",
   ["k"]                 = "project-search:select-previous",
@@ -235,6 +238,7 @@ keymap.add_nmap({
 -------------------------------------------------------------------------------
 keymap.add_nmap({
   ["<f5>"] = "vibe:marks:list:refresh",
+  ["r"] = "vibe:marks:list:refresh",
   ["C-/"]  = "vibe:marks:list:find",
   ["k"]                 = "vibe:marks:list:select-previous",
   ["j"]               = "vibe:marks:list:select-next",
@@ -358,6 +362,15 @@ for obj_name,obj_lets in pairs(object_letters) do
       ['ci'..stroke] = "di"..stroke .. "i",
     })
   end
+end
+
+-------------------------------------------------------------------------------
+-- registers
+
+for _,symbol in ipairs(kb.all_typed_symbols) do
+  keymap.add_nmap({
+    ['"'..kb.escape_stroke(symbol)] = "vibe:target-register-"..symbol,
+  })
 end
 
 -------------------------------------------------------------------------------
