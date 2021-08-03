@@ -59,15 +59,28 @@ core.vibe.clipboard_ring_ix = 0
 misc.system__set_clipboard = system.set_clipboard
 misc.system__set_clipboard_ix = 0
 function system.set_clipboard(s, skip_ring)
-  if skip_ring then
-    -- pass
-    
-  else
-    core.vibe.clipboard_ring[#core.vibe.clipboard_ring + 1] = s
+  if core.vibe.flags['run_repeat_seq'] then
+    if core.vibe.flags['run_repeat_seq__started_clipboard']==false then
+      core.vibe.clipboard_ring[#core.vibe.clipboard_ring+1]=''
+    end
+    core.vibe.flags['run_repeat_seq__started_clipboard'] = true
+    -- accumulate repeated stuff
+    core.vibe.clipboard_ring[#core.vibe.clipboard_ring] = 
+        core.vibe.clipboard_ring[#core.vibe.clipboard_ring] .. s
     core.vibe.clipboard_ring_ix = #core.vibe.clipboard_ring
-    core.vibe.clipboard_ring[#core.vibe.clipboard_ring - config.vibe.clipboard_ring_max] = nil
+    core.vibe.clipboard_ring[#core.vibe.clipboard_ring 
+                             - config.vibe.clipboard_ring_max] = nil
+    misc.system__set_clipboard(core.vibe.clipboard_ring[#core.vibe.clipboard_ring])
+  else
+    if skip_ring then
+      -- pass
+    else
+      core.vibe.clipboard_ring[#core.vibe.clipboard_ring + 1] = s
+      core.vibe.clipboard_ring_ix = #core.vibe.clipboard_ring
+      core.vibe.clipboard_ring[#core.vibe.clipboard_ring - config.vibe.clipboard_ring_max] = nil
+    end
+    misc.system__set_clipboard(s)
   end
-  misc.system__set_clipboard(s)
 end 
 
 

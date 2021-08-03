@@ -21,6 +21,7 @@ vibe.last_executed_seq = ''
 vibe.num_arg = ''
 vibe.flags = {}
 vibe.flags['run_stroke_seq'] = false
+vibe.flags['run_repeat_seq__started_clipboard'] = false
 vibe.flags['run_repeat_seq'] = false
 vibe.flags['recording_macro'] = false
 
@@ -59,6 +60,7 @@ function vibe.run_repeat_seq(_seq, num)
   end
   local run_repeat_seq = vibe.flags['run_repeat_seq']
   vibe.flags['run_repeat_seq'] = true
+  vibe.flags['run_repeat_seq__started_clipboard'] = false
   vibe.reset_seq()
   vibe.run_stroke_seq(seq)
   vibe.flags['run_repeat_seq'] = run_repeat_seq

@@ -139,11 +139,10 @@ keymap.add_nmap {
   ["v$"] = "iS-<end><ESC>",
   ["y$"] = "v$y<ESC>",
   ["Y"] = "y$",
-  ["C"] = "Ydi",
   ["yy"] = "0iS-<down><ESC>y<up>",
   ["p"] = "vibe:paste",
   
-  ["*"] = "viw/<CR>n",
+  ["*"] = "viw/<CR>n",  -- yeah, <CR> is an input to CommandView
   ["<delete>"] = "doc:delete",
   
   -- I do like Mac bindings
