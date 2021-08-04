@@ -233,7 +233,7 @@ function misc.str(a)
 end
   
 function misc.has_selection()
-  return doc():has_selection()
+  return core.active_view:is(DocView) and core.active_view.doc:has_selection()
 end
 
 function misc.drop_selection()

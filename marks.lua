@@ -43,8 +43,6 @@ local marks = {}
 marks.global = {}
 marks._local = {}
 
-marks.current_abs_filename = ''
-marks.current_local = {}  
 
 function marks.set_mark(symbol)
   local line,col = doc():get_selection()
@@ -69,29 +67,6 @@ function marks.set_mark(symbol)
     end
     marks._local[abs_filename][symbol] = mark
   end
-  -- we know it's current
-  marks.current_local[symbol] = mark
-end
-
-
-function marks.update_local(doc)
-  local abs_filename = doc.abs_filename
-  core.log('marks.update_local %s', abs_filename)
-  if marks.current_abs_filename ~= abs_filename then
-    
-    marks.current_local = {}
-    for symbol, mark in pairs(marks.global) do
-      marks.current_local[symbol] = mark
-    end
-    
-    if marks._local[abs_filename] then
-      for symbol, mark in pairs(marks._local[abs_filename]) do
-        marks.current_local[symbol] = mark
-      end
-    end
-    
-    marks.current_abs_filename = abs_filename
-  end
 end
 
 function marks.goto_global_mark(symbol)
@@ -108,7 +83,7 @@ function marks.goto_global_mark(symbol)
 end
 
 function marks.goto_local_mark(symbol)
-  local mark = marks.current_local[symbol]
+  local mark = marks._local[doc().abs_filename] and marks._local[doc().abs_filename][symbol]
   if mark then
     core.root_view:open_doc(core.open_doc(mark.abs_filename))
     doc():set_selection(mark.line, mark.col)
@@ -118,7 +93,9 @@ function marks.goto_local_mark(symbol)
 end
 
 function marks.translation(symbol, doc) -- line, col are not needed
-  local mark = marks.current_local[symbol]
+  local mark = marks.global[symbol]
+               or (marks._local[doc.abs_filename]
+                   and marks._local[doc.abs_filename][symbol])
   if mark and mark.abs_filename == doc.abs_filename then
     return mark.line, mark.col
   else
@@ -370,7 +347,6 @@ command.add(nil, {
   ["vibe:marks:clear-all"] = function()
     marks.global = {}
     marks._local = {}
-    marks.current_local = {}
   end,
 })
 
