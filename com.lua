@@ -46,20 +46,16 @@ command.add(nil, {
       core.vibe.run_stroke_seq(text)
     end)
   end,
+
   ["vibe:repeat"] = function()
-    -- first - remove the last command (the `vibe:repeat` one)
-    core.vibe.last_executed_seq = core.vibe.kb.split_stroke_seq(
-            core.vibe.last_executed_seq
-          )
-    core.vibe.last_executed_seq = table.concat(
-        {table.unpack(
-          core.vibe.last_executed_seq,
-          1,
-          #core.vibe.last_executed_seq - 1
-        )}
-      )
+    -- I was deleting the last stroke seq here
+    --  (the one activating this repeat command)
+    -- but that's wrong 
+    --  (for one I could in theory run it via CommandView)
+    --   so I moved the deletion to vibe.process_stroke
     core.vibe.run_stroke_seq(core.vibe.last_executed_seq)
   end,
+
   ["vibe:repeat-find-in-line"] = function()
     if core.vibe.last_line_find == nil then
       core.vibe.debug_str = 'no last line search..'

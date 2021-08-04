@@ -191,8 +191,28 @@ function vibe.process_stroke(stroke)
       local performed = false
       for _, cmd in ipairs(commands) do
         if command.map[cmd] then
+        
+          if cmd == "vibe:repeat" then
+            vibe.last_executed_seq = 
+              vibe.last_executed_seq:sub_suffix_literal(vibe.stroke_seq,'')
+            vibe.stroke_seq = ''
+          end
+
           performed = command.perform(cmd)
-          if performed then break end
+        
+          if performed then 
+            if cmd:sub(1,5)=='vibe:' then
+              -- pass. I expect my commands to make use of num_arg
+            else
+              -- simply repeat
+              if vibe.num_arg~='' then 
+                for j=1,tonumber(vibe.num_arg)-1 do
+                  command.perform(cmd)
+                end
+              end
+            end
+            break 
+          end
         else
           -- sequence!
           core.log_quiet('sequence as command! [%s]',cmd)

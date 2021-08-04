@@ -24,6 +24,10 @@ local config = require "core.config"
 local common = require "core.common"
 local translate = require "core.doc.translate"
 
+
+-- for tests
+local test
+
 local misc = {}
 
 
@@ -99,6 +103,21 @@ end
 function string:isUpperCase()
   return self:upper()==self and self:lower()~=self
 end
+
+-- substitute suffix, literally (no patterns!)
+--  kinda like :gsub(suffix..'$', sub)
+--    but then suffix should be escaped and I'm lazy..
+function string:sub_suffix_literal(suffix, sub)
+  if self:sub(#self-#suffix+1)==suffix then
+    return self:sub(1, #self - #suffix)..sub, 1 -- don't forget the count
+  end
+  return self, 0
+end
+
+test = 'string_suffix'
+assert(test:sub_suffix_literal('suffix','sub')=='string_sub')
+
+
 
 function string:find_literal(substr)
   -- literal find, instead of pattern-based 
