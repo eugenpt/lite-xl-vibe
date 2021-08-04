@@ -34,7 +34,10 @@ end
 
 local function fill_reverse(reverse, list, fill)
   for _,cmd in ipairs(list) do
-    reverse[cmd] = fill
+    if reverse[cmd] == nil then
+      reverse[cmd] = {}
+    end
+    table.insert(reverse[cmd], fill)
   end
 end
 

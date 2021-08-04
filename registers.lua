@@ -53,6 +53,12 @@ end
 
 command.add(function() return core.vibe.flags['recording_macro'] end,{
   ["vibe:macro:stop-recording"] = function()
+    -- remove the q
+    -- -- TODO: write a proper thing here..
+    registers[core.vibe.recording_register] = 
+      registers[core.vibe.recording_register]:sub(1,
+        #registers[core.vibe.recording_register] - 1)
+    --
     core.vibe.recording_register = nil
     core.vibe.flags['recording_macro'] = false
   end,
