@@ -194,6 +194,25 @@ function misc.find_in_list(list, fun)
   return nil
 end
 
+function misc.compare_key_fun(key)
+  return function(a,b) return a[key]>b[key] end
+end
+
+function misc.fuzzy_match_key(list, key, needle, files)
+  local res = {}
+  for _, item in ipairs(list) do
+    local score = system.fuzzy_match(tostring(item[key]), needle, files)
+    if score then
+      table.insert(res, { text = item, score = score })
+    end
+  end
+  table.sort(res, misc.compare_key_fun('score'))
+  for i, item in ipairs(res) do
+    res[i] = item.text
+  end
+  return res
+end
+
 -- https://stackoverflow.com/a/4991602/2624911
 function misc.file_exists(name)
    local f=io.open(name,"r")

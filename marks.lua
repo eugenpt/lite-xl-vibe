@@ -44,7 +44,7 @@ marks.global = {}
 marks._local = {}
 
 
-function marks.set_mark(symbol)
+function marks.set_mark(symbol, global_flag)
   local line,col = doc():get_selection()
   local abs_filename = doc().abs_filename
   local mark = {
@@ -54,7 +54,7 @@ function marks.set_mark(symbol)
     ["line_text"] = doc().lines[line],
     ["symbol"] = symbol,
   }
-  if symbol:isUpperCase() then
+  if global_flag or symbol:isUpperCase() then
     -- global
     if marks.global[symbol] == nil then
       marks.global[symbol] = {}
@@ -104,6 +104,7 @@ function marks.translation(symbol, doc) -- line, col are not needed
 end
 
 -------------------------------------------------------------------------------
+-- commands and keymaps for one-symbol marks
 
 for c,C in pairs(kb.shift_keys) do
   command.add("core.docview", {
@@ -131,6 +132,38 @@ for c,C in pairs(kb.shift_keys) do
   })
 end
 
+-------------------------------------------------------------------------------
+-- DOOM Emacs kind of marks
+command.add("core.docview", {
+  ['vibe:marks:create-or-move-to-named-mark'] = function()
+    -- If you want, you could use doom's default bookmark name.. I won't
+    -- core.command_view:set_text(doc().filename)
+    core.command_view:enter("Create or go to mark", function(text, item)
+      if item then
+        marks.goto_global_mark(item.symbol)
+      else 
+        marks.set_mark(text, true)
+      end
+    end, function(text)
+      local items = {}
+      for symbol,mark in pairs(marks.global) do
+        table.insert(items, {
+          ["text"]   = symbol..'| '..mark.abs_filename..' | '..mark.line_text,
+          ["symbol"] = symbol
+        })
+      end
+      return misc.fuzzy_match_key(items, 'text', text)
+    end)
+  end,
+})
+
+-- and proper DOOM Emacs keymap
+keymap.add_nmap({
+  ['<space><CR>'] = 'vibe:marks:create-or-move-to-named-mark',
+})
+
+-------------------------------------------------------------------------------
+-- Save / Load
 -------------------------------------------------------------------------------
 
 function marks.filename()
