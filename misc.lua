@@ -261,7 +261,7 @@ function misc.drop_selection()
 end
 
 function misc.move_to_line(line)
-  doc():move_to(function() return tonumber(num_arg),0 end, dv())
+  doc():move_to(function() return line,0 end, dv())
 end
 
 function misc.append_line_if_last_line(line)

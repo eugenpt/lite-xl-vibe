@@ -152,4 +152,21 @@ command.add(nil, {
   end,
 })
 
+command.add("core.docview", {
+  ["vibe:move-to-start-of-doc"] = function()
+    if core.vibe.num_arg == '' then
+      command.perform("doc:move-to-start-of-doc")
+    else
+      misc.move_to_line(tonumber(core.vibe.num_arg))
+    end
+  end,
+  ["vibe:move-to-end-of-doc"] = function()
+    if core.vibe.num_arg == '' then
+      command.perform("doc:move-to-end-of-doc")
+    else
+      misc.move_to_line(tonumber(core.vibe.num_arg))
+    end
+  end,
+})
+
 return com

@@ -108,8 +108,8 @@ keymap.add_nmap {
   ["C-d"] = "doc:move-to-next-page",
   ["["] = "doc:move-to-previous-block-start",
   ["]"] = "doc:move-to-next-block-end",
-  ["gg"] = "doc:move-to-start-of-doc",
-  ["G"] = "doc:move-to-end-of-doc",
+  ["gg"] = "vibe:move-to-start-of-doc",
+  ["G"] = "vibe:move-to-end-of-doc",
   ["C-k"] = "root:switch-to-next-tab",
   ["C-j"] = "root:switch-to-previous-tab",
   -- well..  also sort of navigation?
