@@ -247,28 +247,28 @@ keymap.add_nmap({
 -- ±same for marks (should I make unified resultsview?                       --                                                         --
 -------------------------------------------------------------------------------
 keymap.add_nmap({
-  ["<f5>"] = "vibe:marks:list:refresh",
-  ["r"] = "vibe:marks:list:refresh",
-  ["C-/"]  = "vibe:marks:list:find",
-  ["k"]                 = "vibe:marks:list:select-previous",
-  ["j"]               = "vibe:marks:list:select-next",
-  ["<CR>"]             = "vibe:marks:list:open-selected",
-  ["C-u"]             = "vibe:marks:list:move-to-previous-page",
-  ["C-d"]           = "vibe:marks:list:move-to-next-page",
-  ["gg"]          = "vibe:marks:list:move-to-start-of-doc",
-  ["G"]           = "vibe:marks:list:move-to-end-of-doc",
+  ["<f5>"] = "vibe:results:refresh",
+  ["r"] = "vibe:results:refresh",
+  ["C-/"]  = "vibe:results:find",
+  ["k"]                 = "vibe:results:select-previous",
+  ["j"]               = "vibe:results:select-next",
+  ["<CR>"]             = "vibe:results:open-selected",
+  ["C-u"]             = "vibe:results:move-to-previous-page",
+  ["C-d"]           = "vibe:results:move-to-next-page",
+  ["gg"]          = "vibe:results:move-to-start-of-doc",
+  ["G"]           = "vibe:results:move-to-end-of-doc",
   -- also try'n'keep the usual mappings (why not?)
-  ["C-F"]       = "vibe:marks:list:find",
-  ["<up>"]                 = "vibe:marks:list:select-previous",
-  ["<down>"]               = "vibe:marks:list:select-next",
-  ["<return>"]             = "vibe:marks:list:open-selected",
-  ["C-m"]             = "vibe:marks:list:open-selected",
-  ["<pageup>"]             = "vibe:marks:list:move-to-previous-page",
-  ["<pagedown>"]           = "vibe:marks:list:move-to-next-page",
-  ["C-<home>"]          = "vibe:marks:list:move-to-start-of-doc",
-  ["C-<end>"]           = "vibe:marks:list:move-to-end-of-doc",
-  ["<home>"]               = "vibe:marks:list:move-to-start-of-doc",
-  ["<end>"]                = "vibe:marks:list:move-to-end-of-doc"
+  ["C-F"]       = "vibe:results:find",
+  ["<up>"]                 = "vibe:results:select-previous",
+  ["<down>"]               = "vibe:results:select-next",
+  ["<return>"]             = "vibe:results:open-selected",
+  ["C-m"]             = "vibe:results:open-selected",
+  ["<pageup>"]             = "vibe:results:move-to-previous-page",
+  ["<pagedown>"]           = "vibe:results:move-to-next-page",
+  ["C-<home>"]          = "vibe:results:move-to-start-of-doc",
+  ["C-<end>"]           = "vibe:results:move-to-end-of-doc",
+  ["<home>"]               = "vibe:results:move-to-start-of-doc",
+  ["<end>"]                = "vibe:results:move-to-end-of-doc"
 })
 
 -------------------------------------------------------------------------------

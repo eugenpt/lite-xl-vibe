@@ -19,9 +19,6 @@ local function is_mode(mode)
   return function() return core.vibe.mode==mode end
 end
 
-local function has_selection()
-  return doc():has_selection()
-end
 
 local com = {}
 
@@ -94,16 +91,18 @@ command.add(nil, {
     end
   end,
   ["vibe:delete-symbol-under-cursor"] = function()
-      local doc = core.active_view.doc
-      local line,col,line2,col2 = doc:get_selection()
-      doc:set_selection(line,col)
-      doc:delete_to(translate.next_char)
-      doc:set_selection(line,col,line2,col2)
+      local doc = core.active_view and core.active_view.doc
+      if doc then
+        local line,col,line2,col2 = doc:get_selection()
+        doc:set_selection(line,col)
+        doc:delete_to(translate.next_char)
+        doc:set_selection(line,col,line2,col2)
+      end
   end,
 })
 
 
-command.add(has_selection, {
+command.add(misc.has_selection, {
   ["vibe:copy"] = function()
     core.log('vibe:copy')
     command.perform("doc:copy")
