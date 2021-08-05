@@ -55,6 +55,7 @@ function StatusView:get_items()
       #dv.doc.lines, " lines",
       self.separator,
       dv.doc.crlf and "CRLF" or "LF",
+      style.text, self.separator2, '#'..core.vibe.num_arg,
       style.text, self.separator2, core.vibe.last_stroke,
     }
   end

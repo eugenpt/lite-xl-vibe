@@ -167,16 +167,17 @@ function vibe.process_stroke(stroke)
         core.log_quiet('nmap_override |%s| to %s', vibe.last_stroke, misc.str(commands))
       else
         commands = keymap.nmap[vibe.stroke_seq]
+
+        if (stroke:isNumber() and not (vibe.num_arg=='' and stroke=='0'))then
+          vibe.num_arg = vibe.num_arg .. stroke
+          -- and also don't put it into seq
+          vibe.stroke_seq = vibe.stroke_seq:sub(1,#vibe.stroke_seq - 1)
+          return true
+        end
         
         if commands then
           core.log_quiet('|%s| nmapped to %s', vibe.stroke_seq, misc.str(commands))
         else  
-          if (stroke:isNumber() and not (vibe.num_arg=='' and stroke=='0')) then
-            vibe.num_arg = vibe.num_arg .. stroke
-            -- and also don't put it into seq
-            vibe.stroke_seq = vibe.stroke_seq:sub(1,#vibe.stroke_seq - 1)
-            return true
-          end
           if not keymap.have_nmap_starting_with(vibe.stroke_seq) then
             core.log_quiet('no commands for ' .. vibe.stroke_seq)
             vibe.reset_seq()
