@@ -36,7 +36,7 @@ vibe.com = require "plugins.lite-xl-vibe.com"
 vibe.marks = require "plugins.lite-xl-vibe.marks"
 vibe.interface = require "plugins.lite-xl-vibe.interface"
 
-
+require "plugins.lite-xl-vibe.visual_mode"
 
 local function dv()
   return core.active_view

@@ -37,7 +37,6 @@ local function doc()
 end
 
 
-
 local marks = {}
 
 marks.global = {}
@@ -103,34 +102,49 @@ function marks.translation(symbol, doc) -- line, col are not needed
   end
 end
 
+function marks.translation_fun(symbol)
+  return function(doc)
+           return marks.translation(symbol, doc)
+         end
+end
+
 -------------------------------------------------------------------------------
 -- commands and keymaps for one-symbol marks
 
+local translations = {}
+
 for c,C in pairs(kb.shift_keys) do
-  command.add("core.docview", {
+command.add("core.docview", {
     ['vibe:marks:set-local-'..c] = function()
       marks.set_mark(c)
     end,
     ['vibe:marks:set-global-'..C] = function()
       marks.set_mark(C)
     end,
-    ['vibe:marks:go-to-local-'..c] = function()
-      marks.goto_local_mark(c)
-    end,
-    ['vibe:marks:go-to-global-'..C] = function()
-      marks.goto_global_mark(C)
-    end,
   })
+  
+  translations['local-'..c] = marks.translation_fun(c)
+  translations['global-'..C] = marks.translation_fun(C)
   
   keymap.add_nmap({
     ['m'..c] = 'vibe:marks:set-local-'..c,
     ['m'..C] = 'vibe:marks:set-global-'..C,
-    ["'"..c] = 'vibe:marks:go-to-local-'..c,
-    ["`"..c] = 'vibe:marks:go-to-local-'..c,
-    ["'"..C] = 'vibe:marks:go-to-global-'..C,
-    ["`"..C] = 'vibe:marks:go-to-global-'..C,
+    ["'"..c] = 'doc:move-to-local-'..c,
+    ["`"..c] = 'doc:move-to-local-'..c,
+    ["'"..C] = 'doc:move-to-global-'..C,
+    ["`"..C] = 'doc:move-to-global-'..C,
   })
 end
+
+local commands = {}
+
+for name, fn in pairs(translations) do
+  commands["doc:move-to-" .. name] = function() doc():move_to(fn, dv()) end
+  commands["doc:select-to-" .. name] = function() doc():select_to(fn, dv()) end
+  commands["doc:delete-to-" .. name] = function() doc():delete_to(fn, dv()) end
+end
+
+command.add("core.docview", commands)
 
 -------------------------------------------------------------------------------
 -- DOOM Emacs kind of marks
