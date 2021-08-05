@@ -14,7 +14,9 @@ local style = require "core.style"
 local config = require "core.config"
 local common = require "core.common"
 local translate = require "core.doc.translate"
+
 local kb = require "plugins.lite-xl-vibe.keyboard"
+local ResultsView = require "plugins.lite-xl-vibe.ResultsView"
 
 local registers = {}
 
@@ -61,6 +63,37 @@ command.add(function() return core.vibe.flags['recording_macro'] end,{
     --
     core.vibe.recording_register = nil
     core.vibe.flags['recording_macro'] = false
+  end,
+})
+
+command.add(nil, {
+  ["vibe:registers-macro:list-all"] = function()
+    local mv = ResultsView("Registers List", function()
+      local items = {}
+      -- registers
+      for reg, text in pairs(registers) do
+        if text then
+          table.insert(items, {
+            ["title"] = '<'..reg..'>',
+            ["text"] = text,
+          })
+        end
+      end
+      -- clipboard ring
+      for ix,item in pairs(core.vibe.clipboard_ring) do
+        if item then
+          table.insert(items, {
+            ["title"] = '<clipboard-'..tostring(ix)..'>',
+            ["text"] = item,
+          })
+        end
+      end
+      return items
+    end, function(res)
+      system.set_clipboard(res.text, true) -- true for skip the ring
+      command.perform('root:close')
+    end)
+    core.root_view:get_active_node_default():add_view(mv)
   end,
 })
 

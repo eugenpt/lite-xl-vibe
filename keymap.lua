@@ -166,6 +166,10 @@ keymap.add_nmap {
   ["<space>qr"] = "core:restart",
   ["<space>bd"] = "root:close",
   ["<space>bk"] = "root:close",
+  ["<space>bs"] = "doc:save",
+  ["<space>bS"] = "doc:save-as",
+  ["<space>om"] = "vibe:marks:show-all",
+  ["<space>or"] = "vibe:registers-macro:list-all",
   -- misc
   ["C-\\\\"] = "treeview:toggle", -- yeah, single \ turns into \\\\ , thats crazy.
   
