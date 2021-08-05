@@ -162,6 +162,8 @@ keymap.add_nmap {
   -- hint of Doom emacs?
   ["<space>x"] = "vibe:open-scratch-buffer",
   ["<space>:"] = "A-x",
+  ["<space>,"] = "vibe:switch-to-tab-search",
+  ["<space>."] = "core:find-file",
   ["<space>p"] = "vibe:registers:search-and-paste",
   ["<space>ir"] = "vibe:registers:search-and-paste",
   ["<space>y"] = "vibe:registers:search-and-copy",
@@ -236,7 +238,7 @@ end
 keymap.add_nmap({
   ["r"] = "project-search:refresh",
   ["<f5>"] = "project-search:refresh",
-  ["C-/"]  = "project-search:find",
+  ["C-/"]  = "project-search:fuzzy-find", -- "project-search:find",
   ["k"]                 = "project-search:select-previous",
   ["j"]               = "project-search:select-next",
   ["<CR>"]             = "project-search:open-selected",

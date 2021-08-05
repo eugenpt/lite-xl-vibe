@@ -130,4 +130,26 @@ command.add(misc.has_selection, {
   end,
 })
 
+command.add(nil, {
+  ["vibe:switch-to-tab-search"] = function()
+    core.command_view:enter("Switch to tab:", function(text, item)
+      if item then
+        core.root_view:open_doc(item.doc)
+      else 
+        local filename = system.absolute_path(common.home_expand(text))
+        core.root_view:open_doc(core.open_doc(filename))
+      end
+    end, function(text)
+      local items = {}
+      for _, doc in ipairs(core.docs) do
+        table.insert(items, {
+          ["text"]   = doc.abs_filename,
+          ["doc"] = doc,
+        })
+      end
+      return misc.fuzzy_match_key(items, 'text', text)
+    end)
+  end,
+})
+
 return com
