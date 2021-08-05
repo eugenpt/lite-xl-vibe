@@ -67,6 +67,7 @@ for bind,coms in pairs(keymap.nmap) do
       keymap.add_nmap({
         ['v'..bind] = sel_name,
         ['d'..bind] = 'v'..bind..'d',
+        ['c'..bind] = 'v'..bind..'di',
       })
     end
   end
