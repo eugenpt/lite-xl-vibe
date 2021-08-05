@@ -26,6 +26,7 @@ local core = require "core"
 local command = require "core.command"
 local common = require "core.common"
 local keymap = require "core.keymap"
+local Doc = require "core.doc"
 
 local misc = require "plugins.lite-xl-vibe.misc"
 local kb = require "plugins.lite-xl-vibe.keyboard"
@@ -148,6 +149,50 @@ for name, fn in pairs(translations) do
 end
 
 command.add("core.docview", commands)
+
+
+-------------------------------------------------------------------------------
+-- Shift marks' line numbers on doc edits
+-------------------------------------------------------------------------------
+-- -- based on lite-xl/lite-plugins/master/plugins/markers.lua
+-------------------------------------------------------------------------------
+local function shift_mark(mark, at, diff)
+  mark['line'] = mark['line'] >= at and mark['line'] + diff or mark['line']
+end
+
+local function shift_lines(doc, at, diff)
+  if diff == 0 then return end
+  for _, mark in pairs(marks.global) do
+    if mark.abs_filename == doc.abs_filename then
+      shift_mark(mark, at, diff)
+    end
+  end  
+  if marks._local[doc.abs_filename] then
+    for _, mark in pairs(marks._local[doc.abs_filename]) do
+      shift_mark(mark, at, diff)
+    end
+  end
+end
+
+
+local raw_insert = Doc.raw_insert
+
+function Doc:raw_insert(line, col, text, ...)
+  raw_insert(self, line, col, text, ...)
+  local line_count = 0
+  for _ in text:gmatch("\n") do
+    line_count = line_count + 1
+  end
+  shift_lines(self, line, line_count)
+end
+
+
+local raw_remove = Doc.raw_remove
+
+function Doc:raw_remove(line1, col1, line2, col2, ...)
+  raw_remove(self, line1, col1, line2, col2, ...)
+  shift_lines(self, line2, line1 - line2)
+end
 
 -------------------------------------------------------------------------------
 -- DOOM Emacs kind of marks
