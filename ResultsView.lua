@@ -27,6 +27,7 @@ local keymap = require "core.keymap"
 local style = require "core.style"
 local View = require "core.view"
 
+local misc = require "plugins.lite-xl-vibe.misc"
 local ResultsView = View:extend()
 
 function ResultsView:new(title, items_fun, on_click_fun)
@@ -41,7 +42,8 @@ end
 
 function ResultsView:fill_results()
   self.selected_idx = 0
-  self.results = self.items_fun()
+  self.results_src = self.items_fun()
+  self.results = misc.copy(self.results_src)
 end
 
 function ResultsView:get_name()
@@ -184,6 +186,40 @@ command.add(ResultsView, {
     local view = core.active_view
     view.scroll.to.y = view:get_scrollable_size()
   end,
+  
+  ["vibe:results:search"] = function()
+    -- prepare field for fuzzy search
+    for _,item in ipairs(core.active_view.results) do
+      item.search_text = (item.title or '') .. ' '
+                          .. (item.text or '')
+    end
+    local resultsview = core.active_view
+    core.active_view.selected_idx = 0
+
+    core.command_view:enter("Search in list:", function(text)
+      if #resultsview.results==1 then
+        resultsview.selected_idx=1
+        resultsview:open_selected_result()
+      end
+      -- if found then
+      --   last_fn, last_text = search_fn, text
+      --   previous_finds = {}
+      --   push_previous_find(dv.doc, sel)
+      -- else
+      --   core.error("Couldn't find %q", text)
+      --   dv.doc:set_selection(table.unpack(sel))
+      --   dv:scroll_to_make_visible(sel[1], sel[2])
+      -- end
+  
+    end, function(text)
+      resultsview.results = misc.fuzzy_match_key(resultsview.results_src, 'search_text', text)
+    end, function(explicit)
+      -- if explicit then
+      --   dv.doc:set_selection(table.unpack(sel))
+      --   dv:scroll_to_make_visible(sel[1], sel[2])
+      -- end
+    end)
+  end,
 })
 
 -------------------------------------------------------------------------------
@@ -199,7 +235,8 @@ keymap.add {
   ["ctrl+home"]          = "vibe:results:move-to-start-of-doc",
   ["ctrl+end"]           = "vibe:results:move-to-end-of-doc",
   ["home"]               = "vibe:results:move-to-start-of-doc",
-  ["end"]                = "vibe:results:move-to-end-of-doc"
+  ["end"]                = "vibe:results:move-to-end-of-doc",
+  ["ctrl+f"]             = "vibe:results:search",
 }
 
 return ResultsView

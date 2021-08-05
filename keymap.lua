@@ -265,7 +265,8 @@ keymap.add_nmap({
 keymap.add_nmap({
   ["<f5>"] = "vibe:results:refresh",
   ["r"] = "vibe:results:refresh",
-  ["C-/"]  = "vibe:results:find",
+  ["/"]  = "vibe:results:search",
+  ["C-f"]  = "vibe:results:search",
   ["k"]                 = "vibe:results:select-previous",
   ["j"]               = "vibe:results:select-next",
   ["<CR>"]             = "vibe:results:open-selected",
@@ -274,7 +275,6 @@ keymap.add_nmap({
   ["gg"]          = "vibe:results:move-to-start-of-doc",
   ["G"]           = "vibe:results:move-to-end-of-doc",
   -- also try'n'keep the usual mappings (why not?)
-  ["C-F"]       = "vibe:results:find",
   ["<up>"]                 = "vibe:results:select-previous",
   ["<down>"]               = "vibe:results:select-next",
   ["<return>"]             = "vibe:results:open-selected",
