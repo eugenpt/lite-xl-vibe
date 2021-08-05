@@ -53,16 +53,14 @@ function vibe.reset_seq()
   vibe.num_arg = ''
 end
 
-function vibe.run_repeat_seq(_seq, num)
-  local seq = ''
-  for j=1,num do
-    seq = seq .. _seq
-  end
+function vibe.run_repeat_seq(seq, num)
   local run_repeat_seq = vibe.flags['run_repeat_seq']
   vibe.flags['run_repeat_seq'] = true
   vibe.flags['run_repeat_seq__started_clipboard'] = false
   vibe.reset_seq()
-  vibe.run_stroke_seq(seq)
+  for j=1,num do
+    vibe.run_stroke_seq((vibe.mode=='insert' and '<ESC>' or '') .. seq)
+  end
   vibe.flags['run_repeat_seq'] = run_repeat_seq
 end
 
