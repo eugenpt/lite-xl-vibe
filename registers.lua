@@ -131,6 +131,8 @@ command.add("core.docview", {
       end
     end, register_fuzzy_sort({add_ring=true}))
   end,
+})
+command.add(misc.has_selection, {
   ["vibe:registers:search-and-copy"] = function()
     core.command_view:enter("Copy to register (clipboard)", function(text, item)
       if item then
