@@ -129,4 +129,35 @@ command.add(misc.has_selection, {
   end,
 })
 
+if command.map["workspace:save-workspace-as"] == nil then
+command.add(nil,{
+  ["workspace:save-workspace-as"] = function()
+    core.command_view:set_text(core.normalize_to_project_dir(core.project_dir .. '.ws'))
+    core.command_view:enter("Save Workspace As", function(filename)
+      save_workspace(common.home_expand(filename))
+    end, function (text)
+      return common.home_encode_list(common.path_suggest(common.home_expand(text)))
+    end)
+  end,
+  ["workspace:open-workspace-file"] = function()
+    local view = core.active_view
+    if view.doc and view.doc.abs_filename then
+      local dirname, filename = view.doc.abs_filename:match("(.*)[/\\](.+)$")
+      if dirname then
+        dirname = core.normalize_to_project_dir(dirname)
+        local text = dirname == core.project_dir and "" or common.home_encode(dirname) .. PATHSEP
+        core.command_view:set_text(text)
+      end
+    end
+    core.command_view:enter("Open Workspace File", function(text)
+      open_workspace_file(system.absolute_path(common.home_expand(text)))
+    end, function (text)
+      return common.home_encode_list(common.path_suggest(common.home_expand(text)))
+    end, nil, function(text)
+      open_workspace_file(common.home_expand(text))
+    end)
+  end,
+})
+end
+
 return com

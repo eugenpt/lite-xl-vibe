@@ -14,6 +14,9 @@ if x is an UPPERCASE letter - the mark is global
   (new mark for the same uppercase letter will owerwrite the previous one)
   
 You can list all marks using command "vibe:marks:show-all"
+
+
+Also you can make named marks using <space><CR>
   
 For now all marks are kept between sessions in .config/marks.lua file
 
