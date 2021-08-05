@@ -16,6 +16,7 @@ local common = require "core.common"
 local translate = require "core.doc.translate"
 
 local kb = require "plugins.lite-xl-vibe.keyboard"
+local misc = require "plugins.lite-xl-vibe.misc"
 local ResultsView = require "plugins.lite-xl-vibe.ResultsView"
 
 local registers = {}
@@ -94,6 +95,51 @@ command.add(nil, {
       command.perform('root:close')
     end)
     core.root_view:get_active_node_default():add_view(mv)
+  end,
+})
+
+local function register_fuzzy_sort(opts)
+  return function(text)
+  local items = {}
+  for symbol,register in pairs(registers) do
+    table.insert(items, {
+      ["text"]   = symbol..'| '..register,
+      ["content"] = register,
+      ["symbol"] = symbol,
+    })
+  end
+  if opts['add_ring'] then
+  for i, register in pairs(core.vibe.clipboard_ring) do
+    table.insert(items, {
+      ["text"]   = '<'..tonumber(i)..'>'..'| '..register,
+      ["content"] = register,
+    })
+  end
+  end
+  return misc.fuzzy_match_key(items, 'text', text)
+  end
+end
+
+command.add("core.docview", {
+  ["vibe:registers:search-and-paste"] = function()
+    core.command_view:enter("Insert from register (clipboard)", function(text, item)
+      if item then
+        system.set_clipboard(item.content, true) -- true for skip ring
+        command.perform("vibe:paste")
+      else 
+        -- like.. ??
+      end
+    end, register_fuzzy_sort({add_ring=true}))
+  end,
+  ["vibe:registers:search-and-copy"] = function()
+    core.command_view:enter("Copy to register (clipboard)", function(text, item)
+      if item then
+        core.vibe.target_register = item.symbol
+      else 
+        core.vibe.target_register = text
+      end
+      command.perform("vibe:copy")
+    end, register_fuzzy_sort({add_ring=false}))
   end,
 })
 

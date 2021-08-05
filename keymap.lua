@@ -162,6 +162,9 @@ keymap.add_nmap {
   -- hint of Doom emacs?
   ["<space>x"] = "vibe:open-scratch-buffer",
   ["<space>:"] = "A-x",
+  ["<space>p"] = "vibe:registers:search-and-paste",
+  ["<space>ir"] = "vibe:registers:search-and-paste",
+  ["<space>y"] = "vibe:registers:search-and-copy",
   ["<space>qr"] = "core:restart",
   ["<space>qL"] = "workspace:open-workspace-file",
   ["<space>qS"] = "workspace:save-workspace-as",
