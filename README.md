@@ -1,7 +1,44 @@
 # lite-xl-vibe
 VI(m?) Bindings (with a hint of Emacs) for [lite-xl](https://github.com/lite-xl/lite-xl)
 
-they kinda work
+
+## Installation
+
+just clone the repo as plugins subfolder
+```
+git clone git@github.com:eugenpt/lite-xl-vibe.git ~/.config/lite-xl/plugins/lite-xl-vibe
+```
+
+# Intro
+
+If you don't know what VIM is you really should. Also - how did you find this page??
+
+If you do know that VIM is - this plugin provides basic support of VIM bindings.
+
+Press `Esc`/`Ctrl+[` to go into `NORMAL` mode, to navigate, select, do whatever you want (except for actual input)
+
+Press `i` while in `NORMAL` mode to go back to `INSERT` mode 
+(works same as lite or almost any editor usually.
+ Some differences are here from Emacs, see details [below](#differences-in-insert-mode "Differences in INSERT mode") )
+ 
+# Features
+
+- (Book-)Marks, including named ones (`Space+Return`) and one-keystroke ones 
+  (`m`+letter to set, `'`/`\``+letter to go to a mark, uppercase for global marks)
+- Registers (one for each letter - you can copy to them and paste from them using `"`+letter as prefix for copy/paste command)
+- Clipboard Ring (after paste press `Ctrl+y` to change pasted text to one copied previously)
+- navigation to previous/next word (`b`/`w`/`e`)/WORD (`W`/`B`)/block (`[`/`]`)
+- deletion/selection(`d`/`v`/`c`) to previous/next word/.../mark
+- deletion/selection/..(`d`/`v`/`c`) inside(`i`) word(`w`)/()/[]/block(`b`) 
+  (so `vi(` to select inside matching parenthesis, `ciw` to change inside of word)
+- macros (`q`+letter to start recording, `q` again to stop, `@`+letter to run)
+
+## Differences in INSERT mode
+
+  Some of the Emacs bindings are mapped for insert mode by default, including:
+- `Ctrl+e` moves cursor to end of the line
+- `Ctrl+p` - the previous line
+- `Ctrl+n` - the next line (to open new doc use `Ctrl+Shift+N`)
 
 
 
@@ -15,6 +52,4 @@ Yes, I am aware of the vim-mode branch, but
 
 
 
-## Installation
 
-just clone the repo as plugins subfolder
