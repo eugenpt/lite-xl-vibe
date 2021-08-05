@@ -1,6 +1,24 @@
--------------------------------------------------------------------------------
--- ResultsView
--------------------------------------------------------------------------------
+--[[
+
+  ResultsView
+  
+  A generalized View for all sorts of results,
+    similar to project-search one.
+
+  Arguments for constructor:
+  
+  1. title - Shown in table
+  
+  2. items_fun - function returning list of items
+                 title and text fields are shown 
+                 (same to projectsearch's
+                   filename/place and line text respectively)
+                 receives no arguments
+                 
+  3. on_click_fun - function executed on selection of an item,
+                    receives the item as one and only argument
+
+]]--
 
 local core = require "core"
 local command = require "core.command"
@@ -16,13 +34,12 @@ function ResultsView:new(title, items_fun, on_click_fun)
   self.title = title
   self.scrollable = true
   self.brightness = 0
-  self.items_fun = items_fun
-  self.on_click_fun = on_click_fun
+  self.items_fun = items_fun or function() return {} end
+  self.on_click_fun = on_click_fun or function() end
   self:fill_results()
 end
 
 function ResultsView:fill_results()
-  self.last_file_idx = 1
   self.selected_idx = 0
   self.results = self.items_fun()
 end
@@ -111,7 +128,6 @@ end
 
 function ResultsView:draw()
   self:draw_background(style.background)
-
   -- results
   local y1, y2 = self.position.y, self.position.y + self.size.y
   for i, item, x,y,w,h in self:each_visible_result() do
@@ -121,10 +137,9 @@ function ResultsView:draw()
       renderer.draw_rect(x, y, w, h, style.line_highlight)
     end
     x = x + style.padding.x
-    x = common.draw_text(style.font, style.dim, item.title, "left", x, y, w, h)
-    x = common.draw_text(style.code_font, color, item.text, "left", x, y, w, h)
+    x = common.draw_text(style.font, style.dim, item.title or '', "left", x, y, w, h)
+    x = common.draw_text(style.code_font, color, item.text or '', "left", x, y, w, h)
   end
-
   self:draw_scrollbar()
 end
 
@@ -141,7 +156,6 @@ command.add(ResultsView, {
     view.selected_idx = math.min(view.selected_idx + 1, #view.results)
     view:scroll_to_make_selected_visible()
   end,
-
 
   ["vibe:results:open-selected"] = function()
     core.active_view:open_selected_result()
@@ -171,6 +185,7 @@ command.add(ResultsView, {
     view.scroll.to.y = view:get_scrollable_size()
   end,
 })
+
 -------------------------------------------------------------------------------
 
 keymap.add {
