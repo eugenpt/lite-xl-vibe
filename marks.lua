@@ -155,9 +155,14 @@ command.add("core.docview", {
   ['vibe:marks:create-or-move-to-named-mark'] = function()
     -- If you want, you could use doom's default bookmark name.. I won't
     -- core.command_view:set_text(doc().filename)
+    local doc_filename = doc().abs_filename
     core.command_view:enter("Create or go to mark", function(text, item)
       if item then
-        marks.goto_global_mark(item.symbol)
+        if item.global then
+          marks.goto_global_mark(item.symbol)
+        else
+          marks.goto_local_mark(item.symbol)
+        end
       else 
         marks.set_mark(text, true)
       end
@@ -166,7 +171,14 @@ command.add("core.docview", {
       for symbol,mark in pairs(marks.global) do
         table.insert(items, {
           ["text"]   = symbol..'| '..mark.abs_filename..' | '..mark.line_text,
-          ["symbol"] = symbol
+          ["symbol"] = symbol,
+          ["global"] = true,
+        })
+      end
+      for symbol, mark in pairs(marks._local[doc_filename] or {}) do
+        table.insert(items, {
+          ["text"]   = symbol..'| '..mark.abs_filename..' | '..mark.line_text,
+          ["symbol"] = symbol,
         })
       end
       return misc.fuzzy_match_key(items, 'text', text)
