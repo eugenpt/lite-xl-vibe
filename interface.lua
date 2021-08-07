@@ -85,6 +85,13 @@ command.add_hook("vibe:switch-to-normal-mode", { function()
   end
 end })
 
+local DocView__update__orig = DocView.update
+function DocView:update(...)
+  style.caret_width = (core.vibe.mode=='normal' and core.active_view.get_font)
+                      and core.active_view:get_font():get_width(' ')
+                      or status.caret_width__orig
+  DocView__update__orig(self,...)
+end
 
 
 core.log('interface loaded?')

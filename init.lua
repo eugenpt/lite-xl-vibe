@@ -148,7 +148,6 @@ function vibe.process_stroke(stroke)
       vibe.last_executed_seq = ''
     end
   
-    
     local commands = {}
     
     vibe.debug_str = vibe.last_executed_seq

@@ -39,7 +39,7 @@ Press `i` while in `NORMAL` mode to go back to `INSERT` mode
 - `Ctrl+e` moves cursor to end of the line
 - `Ctrl+p` - the previous line
 - `Ctrl+n` - the next line (to open new doc use `Ctrl+Shift+N`)
-
+- `Ctrl+/` opens `Fuzzy Find in Project`, for toggle comments press `Ctrl+x Ctrl+;`
 
 
 heavily inspired by and originally started from [modalediting of a327ex's lite-plugins](https://github.com/a327ex/lite-plugins)

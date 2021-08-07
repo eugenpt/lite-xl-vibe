@@ -452,7 +452,7 @@ command.add(nil, {
 
   ["core:exec-input-and-insert"] = function()
     core.command_view:enter("Exec and insert at cursor", function(text)
-      local s = assert(load("return "..text))()
+      local s = assert(load(require_str .. "\n\nreturn "..text))()
       core.log(s)
       local line,col = core.active_view.doc:get_selection()
       core.active_view.doc:insert(line, col, misc.str(s))

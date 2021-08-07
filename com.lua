@@ -51,6 +51,7 @@ command.add(nil, {
     -- but that's wrong 
     --  (for one I could in theory run it via CommandView)
     --   so I moved the deletion to vibe.process_stroke
+    core.log('vibe:repeat seq=|%s|', core.vibe.last_executed_seq)
     core.vibe.run_stroke_seq(core.vibe.last_executed_seq)
   end,
 
