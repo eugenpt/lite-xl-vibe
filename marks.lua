@@ -100,10 +100,11 @@ function marks.translation(symbol, doc) -- line, col are not needed
                or (marks._local[doc.abs_filename]
                    and marks._local[doc.abs_filename][symbol])
   if mark and mark.abs_filename == doc.abs_filename then
-    return mark.line, mark.col
+    -- pass?
   else
-    return nil
+    marks.goto_global_mark(symbol)
   end
+  return mark.line, mark.col
 end
 
 function marks.translation_fun(symbol)
@@ -276,14 +277,6 @@ function core.on_quit_project()
   on_quit_project()
 end
 
-
-local core__set_active_view = core.set_active_view
-function core.set_active_view(view)
-  core__set_active_view(view)
-  if view.doc and view.doc.abs_filename and marks.update_local then
-    marks.update_local(view.doc)
-  end
-end
 
 command.add(nil, {
   ["vibe: Save Marks"] = marks.save,
