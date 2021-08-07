@@ -7,6 +7,7 @@ local style = require "core.style"
 local translate = require "core.doc.translate"
 
 local misc = require "plugins.lite-xl-vibe.misc"
+local ResultsView = require "plugins.lite-xl-vibe.ResultsView"
 
 local function dv()
   return core.active_view
@@ -69,12 +70,20 @@ command.add(nil, {
       )
     end, dv())
   end,
+  
   ["vibe:rotate-clipboard-ring"] = function()
     misc.clipboard_ring_rotate()
   end,
+  
   ["vibe:open-scratch-buffer"] = function()
     core.root_view:open_doc(core.open_doc(misc.scratch_filepath()))
   end,
+  
+  ["vibe:switch-to-last-tab"] = function()
+    local node = core.root_view:get_active_node()
+    node:set_active_view(core.last_active_view)
+  end,
+  
   ["vibe:paste"] = function()
     core.log('vibe:paste')
     local text
@@ -92,6 +101,7 @@ command.add(nil, {
       system.set_clipboard(text)
     end
   end,
+  
   ["vibe:delete-symbol-under-cursor"] = function()
       local doc = core.active_view and core.active_view.doc
       if doc then
@@ -150,6 +160,20 @@ command.add(nil, {
       end
       return misc.fuzzy_match_key(items, 'text', text)
     end)
+  end,
+
+  ["vibe:tabs-list"] = function()
+    if core.vibe.tabs_list_view then
+      core.vibe.tabs_list_view:refresh()
+      local node = core.root_view:get_active_node()
+      node:set_active_view(core.vibe.tabs_list_view)
+    else
+      local mv = ResultsView("Opened Files", misc.get_tabs_list, function(res)
+        local dv = core.root_view:open_doc(res.doc)
+      end)
+      core.vibe.tabs_list_view = mv
+      core.root_view:get_active_node_default():add_view(core.vibe.tabs_list_view)
+    end
   end,
 })
 

@@ -244,6 +244,19 @@ function misc.file_exists(name)
    if f~=nil then io.close(f) return true else return false end
 end
 
+function misc.get_tabs_list()
+  local items = {}
+  for _, doc in ipairs(core.docs) do
+    table.insert(items, {
+      ["text"]   = doc.abs_filename,
+      ["doc"] = doc,
+      ["title"] = "",
+    })
+  end
+  core.log('items_fun : %i items',#items)
+  return items
+end
+  
 -------------------------------------------------------------------------------
 -- scratch
 

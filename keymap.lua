@@ -165,6 +165,7 @@ keymap.add_nmap {
   ["A-y"] = "vibe:rotate-clipboard-ring",
   ["C-y"] = "vibe:rotate-clipboard-ring",
   -- ["C-x3"] = "root:split-right", -- hmm.. doesnt work since 3 is read as num_arg
+  
   -- hint of Doom emacs?
   ["<space>x"] = "vibe:open-scratch-buffer",
   ["<space>/"] = "project-search:fuzzy-find",
@@ -180,8 +181,10 @@ keymap.add_nmap {
   ["<space>qr"] = "core:restart",
   ["<space>qL"] = "workspace:open-workspace-file",
   ["<space>qS"] = "workspace:save-workspace-as",
+  ["<space>bi"] = "vibe:tabs-list",
   ["<space>bd"] = "root:close",
   ["<space>bk"] = "root:close",
+  ["<space>bl"] = "vibe:switch-to-last-tab",
   ["<space>bn"] = "root:switch-to-next-tab",
   ["<space>b]"] = "root:switch-to-next-tab",
   ["<space>b["] = "root:switch-to-previous-tab",
