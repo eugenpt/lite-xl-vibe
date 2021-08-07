@@ -1,0 +1,12 @@
+local core = require "core"
+local command = require "core.command"
+local config = require "core.config"
+local keymap = require "core.keymap"
+local DocView = require "core.docview"
+local Doc = require "core.doc"
+local CommandView = require "core.commandview"
+local style = require "core.style"
+local config = require "core.config"
+local common = require "core.common"
+local translate = require "core.doc.translate"
+

@@ -238,11 +238,11 @@ end
 
 function misc.str(a)
   if type(a) == 'table' then
-    local R = '[ '
+    local R = '{ '
     for j,ja in pairs(a) do
-      R = R .. (#R>2 and ', ' or '') .. '[' .. j .. '] = ' .. misc.str(ja)
+      R = R .. (#R>2 and ', ' or '') .. '[' .. misc.str(j) .. '] = ' .. misc.str(ja)
     end
-    R = R .. ' ]'
+    R = R .. ' }'
     return R
   elseif type(a) == 'string' then
     return '"' .. a .. '"'
@@ -250,7 +250,7 @@ function misc.str(a)
     return tostring(a)
   end
 end
-  
+
 function misc.has_selection()
   return core.active_view:is(DocView) and core.active_view.doc:has_selection()
 end
@@ -399,6 +399,16 @@ function command.add_hook(com_name, hook)
 end
 
 -------------------------------------------------------------------------------
+-- file with all the requires
+local fp = assert( io.open("all_requires.lua", "rb") )
+local require_str = ''
+for line in fp:lines() do
+  require_str = require_str .. '\n' .. line
+end
+core.log(require_str)
+fp:close()
+    
+-------------------------------------------------------------------------------
 -- commands
 -------------------------------------------------------------------------------
 
@@ -424,12 +434,30 @@ command.add(nil, {
     end
     assert(load(text))()
   end,
+  
+  ["core:test"] = function()
+  end,
+  
   -- after some thoughts this was even more useful
   --  ( I mean you do need to `require` a lot of stuff.. )
   ["core:exec-file"] = function()
     assert(load(table.concat(doc().lines)))()
   end,
+  
+  ["core:exec-input"] = function()
+    core.command_view:enter("Exec", function(text)
+      core.log(misc.str(assert(load(require_str .. "\n\nreturn "..text))()))
+    end)
+  end,
 
+  ["core:exec-input-and-insert"] = function()
+    core.command_view:enter("Exec and insert at cursor", function(text)
+      local s = assert(load("return "..text))()
+      core.log(s)
+      local line,col = core.active_view.doc:get_selection()
+      core.active_view.doc:insert(line, col, misc.str(s))
+    end)
+  end,
 --[[  
   -- yeah, I do like vim
   ["so % core:exec-file"] = function()
