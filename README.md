@@ -33,6 +33,24 @@ Press `i` while in `NORMAL` mode to go back to `INSERT` mode
   (so `vi(` to select inside matching parenthesis, `ciw` to change inside of word)
 - macros (`q`+letter to start recording, `q` again to stop, `@`+letter to run)
 
+- vim-like custom bindings to lite commands or to sequences of strokes (keymap.add\_nmap({["strokes"]="command/sequence"})
+
+- minimalistic File browser (`<space>of` and type in any directory )
+
+##### DOOM/Emacs thingies:
+- `<space><return>` for (book-)marks
+- `<space>.` for find-file
+- `<space>,` for toogle between tabs with fuzzy search
+- `<space>om` for list of all marks
+- `<space>or` for list of all filled registers
+- `<space>y` while sth is selected to yank to a named register (with select and search)
+- `<space>p`/`<space>ir` to paste from register (with select and search)
+- `<space>:` for commands
+- `<space>;` for exec lua input (and show result in log and status)
+- `<space>C-;` for exec lua input and insert results at cursor
+- `<space>/` for fuzzy search in project
+
+
 ## Differences in INSERT mode
 
   Some of the Emacs bindings are mapped for insert mode by default, including:

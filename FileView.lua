@@ -1,3 +1,20 @@
+--[[
+--
+FileView, a View for minimalistic file browser in lite xl
+--
+dunno really why I do this. Probably because it's fun))
+--
+
+TODOs:
+- title (ResutlsView)
+- Go UP
+  - If C:\..\ , display all active drives
+- file size display
+  - sort
+- file modification sort
+- file extension sort (?)
+--
+]]--
 local core = require "core"
 local command = require "core.command"
 local common = require "core.common"

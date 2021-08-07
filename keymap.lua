@@ -173,6 +173,7 @@ keymap.add_nmap {
   ["<space>C-;"] = "core:exec-input-and-insert",
   ["<space>,"] = "vibe:switch-to-tab-search",
   ["<space>."] = "core:find-file",
+  ["<space>of"] = "vibe:open-file",
   ["<space>p"] = "vibe:registers:search-and-paste",
   ["<space>ir"] = "vibe:registers:search-and-paste",
   ["<space>y"] = "vibe:registers:search-and-copy",
