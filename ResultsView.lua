@@ -65,7 +65,7 @@ function ResultsView:fill_results()
 end
 
 function ResultsView:get_name()
-  return self.title
+  return self.title or 'Results??'
 end
 
 function ResultsView:refresh()
