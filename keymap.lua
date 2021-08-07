@@ -148,6 +148,11 @@ keymap.add_nmap {
   ["*"] = "viw/<CR>n",  -- yeah, <CR> is an input to CommandView
   ["<delete>"] = "doc:delete",
   
+  --
+  ["C-wv"] = "root:split-right",  
+  ["C-ws"] = "root:split-down",
+  
+  
   -- I do like Mac bindings
   ["M-o"] = "core:open-file",
   ["M-n"] = "core:new-doc",
@@ -159,8 +164,10 @@ keymap.add_nmap {
   ["C-xh"] = "doc:select-all",
   ["A-y"] = "vibe:rotate-clipboard-ring",
   ["C-y"] = "vibe:rotate-clipboard-ring",
+  -- ["C-x3"] = "root:split-right", -- hmm.. doesnt work since 3 is read as num_arg
   -- hint of Doom emacs?
   ["<space>x"] = "vibe:open-scratch-buffer",
+  ["<space>/"] = "project-search:fuzzy-find",
   ["<space>:"] = "A-x",
   ["<space>;"] = "core:exec-input",
   ["<space>C-;"] = "core:exec-input-and-insert",
@@ -204,11 +211,6 @@ keymap.add_nmap {
   [":s<CR>"] = "doc:save",
   [":s<space>"] = "doc:save-as",
   [":o"] = "core:find-file",
-  
-  -- personal preferences
-  ["C-h"] = "root:switch-to-left",
-  ["C-l"] = "root:switch-to-right",
-  [":r"] = "core:restart",
 }
 
 -------------------------------------------------------------------------------
@@ -262,7 +264,7 @@ keymap.add_nmap({
   ["<end>"]                = "project-search:move-to-end-of-doc"
 })
 -------------------------------------------------------------------------------
--- ±same for marks (should I make unified resultsview?                       --                                                         --
+-- ±same for my general ResultsView
 -------------------------------------------------------------------------------
 keymap.add_nmap({
   ["<f5>"] = "vibe:results:refresh",
@@ -287,6 +289,16 @@ keymap.add_nmap({
   ["C-<end>"]           = "vibe:results:move-to-end-of-doc",
   ["<home>"]               = "vibe:results:move-to-start-of-doc",
   ["<end>"]                = "vibe:results:move-to-end-of-doc"
+})
+
+-------------------------------------------------------------------------------
+-- FileView
+keymap.add_nmap({
+  ["<backspace>"] = "vibe:fileview:go-back",
+  ["H"] = "vibe:fileview:go-back",
+  ["L"] = "vibe:fileview:go-forward",
+  ["C-<left>"] = "vibe:fileview:go-back",
+  ["C-<right>"] = "vibe:fileview:go-forward",
 })
 
 -------------------------------------------------------------------------------
@@ -414,3 +426,13 @@ keymap.add_nmap({
   ["q"] = "vibe:macro:stop-recording",
 })
 
+-------------------------------------------------------------------------------
+-- personal preferences
+-------------------------------------------------------------------------------
+keymap.add_nmap({
+  ["C-h"] = "root:switch-to-left",
+  ["C-l"] = "root:switch-to-right",
+  [":r"] = "core:restart",
+  ["A-j"] = "root:move-tab-left",
+  ["A-k"] = "root:move-tab-right",
+})

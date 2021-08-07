@@ -213,11 +213,31 @@ function misc.fuzzy_match_key(list, key, needle, files)
   return res
 end
 
+-------------------------------------------------------------------------------
+-- Files
+-------------------------------------------------------------------------------
+
+function misc.list_dir(path)
+  local all = system.list_dir(path) or {}
+  local R = { dirs={}, files = {} }
+  for _, file in ipairs(all) do
+      local info = system.get_file_info(path .. PATHSEP .. file)
+      info.filename = file
+      info.abs_filename = path .. PATHSEP .. file
+      table.insert(info.type == "dir" and R.dirs or R.files, info)
+  end
+  return R
+end
+
+
 -- https://stackoverflow.com/a/4991602/2624911
 function misc.file_exists(name)
    local f=io.open(name,"r")
    if f~=nil then io.close(f) return true else return false end
 end
+
+-------------------------------------------------------------------------------
+-- scratch
 
 function misc.scratch_filepath()
   return USERDIR .. PATHSEP .. "scratch.lua"

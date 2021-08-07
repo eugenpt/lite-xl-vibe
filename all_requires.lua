@@ -9,4 +9,5 @@ local style = require "core.style"
 local config = require "core.config"
 local common = require "core.common"
 local translate = require "core.doc.translate"
+local misc = require "plugins.lite-xl-vibe.misc"
 

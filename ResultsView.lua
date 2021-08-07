@@ -10,10 +10,19 @@
   1. title - Shown in table
   
   2. items_fun - function returning list of items
-                 title and text fields are shown 
+                 each item must contain either 
+                  draw_items, a list of text, font, colors
+                  or
+                 title and text fields to be shown 
                  (same to projectsearch's
                    filename/place and line text respectively)
                  receives no arguments
+                 
+                 if you would like to search through results,
+                 for each item provide eitherm
+                 search_text - a string to make fuzzy_match on
+                 or
+                 title and text (they will be combined for you)
                  
   3. on_click_fun - function executed on selection of an item,
                     receives the item as one and only argument
@@ -128,6 +137,23 @@ function ResultsView:scroll_to_make_selected_visible()
   self.scroll.to.y = math.max(self.scroll.to.y, y + h - self.size.y)
 end
 
+function ResultsView:draw_items(items, x, y, w, h, draw_fn)
+  local font = style.font
+  local color = style.text
+
+  for _, item in ipairs(items) do
+    if type(item) == "userdata" then
+      font = item
+    elseif type(item) == "table" then
+      color = item
+    else
+      x = draw_fn(font, color, item, nil, x, y, w, h)
+    end
+  end
+
+  return x
+end
+
 function ResultsView:draw()
   self:draw_background(style.background)
   -- results
@@ -138,9 +164,16 @@ function ResultsView:draw()
       color = style.accent
       renderer.draw_rect(x, y, w, h, style.line_highlight)
     end
+    
     x = x + style.padding.x
-    x = common.draw_text(style.font, style.dim, item.title or '', "left", x, y, w, h)
-    x = common.draw_text(style.code_font, color, item.text or '', "left", x, y, w, h)
+    local draw_items = item.draw_items or {
+      style.font, style.dim, item.title or '',
+      style.code_font, color, item.text or ''
+    }
+    self:draw_items(draw_items, x, y, w, h, common.draw_text)
+      -- default to title and text
+      -- x = common.draw_text(style.font, style.dim, item.title or '', "left", x, y, w, h)
+      -- x = common.draw_text(style.code_font, color, item.text or '', "left", x, y, w, h)
   end
   self:draw_scrollbar()
 end
@@ -190,8 +223,9 @@ command.add(ResultsView, {
   ["vibe:results:search"] = function()
     -- prepare field for fuzzy search
     for _,item in ipairs(core.active_view.results) do
-      item.search_text = (item.title or '') .. ' '
-                          .. (item.text or '')
+      item.search_text = item.search_text or 
+                         ((item.title or '') .. ' '
+                          .. (item.text or ''))
     end
     local resultsview = core.active_view
     core.active_view.selected_idx = 0
