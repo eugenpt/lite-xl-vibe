@@ -185,6 +185,14 @@ function misc.list_contains(list, fun)
   return false
 end
 
+function misc.list_reverse(list)
+  local A = {}
+  for j=#list,1,-1 do
+    table.insert(A,list[j])
+  end
+  return A
+end
+
 function misc.find_in_list(list, fun)
   for _,item in ipairs(list) do
     if fun(item) then

@@ -49,6 +49,8 @@ function FileView:new(path)
     else
       core.root_view:open_doc(core.open_doc(res.abs_filename))
     end
+  end, function(item)
+    return item.search_text
   end)
 end
 

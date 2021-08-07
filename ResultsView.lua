@@ -39,13 +39,22 @@ local View = require "core.view"
 local misc = require "plugins.lite-xl-vibe.misc"
 local ResultsView = View:extend()
 
-function ResultsView:new(title, items_fun, on_click_fun)
+local function default_sort_fun(item)
+  return item.title..item.title..item.text
+end
+
+function ResultsView:new(title, items_fun, on_click_fun, sort_funs)
   ResultsView.super.new(self)
   self.title = title
   self.scrollable = true
   self.brightness = 0
   self.items_fun = items_fun or function() return {} end
   self.on_click_fun = on_click_fun or function() end
+  self.sort_funs = sort_funs
+                    and (type(sort_funs)=='function' 
+                         and { sort_funs } or sort_funs)
+                    or { default_sort_fun }
+  self.sort_mode = -1
   self:fill_results()
 end
 
@@ -178,6 +187,32 @@ function ResultsView:draw()
   self:draw_scrollbar()
 end
 
+function ResultsView:next_sort_mode()
+  self.sort_mode = self.sort_mode > 0 and -self.sort_mode or 1-self.sort_mode
+  if self.sort_mode > #self.sort_funs then
+    self.sort_mode = 1
+  end
+end
+
+function ResultsView:sort()
+  local items_src = self.results
+  local sort_vs = {}
+  local sort_vs_ixs = {}
+  for j, item in ipairs(items_src) do
+    local tv = self.sort_funs[math.abs(self.sort_mode)](item)
+    table.insert(sort_vs, tv)
+    sort_vs_ixs[tv] = j
+  end  
+  table.sort(sort_vs)
+  self.results = {}
+  for _,v in ipairs(sort_vs) do
+    table.insert(self.results, items_src[sort_vs_ixs[v]])
+  end
+  if self.sort_mode < 0 then
+    self.results = misc.list_reverse(self.results)
+  end
+end
+
 
 command.add(ResultsView, {
   ["vibe:results:select-previous"] = function()
@@ -246,13 +281,23 @@ command.add(ResultsView, {
       -- end
   
     end, function(text)
-      resultsview.results = misc.fuzzy_match_key(resultsview.results_src, 'search_text', text)
+      if text == '' then
+        resultsview.results = resultsview.results_src
+        resultsview:sort()
+      else
+        resultsview.results = misc.fuzzy_match_key(resultsview.results_src, 'search_text', text)
+      end
     end, function(explicit)
       -- if explicit then
       --   dv.doc:set_selection(table.unpack(sel))
       --   dv:scroll_to_make_visible(sel[1], sel[2])
       -- end
     end)
+  end,
+  
+  ["vibe:results:sort"] = function()
+    core.active_view:next_sort_mode()
+    core.active_view:sort()
   end,
 })
 
@@ -271,6 +316,7 @@ keymap.add {
   ["home"]               = "vibe:results:move-to-start-of-doc",
   ["end"]                = "vibe:results:move-to-end-of-doc",
   ["ctrl+f"]             = "vibe:results:search",
+  ["ctrl+s"]                  = "vibe:results:sort",
 }
 
 return ResultsView

@@ -267,6 +267,7 @@ keymap.add_nmap({
 -- ±same for my general ResultsView
 -------------------------------------------------------------------------------
 keymap.add_nmap({
+  ["s"]                  = "vibe:results:sort",
   ["<f5>"] = "vibe:results:refresh",
   ["r"] = "vibe:results:refresh",
   ["/"]  = "vibe:results:search",
