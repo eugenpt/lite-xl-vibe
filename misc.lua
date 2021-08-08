@@ -100,6 +100,27 @@ end
 
 -------------------------------------------------------------------------------
 
+local function str_mul(str,num)
+  local r = ''
+  for j=1,num do
+    r = r .. str
+  end
+  return r
+end
+
+getmetatable('string').__mul = function(s,n)
+  if type(s)=='string' then
+    if type(n)=='string' then
+      -- like.. ??
+      return s*tonumber(n)
+    else
+      return str_mul(s,n)
+    end
+  else
+    return str_mul(n,s)  
+  end
+end
+
 function string:isUpperCase()
   return self:upper()==self and self:lower()~=self
 end
@@ -277,19 +298,34 @@ local function doc()
   return core.active_view.doc
 end
 
-function misc.str(a)
+local tablestr_depth = 0
+local function str(a)
+  local prefix = ' ' * tablestr_depth
+  tablestr_depth = tablestr_depth + 1
+  core.log('str ; tablestr_depth = %i', tablestr_depth)
+  local R = ''
   if type(a) == 'table' then
-    local R = '{ '
-    for j,ja in pairs(a) do
-      R = R .. (#R>2 and ', ' or '') .. '[' .. misc.str(j) .. '] = ' .. misc.str(ja)
+    if tablestr_depth > 2 then
+      R = '<table>'
+    else
+      R = '{'
+      for j,ja in pairs(a) do
+        R = R .. '\n' .. prefix .. '[' .. tostring(j) .. '] = ' .. str(ja)
+      end
+      R = R .. '\n' .. prefix .. '}'
     end
-    R = R .. ' }'
-    return R
   elseif type(a) == 'string' then
-    return '"' .. a .. '"'
+    R = '"' .. a .. '"'
   else
-    return tostring(a)
+    R = tostring(a)
   end
+  tablestr_depth = tablestr_depth - 1
+  return prefix .. R
+end
+
+function misc.str(a)
+  tablestr_depth = 0
+  return str(a)
 end
 
 function misc.has_selection()
