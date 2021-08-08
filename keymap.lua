@@ -285,6 +285,8 @@ keymap.add_nmap({
   ["C-d"]           = "vibe:results:move-to-next-page",
   ["gg"]          = "vibe:results:move-to-start-of-doc",
   ["G"]           = "vibe:results:move-to-end-of-doc",
+  ["q"]             = "vibe:results:close",
+
   -- also try'n'keep the usual mappings (why not?)
   ["<up>"]                 = "vibe:results:select-previous",
   ["<down>"]               = "vibe:results:select-next",
@@ -295,7 +297,8 @@ keymap.add_nmap({
   ["C-<home>"]          = "vibe:results:move-to-start-of-doc",
   ["C-<end>"]           = "vibe:results:move-to-end-of-doc",
   ["<home>"]               = "vibe:results:move-to-start-of-doc",
-  ["<end>"]                = "vibe:results:move-to-end-of-doc"
+  ["<end>"]                = "vibe:results:move-to-end-of-doc",
+  ["<escape>"]             = "vibe:results:close",
 })
 
 -------------------------------------------------------------------------------

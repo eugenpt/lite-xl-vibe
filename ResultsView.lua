@@ -299,6 +299,10 @@ command.add(ResultsView, {
     core.active_view:next_sort_mode()
     core.active_view:sort()
   end,
+
+  ["vibe:results:close"] = function()
+    command.perform("root:close")
+  end,
 })
 
 -------------------------------------------------------------------------------
@@ -316,7 +320,8 @@ keymap.add {
   ["home"]               = "vibe:results:move-to-start-of-doc",
   ["end"]                = "vibe:results:move-to-end-of-doc",
   ["ctrl+f"]             = "vibe:results:search",
-  ["ctrl+s"]                  = "vibe:results:sort",
+  ["ctrl+s"]             = "vibe:results:sort",
+  ["escape"]             = "vibe:results:close",
 }
 
 return ResultsView

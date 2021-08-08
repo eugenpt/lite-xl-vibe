@@ -29,7 +29,7 @@ local ResultsView = require "plugins.lite-xl-vibe.ResultsView"
 local FileView = ResultsView:extend()
 
 function FileView:new(path)
-  self.path = path
+  self.path = path or core.project_dir
   self.history = { path }
   self.history_cur_ix = 1
   FileView.super.new(self,"F|"..path, function()
