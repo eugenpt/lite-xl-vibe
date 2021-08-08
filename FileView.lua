@@ -36,6 +36,12 @@ function FileView:new(path)
     local R = misc.list_dir(self.path)
     local items = {}
     -- dirs
+    table.insert(items, {
+      abs_filename = misc.path_up(self.path),
+      draw_items = {"  .."},
+      filename = "..",
+      type = "dir",
+    })
     for _, dir in ipairs(R.dirs) do
       dir.draw_items = {style.accent , style.icon_font, "d",style.code_font, " ", dir.filename}
       table.insert(items, dir)
@@ -71,7 +77,7 @@ function FileView:new(path)
   end)
 end
 
-local function show_directory(path, _fv)
+local function show_directory(path)
   local fv = FileView(path)
   core.root_view:get_active_node_default():add_view(fv)
 end
@@ -109,6 +115,38 @@ command.add(nil, {
   end,
 })
 
+command.add(nil, {
+  ["vibe:open-select-dir"] = function()
+    -- fill items
+    local items = {}
+    -- first - dir of the current file
+    if core.active_view and core.active_view.doc then
+      items[misc.path_up(core.active_view.doc.abs_filename)] = 1
+    end
+    -- then all working dirs
+    for _, dir in ipairs(core.project_directories) do
+      items[dir.name] = 1
+    end
+    --
+    items = misc.keys(items)
+    if #items > 1 then
+      local mv = ResultsView("Dir to open",function()
+        local r = {}
+        for _,path in ipairs(items) do
+          table.insert(r,{ text=path })
+        end
+        return r
+      end, function(res)
+        command.perform('root:close')
+        show_directory(res.text)
+      end)
+      core.root_view:get_active_node_default():add_view(mv)
+    else
+      show_directory(items[1])
+    end
+  end,
+})
+
 command.add(FileView, {
   ["vibe:fileview:go-back"] = function()
     local fv = core.active_view
@@ -131,10 +169,22 @@ command.add(FileView, {
       fv:fill_results()    
     end
   end,
+
+  ["vibe:fileview:go-up"] = function()
+    local fv = core.active_view
+    if fv.path:find_literal(PATHSEP) == nil then
+      core.error("Nowhere to go up")
+    else
+      fv.history_cur_ix = fv.history_cur_ix + 1
+      fv.path = misc.path_up(fv.path)
+      fv:fill_results()    
+    end
+  end,
 })
 
 keymap.add({
   ["backspace"] = "vibe:fileview:go-back",
+  ["ctrl+up"] = "vibe:fileview:go-up",
   ["ctrl+left"] = "vibe:fileview:go-back",
   ["ctrl+right"] = "vibe:fileview:go-forward",
 })

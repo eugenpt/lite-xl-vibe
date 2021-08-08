@@ -174,7 +174,6 @@ keymap.add_nmap {
   ["<space>C-;"] = "core:exec-input-and-insert",
   ["<space>,"] = "vibe:switch-to-tab-search",
   ["<space>."] = "core:find-file",
-  ["<space>of"] = "vibe:open-file",
   ["<space>p"] = "vibe:registers:search-and-paste",
   ["<space>ir"] = "vibe:registers:search-and-paste",
   ["<space>y"] = "vibe:registers:search-and-copy",
@@ -195,6 +194,9 @@ keymap.add_nmap {
   ["<space>ol"] = "core:open-log",
   ["<space>om"] = "vibe:marks:show-all",
   ["<space>or"] = "vibe:registers-macro:list-all",
+  ["<space>of"] = "vibe:open-file",
+  ["<space>od"] = "vibe:open-select-dir",
+  ["<space>o\\-"] = "vibe:open-select-dir",
   -- misc
   ["C-\\\\"] = "treeview:toggle", -- yeah, single \ turns into \\\\ , thats crazy.
   
@@ -302,12 +304,15 @@ keymap.add_nmap({
   ["<backspace>"] = "vibe:fileview:go-back",
   ["H"] = "vibe:fileview:go-back",
   ["L"] = "vibe:fileview:go-forward",
+  ["K"] = "vibe:fileview:go-up",
+  ["C-k"] = "vibe:fileview:go-up",
   ["C-<left>"] = "vibe:fileview:go-back",
   ["C-<right>"] = "vibe:fileview:go-forward",
+  ["C-<up>"] = "vibe:fileview:go-up",
 })
 
 -------------------------------------------------------------------------------
--- some minor tweaks for isnert mode from emacs/vim/..                       --
+-- snme minor tweaks for insert mode from emacs/vim/..                       --
 -------------------------------------------------------------------------------
 keymap.add_direct {
   ["ctrl+p"] = { "autocomplete:previous", "command:select-previous", "doc:move-to-previous-line" },

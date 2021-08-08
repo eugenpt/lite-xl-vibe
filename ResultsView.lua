@@ -59,7 +59,7 @@ function ResultsView:new(title, items_fun, on_click_fun, sort_funs)
 end
 
 function ResultsView:fill_results()
-  self.selected_idx = 0
+  self.selected_idx = 1
   self.results_src = self.items_fun()
   self.results = misc.copy(self.results_src)
 end

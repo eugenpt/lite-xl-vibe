@@ -161,6 +161,10 @@ function string:isNumber()
   return true
 end
 
+function misc.path_up(path)
+  return path:gsub(PATHSEP..'[^'..PATHSEP..']+$','')
+end
+
 function misc.slice(table,i0,i1)
   i0 = i0 or 1
   i1 = i1 or #table
@@ -302,7 +306,6 @@ local tablestr_depth = 0
 local function str(a)
   local prefix = ' ' * tablestr_depth
   tablestr_depth = tablestr_depth + 1
-  core.log('str ; tablestr_depth = %i', tablestr_depth)
   local R = ''
   if type(a) == 'table' then
     if tablestr_depth > 2 then
