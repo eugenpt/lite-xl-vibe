@@ -40,7 +40,7 @@ require "plugins.lite-xl-vibe.FileView"
 
 require "plugins.lite-xl-vibe.visual_mode"
 
-require "plugins.lite-xl-vibe.vibeworkspace"
+vibe.workspace = require "plugins.lite-xl-vibe.vibeworkspace"
 
 local function dv()
   return core.active_view

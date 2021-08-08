@@ -4,8 +4,9 @@ local common = require "core.common"
 local DocView = require "core.docview"
 local LogView = require "core.logview"
 
+local vibeworkspace = {}
 
-local function workspace_files_for(project_dir)
+function vibeworkspace.workspace_files_for(project_dir)
   local basename = common.basename(project_dir)
   local workspace_dir = USERDIR .. PATHSEP .. "ws"
   local info_wsdir = system.get_file_info(workspace_dir)
@@ -30,8 +31,8 @@ local function workspace_files_for(project_dir)
 end
 
 
-local function consume_workspace_file(project_dir)
-  for filename, id in workspace_files_for(project_dir) do
+function vibeworkspace.consume_workspace_file(project_dir)
+  for filename, id in vibeworkspace.workspace_files_for(project_dir) do
     local load_f = loadfile(filename)
     local workspace = load_f and load_f()
     if workspace and workspace.path == project_dir then
@@ -42,9 +43,9 @@ local function consume_workspace_file(project_dir)
 end
 
 
-local function get_workspace_filename(project_dir)
+function vibeworkspace.get_workspace_filename(project_dir)
   local id_list = {}
-  for filename, id in workspace_files_for(project_dir) do
+  for filename, id in vibeworkspace.workspace_files_for(project_dir) do
     id_list[id] = true
   end
   local id = 1
@@ -56,25 +57,25 @@ local function get_workspace_filename(project_dir)
 end
 
 
-local function has_no_locked_children(node)
+function vibeworkspace.has_no_locked_children(node)
   if node.locked then return false end
   if node.type == "leaf" then return true end
-  return has_no_locked_children(node.a) and has_no_locked_children(node.b)
+  return vibeworkspace.has_no_locked_children(node.a) and vibeworkspace.has_no_locked_children(node.b)
 end
 
 
-local function get_unlocked_root(node)
+function vibeworkspace.get_unlocked_root(node)
   if node.type == "leaf" then
     return not node.locked and node
   end
-  if has_no_locked_children(node) then
+  if vibeworkspace.has_no_locked_children(node) then
     return node
   end
-  return get_unlocked_root(node.a) or get_unlocked_root(node.b)
+  return vibeworkspace.get_unlocked_root(node.a) or vibeworkspace.get_unlocked_root(node.b)
 end
 
 
-local function save_view(view)
+function vibeworkspace.save_view(view)
   local mt = getmetatable(view)
   if mt == DocView then
     return {
@@ -99,7 +100,7 @@ local function save_view(view)
 end
 
 
-local function load_view(t)
+function vibeworkspace.load_view(t)
   if t.type == "doc" then
     local dv
     if not t.filename then
@@ -127,7 +128,7 @@ local function load_view(t)
 end
 
 
-local function save_node(node)
+function vibeworkspace.save_node(node)
   local res = {}
   res.type = node.type
   if node.type == "leaf" then
@@ -150,12 +151,12 @@ local function save_node(node)
 end
 
 
-local function load_node(node, t)
+function vibeworkspace.load_node(node, t)
   if t.type == "leaf" then
     local res
     local active_view
     for i, v in ipairs(t.views) do
-      local view = load_view(v)
+      local view = vibeworkspace.load_view(v)
       if view then
         if v.active then res = view end
         node:add_view(view)
@@ -171,14 +172,14 @@ local function load_node(node, t)
   else
     node:split(t.type == "hsplit" and "right" or "down")
     node.divider = t.divider
-    local res1 = load_node(node.a, t.a)
-    local res2 = load_node(node.b, t.b)
+    local res1 = vibeworkspace.load_node(node.a, t.a)
+    local res2 = vibeworkspace.load_node(node.b, t.b)
     return res1 or res2
   end
 end
 
 
-local function save_directories()
+function vibeworkspace.save_directories()
   local project_dir = core.project_dir
   local dir_list = {}
   for i = 2, #core.project_directories do
@@ -188,9 +189,9 @@ local function save_directories()
 end
 
 
-local function save_workspace(filename)
-  local root = get_unlocked_root(core.root_view.root_node)
-  local workspace_filename = filename or get_workspace_filename(core.project_dir)
+function vibeworkspace.save_workspace(filename)
+  local root = vibeworkspace.get_unlocked_root(core.root_view.root_node)
+  local workspace_filename = filename or vibeworkspace.get_workspace_filename(core.project_dir)
   local fp = io.open(workspace_filename, "w")
   if fp then
     local node_text = common.serialize(save_node(root))
@@ -201,11 +202,11 @@ local function save_workspace(filename)
 end
 
 
-local function load_workspace(_workspace)
-  local workspace = _workspace or consume_workspace_file(core.project_dir)
+function vibeworkspace.load_workspace(_workspace)
+  local workspace = _workspace or vibeworkspace.consume_workspace_file(core.project_dir)
   if workspace then
-    local root = get_unlocked_root(core.root_view.root_node)
-    local active_view = load_node(root, workspace.documents)
+    local root = vibeworkspace.get_unlocked_root(core.root_view.root_node)
+    local active_view = vibeworkspace.load_node(root, workspace.documents)
     if active_view then
       core.set_active_view(active_view)
     end
@@ -220,18 +221,18 @@ local run = core.run
 
 function core.run(...)
   if #core.docs == 0 then
-    core.try(load_workspace)
+    core.try(vibeworkspace.load_workspace)
 
     local on_quit_project = core.on_quit_project
     function core.on_quit_project()
-      core.try(save_workspace)
+      core.try(vibeworkspace.save_workspace)
       on_quit_project()
     end
 
     local on_enter_project = core.on_enter_project
     function core.on_enter_project(new_dir)
       on_enter_project(new_dir)
-      core.try(load_workspace)
+      core.try(vibeworkspace.load_workspace)
     end
   end
 
@@ -239,13 +240,13 @@ function core.run(...)
   return core.run(...)
 end
 
-local function open_workspace_file(filename)
+function vibeworkspace.open_workspace_file(filename)
   local workspace = loadfile(filename)
   workspace = workspace and workspace()
   if workspace then
     core.root_view:close_all_docviews()
     core.set_project_dir(workspace.path)
-    load_workspace(workspace)
+    vibeworkspace.load_workspace(workspace)
   else
     core.error("cannot load workspace from %s", filename)
   end
@@ -255,7 +256,7 @@ command.add(nil,{
   ["vibe:workspace:save-workspace-as"] = function()
     core.command_view:set_text(core.normalize_to_project_dir(core.project_dir .. '.ws'))
     core.command_view:enter("Save Workspace As", function(filename)
-      save_workspace(common.home_expand(filename))
+      vibeworkspace.save_workspace(common.home_expand(filename))
     end, function (text)
       return common.home_encode_list(common.path_suggest(common.home_expand(text)))
     end)
@@ -271,11 +272,13 @@ command.add(nil,{
       end
     end
     core.command_view:enter("Open Workspace File", function(text)
-      open_workspace_file(system.absolute_path(common.home_expand(text)))
+      vibeworkspace.open_workspace_file(system.absolute_path(common.home_expand(text)))
     end, function (text)
       return common.home_encode_list(common.path_suggest(common.home_expand(text)))
     end, nil, function(text)
-      open_workspace_file(common.home_expand(text))
+      vibeworkspace.open_workspace_file(common.home_expand(text))
     end)
   end,
 })
+
+return vibeworkspace
