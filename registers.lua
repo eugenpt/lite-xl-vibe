@@ -145,4 +145,51 @@ command.add(misc.has_selection, {
   end,
 })
 
+-------------------------------------------------------------------------------
+-- Save / Load
+-------------------------------------------------------------------------------
+
+local function registers_filename()
+  return USERDIR .. PATHSEP .. "registers.lua"
+end
+
+local function registers_load(_filename)
+  local filename = _filename or registers_filename()
+  local load_f = loadfile(filename)
+  local _registers = load_f and load_f()
+  if _registers and _registers.clipboard_ring then
+    registers= _registers.registers
+    core.vibe.clipboard_ring = _registers.clipboard_ring
+    core.vibe.clipboard_ring_ix = #_registers.clipboard_ring
+    system.set_clipboard(core.vibe.clipboard_ring[#_registers.clipboard_ring], true)
+  else
+    core.error("vibe: Error while loading registers file")
+  end  
+end
+
+local function registers_save(_filename)
+  local filename = _filename or registers_filename()
+  local fp = io.open(filename, "w")
+  if fp then
+    local regs = common.serialize(registers)
+    local ring = common.serialize(core.vibe.clipboard_ring)
+    fp:write(string.format("return { registers=%s , clipboard_ring=%s}\n", regs, ring))
+    fp:close()
+  end
+end
+
+registers_load()
+
+local on_quit_project = core.on_quit_project
+function core.on_quit_project()
+  core.try(registers_save)
+  on_quit_project()
+end
+
+
+command.add(nil, {
+  ["vibe:save-registers"] = registers_save,
+  ["vibe:load-registers"] = registers_load,
+})
+
 return registers
