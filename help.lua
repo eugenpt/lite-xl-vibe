@@ -12,6 +12,8 @@ local ResultsView = require "plugins.lite-xl-vibe.ResultsView"
 
 local help = {}
 
+help.last_stroke_time = system.get_time()
+
 help.group_hints = {
   ["<space>"] = "PREFIX ...",
   ['<space>b'] = 'Buffers/Files/taBs...',
@@ -98,6 +100,10 @@ end
 local status = core.vibe.interface -- I know.
 
 function status.draw_suggestions_box(self)
+  if system.get_time() - help.last_stroke_time < config.vibe.stroke_sug_delay then
+    return nil
+  end
+  
   local h = get_line_height()
   -- local x, y = self:get_content_offset()
   local rx, ry, rw, rh = self.position.x, self.position.y - h , self.size.x, h

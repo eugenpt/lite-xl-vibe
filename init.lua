@@ -116,6 +116,7 @@ function keymap.on_key_pressed(k)
     -- .. for now at least
     return vibe.on_key_pressed__orig(k)
   end
+  vibe.help.last_stroke_time = system.get_time()
 
   -- I need the finer control on this (I think..)
   local mk = vibe.kb.modkey_map[k]
