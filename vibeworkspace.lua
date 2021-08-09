@@ -44,6 +44,23 @@ function vibeworkspace.consume_workspace_file(project_dir)
   end
 end
 
+function vibeworkspace.savepath()
+  return USERDIR .. PATHSEP .. "vibe-ws.lua"
+end
+
+function vibeworkspace.save_path()
+  local fp = io.open(vibeworkspace.savepath(), "w")
+  if fp then
+    local node_text = common.serialize(save_node(root))
+    local dir_text = common.serialize(save_directories())
+    fp:write(string.format("return '%s'", vibeworkspace.abs_filename))
+    fp:close()
+  end
+end
+
+local temp = loadfile(vibeworkspace.savepath())
+vibeworkspace.abs_filename = temp and temp()
+
 
 function vibeworkspace.get_workspace_filename(project_dir)
   local id_list = {}
@@ -260,6 +277,33 @@ function vibeworkspace.open_workspace_file(filename)
     core.error("cannot load workspace from %s", filename)
   end
 end
+
+-------------------------------------------------------------------------------
+--
+local run = core.run
+function core.run(...)
+  local temp = run(...)
+
+  if #core.docs == 0 then
+    local temp = loadfile(vibeworkspace.savepath())
+    vibeworkspace.abs_filename = temp and temp()
+
+    core.try(vibeworkspace.load_workspace)
+
+    local on_quit_project = core.on_quit_project
+    function core.on_quit_project()
+      core.try(vibeworkspace.save_workspace)
+      on_quit_project()
+    end
+  end
+
+  core.run = run
+  return temp
+end
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 command.add(nil,{
   ["vibe:workspace:save-workspace-as"] = function()
