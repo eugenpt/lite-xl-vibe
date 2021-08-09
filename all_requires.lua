@@ -15,3 +15,7 @@ local common = require "core.common"
 local translate = require "core.doc.translate"
 local misc = require "plugins.lite-xl-vibe.misc"
 
+local SavableView = require "plugins.lite-xl-vibe.SavableView"
+local ResultsView = require "plugins.lite-xl-vibe.ResultsView"
+local FileView = require "plugins.lite-xl-vibe.FileView"
+

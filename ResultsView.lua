@@ -34,17 +34,27 @@ local command = require "core.command"
 local common = require "core.common"
 local keymap = require "core.keymap"
 local style = require "core.style"
-local View = require "core.view"
 
 local misc = require "plugins.lite-xl-vibe.misc"
-local ResultsView = View:extend()
+local SavableView = require "plugins.lite-xl-vibe.SavableView"
+local ResultsView = SavableView:extend()
 
 local function default_sort_fun(item)
   return item.title..item.title..item.text
 end
 
+function ResultsView:save_info()
+  -- not really that helpful
+  return { title=self.title }
+end
+
+function ResultsView.load_info(info)
+  return ResultsView(info.title)
+end
+
 function ResultsView:new(title, items_fun, on_click_fun, sort_funs)
   ResultsView.super.new(self)
+  self.module = "ResultsView"
   self.title = title
   self.scrollable = true
   self.brightness = 0
@@ -266,8 +276,8 @@ command.add(ResultsView, {
     core.active_view.selected_idx = 0
 
     core.command_view:enter("Search in list:", function(text)
+      resultsview.selected_idx=1
       if #resultsview.results==1 then
-        resultsview.selected_idx=1
         resultsview:open_selected_result()
       end
       -- if found then

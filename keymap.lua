@@ -197,6 +197,13 @@ keymap.add_nmap {
   ["<space>of"] = "vibe:open-file",
   ["<space>od"] = "vibe:open-select-dir",
   ["<space>o\\-"] = "vibe:open-select-dir",
+  -- toggles
+  ["<space>tm"] = "minimap:toggle-visibility",
+  ["<space>tt"] = "treeview:toggle",
+  ["<space>tf"] = "core:toggle-fullscreen",
+  ["<space>tc"] = "doc:toggle-line-comments",
+  ["<space>tw"] = "draw-whitespace:toggle",
+    
   -- misc
   ["C-\\\\"] = "treeview:toggle", -- yeah, single \ turns into \\\\ , thats crazy.
   

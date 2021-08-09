@@ -28,12 +28,22 @@ local ResultsView = require "plugins.lite-xl-vibe.ResultsView"
   
 local FileView = ResultsView:extend()
 
+function FileView:save_info()
+  -- not really that helpful
+  return { path=self.path }
+end
+
+function FileView.load_info(info)
+  return FileView(info.path)
+end
+
 function FileView:new(path)
   self.path = path or core.project_dir
   self.history = { path }
   self.history_cur_ix = 1
-  FileView.super.new(self,"F|"..path, function()
+  FileView.super.new(self,"F|"..self.path, function()
     local R = misc.list_dir(self.path)
+    self.title = "F|"..self.path
     local items = {}
     -- dirs
     table.insert(items, {
@@ -75,6 +85,7 @@ function FileView:new(path)
   end, function(item)
     return item.search_text
   end)
+  self.module = "FileView"
 end
 
 local function show_directory(path)
@@ -172,7 +183,8 @@ command.add(FileView, {
 
   ["vibe:fileview:go-up"] = function()
     local fv = core.active_view
-    if fv.path:find_literal(PATHSEP) == nil then
+    if (fv.path:find_literal(PATHSEP) == nil)
+       and not misc.path_is_win_drive(fv.path) then
       core.error("Nowhere to go up")
     else
       fv.history_cur_ix = fv.history_cur_ix + 1

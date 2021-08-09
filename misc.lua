@@ -161,7 +161,16 @@ function string:isNumber()
   return true
 end
 
+function misc.path_is_win_drive(path)
+  return (#path==2)and(path:sub(2,2)==':') 
+end
+
 function misc.path_up(path)
+  if misc.path_is_win_drive(path) then
+    -- Windows, drive level
+    --  up = '', alias for 'all drives are subfolders'
+    return ''
+  end
   return path:gsub(PATHSEP..'[^'..PATHSEP..']+$','')
 end
 
@@ -250,8 +259,28 @@ end
 -- Files
 -------------------------------------------------------------------------------
 
+function misc.list_drives()
+  local letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  local R = { dirs={}, files={} }
+  for j=1,#letters do
+    local path = letters:sub(j,j)..':'..'\\'
+    local info = system.get_file_info(path)
+    if info then 
+      info.filename = path
+      info.abs_filename = letters:sub(j,j)..':'
+      table.insert(R.dirs, info)
+      
+    end
+  end
+  return R
+end
+
 function misc.list_dir(path)
-  local all = system.list_dir(path) or {}
+  core.log('misc.list_dir, path=%s',path)
+  if path == '' then
+    return misc.list_drives()
+  end
+  local all = system.list_dir(misc.path_is_win_drive(path) and (path..'\\') or path) or {}
   local R = { dirs={}, files = {} }
   for _, file in ipairs(all) do
       local info = system.get_file_info(path .. PATHSEP .. file)
@@ -308,7 +337,7 @@ local function str(a)
   tablestr_depth = tablestr_depth + 1
   local R = ''
   if type(a) == 'table' then
-    if tablestr_depth > 2 then
+    if tablestr_depth > (config.vibe.misc_str_max_depth or 4) then
       R = '<table>'
     else
       R = '{'
@@ -478,9 +507,12 @@ function command.add_hook(com_name, hook)
    table.insert(command.hooks[com_name], hook)
 end
 
+function misc.local_path()
+  return debug.getinfo(2, "S").source:sub(2):gsub(PATHSEP..'[^'..PATHSEP..']*$','')
+end
 -------------------------------------------------------------------------------
 -- file with all the requires
-local fp = assert( io.open("all_requires.lua", "rb") )
+local fp = assert( io.open(misc.local_path() .. PATHSEP .. "all_requires.lua", "rb") )
 local require_str = ''
 for line in fp:lines() do
   require_str = require_str .. '\n' .. line
@@ -526,7 +558,9 @@ command.add(nil, {
   
   ["core:exec-input"] = function()
     core.command_view:enter("Exec", function(text)
-      core.log('%s', misc.str(assert(load(require_str .. "\n\nreturn "..text))()))
+      -- first, try to execute
+      
+      core.log("%s", misc.str(assert(load(require_str .. "\n\nreturn "..text))()))
     end)
   end,
 
