@@ -111,18 +111,35 @@ function status.draw_suggestions_box(self)
   
   local widths = {}
   local max_x = 0
+  local min_x = 0
+  
+  local max_stroke_w = 0
+  for _, stroke in ipairs(strokes) do
+    if #stroke > max_stroke_w then
+      max_stroke_w = #stroke
+    end
+  end
 
-    j = 0
-  for _, sug in ipairs(strokes) do
+  local sj=0
+  j = 0
+  while sj<#strokes do
+    sj = sj + 1
+    local sug = strokes[sj]
     local coms = Ss[sug]
     j = j + 1
     if j>config.vibe.max_stroke_sugg then
-      break
+      max_x = max_x + h
+      if max_x + max_x - min_x > rw then
+        -- next column will not fit
+        break
+      end
+      min_x = max_x
+      j = 1
     end
     
     local rx, ry, rw, rh = self.position.x, self.position.y - j*h , self.size.x, h
-    renderer.draw_rect(rx, ry, rw, rh, style.background3)
-    local x = common.draw_text(font, style.accent, sug:sub(#core.vibe.stroke_seq+1).."  |  ", nil, rx, ry, 0, h)
+    renderer.draw_rect(rx + min_x, ry, rw, rh, style.background3)
+    local x = common.draw_text(font, style.accent, " " .. (" "*(max_stroke_w - #sug)) ..sug:sub(#core.vibe.stroke_seq+1).."  |  ", nil, rx+min_x, ry, 0, h)
     x = common.draw_text(font, style.text, table.concat(coms,' '), nil, x, ry, 0, h)
     
     if x>max_x then 
