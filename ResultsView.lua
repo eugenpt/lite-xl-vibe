@@ -248,21 +248,27 @@ command.add(ResultsView, {
   ["vibe:results:move-to-previous-page"] = function()
     local view = core.active_view
     view.scroll.to.y = view.scroll.to.y - view.size.y
+    local min, max = view:get_visible_results_range()
+    view.selected_idx = min >= 1 and min or 1
   end,
   
   ["vibe:results:move-to-next-page"] = function()
     local view = core.active_view
     view.scroll.to.y = view.scroll.to.y + view.size.y
+    local min, max = view:get_visible_results_range()
+    view.selected_idx = max <= #view.results and max or #view.results
   end,
   
   ["vibe:results:move-to-start-of-doc"] = function()
     local view = core.active_view
+    view.selected_idx = 1
     view.scroll.to.y = 0
   end,
   
   ["vibe:results:move-to-end-of-doc"] = function()
     local view = core.active_view
     view.scroll.to.y = view:get_scrollable_size()
+    view.selected_idx = #view.results
   end,
   
   ["vibe:results:search"] = function()

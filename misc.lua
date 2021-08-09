@@ -63,6 +63,9 @@ core.vibe.clipboard_ring_ix = 0
 misc.system__set_clipboard = system.set_clipboard
 misc.system__set_clipboard_ix = 0
 function system.set_clipboard(s, skip_ring)
+  if s == nil then
+    return
+  end
   if core.vibe.flags['run_repeat_seq'] then
     if core.vibe.flags['run_repeat_seq__started_clipboard']==false then
       core.vibe.clipboard_ring[#core.vibe.clipboard_ring+1]=''
