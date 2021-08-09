@@ -160,8 +160,14 @@ local function registers_load(_filename)
   if _registers and _registers.clipboard_ring then
     registers= _registers.registers
     core.vibe.clipboard_ring = _registers.clipboard_ring
-    core.vibe.clipboard_ring_ix = #_registers.clipboard_ring
-    system.set_clipboard(core.vibe.clipboard_ring[#_registers.clipboard_ring], true)
+    core.vibe.clipboard_ring_max = 0
+    for j,_ in pairs(core.vibe.clipboard_ring) do
+      if j > core.vibe.clipboard_ring_max then
+        core.vibe.clipboard_ring_max = j
+      end
+    end
+    core.vibe.clipboard_ring_ix = core.vibe.clipboard_ring_max
+    system.set_clipboard(core.vibe.clipboard_ring[core.vibe.clipboard_ring_max], true)
   else
     core.error("vibe: Error while loading registers file")
   end  

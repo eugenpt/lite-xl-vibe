@@ -59,31 +59,39 @@ end
 
 core.vibe.clipboard_ring = {}
 core.vibe.clipboard_ring_ix = 0
+core.vibe.clipboard_ring_max = 0
 misc.system__set_clipboard = system.set_clipboard
-misc.system__set_clipboard_ix = 0
+
 function system.set_clipboard(s, skip_ring)
+  core.log_quiet('vibe system system.set_clipboard')
   if s == nil then
     return
   end
   if core.vibe.flags['run_repeat_seq'] then
+    core.log_quiet('  run_repeat_seq')
     if core.vibe.flags['run_repeat_seq__started_clipboard']==false then
-      core.vibe.clipboard_ring[#core.vibe.clipboard_ring+1]=''
+      core.vibe.clipboard_ring_max = core.vibe.clipboard_ring_max + 1
+      core.vibe.clipboard_ring[core.vibe.clipboard_ring_max]=''
     end
     core.vibe.flags['run_repeat_seq__started_clipboard'] = true
     -- accumulate repeated stuff
-    core.vibe.clipboard_ring[#core.vibe.clipboard_ring] = 
-        core.vibe.clipboard_ring[#core.vibe.clipboard_ring] .. s
-    core.vibe.clipboard_ring_ix = #core.vibe.clipboard_ring
-    core.vibe.clipboard_ring[#core.vibe.clipboard_ring 
+    core.vibe.clipboard_ring[core.vibe.clipboard_ring_max] = 
+        core.vibe.clipboard_ring[core.vibe.clipboard_ring_max] .. s
+    core.vibe.clipboard_ring_ix = core.vibe.clipboard_ring_max
+    core.vibe.clipboard_ring[core.vibe.clipboard_ring_max
                              - config.vibe.clipboard_ring_max] = nil
-    misc.system__set_clipboard(core.vibe.clipboard_ring[#core.vibe.clipboard_ring])
+    misc.system__set_clipboard(core.vibe.clipboard_ring[core.vibe.clipboard_ring_max])
   else
     if skip_ring then
+      core.log_quiet('  skip ring')
+      core.log_quiet('  = %s', misc.str(skip_ring))
       -- pass
     else
-      core.vibe.clipboard_ring[#core.vibe.clipboard_ring + 1] = s
-      core.vibe.clipboard_ring_ix = #core.vibe.clipboard_ring
-      core.vibe.clipboard_ring[#core.vibe.clipboard_ring - config.vibe.clipboard_ring_max] = nil
+      core.vibe.clipboard_ring_max = core.vibe.clipboard_ring_max + 1
+      core.vibe.clipboard_ring[core.vibe.clipboard_ring_max] = s
+      core.vibe.clipboard_ring_ix = core.vibe.clipboard_ring_max
+      core.log_quiet('no skip, ix=%i', core.vibe.clipboard_ring_ix)
+      core.vibe.clipboard_ring[core.vibe.clipboard_ring_max - config.vibe.clipboard_ring_max] = nil
     end
     misc.system__set_clipboard(s)
   end
