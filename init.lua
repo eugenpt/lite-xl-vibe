@@ -24,6 +24,7 @@ vibe.flags['run_stroke_seq'] = false
 vibe.flags['run_repeat_seq__started_clipboard'] = false
 vibe.flags['run_repeat_seq'] = false
 vibe.flags['recording_macro'] = false
+vibe.flags['requesting_help_stroke_sugg'] = false
 
 vibe.target_register = nil
 vibe.target_register = nil
@@ -44,6 +45,8 @@ require "plugins.lite-xl-vibe.visual_mode"
 
 vibe.workspace = require "plugins.lite-xl-vibe.vibeworkspace"
 
+vibe.help = require "plugins.lite-xl-vibe.help"
+
 local function dv()
   return core.active_view
 end
@@ -57,7 +60,12 @@ end
 function vibe.reset_seq()
   vibe.stroke_seq = ''
   vibe.num_arg = ''
-  vibe.stroke_suggestions = {}
+  if vibe.flags['requesting_help_stroke_sugg'] then
+    vibe.stroke_suggestions = keymap.nmap_starting_with(vibe.stroke_seq)
+    vibe.flags['requesting_help_stroke_sugg'] = false
+  else
+    vibe.stroke_suggestions = {}
+  end
 end
 
 function vibe.run_repeat_seq(seq, num)

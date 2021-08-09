@@ -89,6 +89,7 @@ keymap.add_nmap_override {
   ["C-g"] = "vibe:escape",
   ["C-["] = "vibe:escape",
   ["<ESC>"] = "vibe:escape",
+  ["A-h"] = "vibe:help-suggest-stroke",
 }
 
 keymap.add_nmap {

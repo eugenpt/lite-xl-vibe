@@ -18,6 +18,11 @@ local com = require("plugins.lite-xl-vibe.com")
 local status = {}
 
 
+local function get_mode_str()
+  return core.vibe and (core.vibe.mode == 'insert' and "INSERT" or "NORMAL") or 'nil?'
+end
+
+
 function StatusView:get_items()
   if getmetatable(core.active_view) == DocView then
     local dv = core.active_view
@@ -30,7 +35,7 @@ function StatusView:get_items()
     return {
       dirty and style.accent or style.text, style.icon_font, "f",
       style.code_font, style.text, self.separator2,
-      style.accent, core.vibe:get_mode_str(), style.text, self.separator2,
+      style.accent, get_mode_str(), style.text, self.separator2,
       style.dim, style.font, style.text,
       dv.doc.filename and style.text or style.dim, dv.doc:get_name(),
       style.text, style.code_font,
@@ -72,36 +77,6 @@ function StatusView:get_items()
     #core.project_files, " files"
   }
 end
--------------------------------------------------------------------------------
--------------------------------------------------------------------------------
-
-local font = style.code_font
-local function get_line_height()
-  return math.floor(font:get_height() * config.line_height)
-end
-
-function status.draw_suggestions_box(self)
-  local h = get_line_height()
-  -- local x, y = self:get_content_offset()
-  local rx, ry, rw, rh = self.position.x, self.position.y - h , self.size.x, h
-  
-  local Ss = core.vibe.stroke_suggestions
-  for j=1,#Ss>5 and 5 or #Ss do
-    local rx, ry, rw, rh = self.position.x, self.position.y - j*h , self.size.x, h
-    renderer.draw_rect(rx, ry, rw, rh, style.background3)
-    local x = common.draw_text(font, style.accent, Ss[j]:sub(#core.vibe.stroke_seq+1).."  |  ", nil, rx, ry, 0, h)
-    common.draw_text(font, style.text, table.concat(keymap.nmap[Ss[j]],' '), nil, x, ry, 0, h)
-  end
-
-end
-
-status.statusview__draw__orig = StatusView.draw
-
-function StatusView:draw()
-  status.statusview__draw__orig(self)
-  core.root_view:defer_draw(status.draw_suggestions_box, self)
-end
-
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 

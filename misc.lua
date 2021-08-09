@@ -205,6 +205,14 @@ function misc.keys(table)
   return r
 end
 
+function misc.list_unique(list)
+  local r = {}
+  for _,a in ipairs(list) do
+    r[a] = 1
+  end
+  return misc.keys(r)
+end
+
 function misc.values(table)
   local r = {}
   for _,a in pairs(table) do
@@ -312,7 +320,12 @@ function misc.get_tabs_list()
   core.log('items_fun : %i items',#items)
   return items
 end
-  
+
+
+function misc.text_width(font, _, text, _, x)
+  return x + font:get_width(text)
+end
+
 -------------------------------------------------------------------------------
 -- scratch
 
