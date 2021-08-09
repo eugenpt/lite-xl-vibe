@@ -225,7 +225,8 @@ function vibeworkspace.save_workspace(filename)
     local str = string.format("return { path = %q, documents = %s, directories = %s }\n", core.project_dir, node_text, dir_text)
     fp:write(str)
     fp:close()
-    vibeworkspace.abs_filename = filename
+    vibeworkspace.abs_filename = workspace_filename
+    core.log("vibe.workspace saved to %s", workspace_filename)
     return str
   end
   return nil
@@ -265,7 +266,8 @@ function Node:close_all_docviews()
   node__close_all_docviews(self)
 end
 
-function vibeworkspace.open_workspace_file(filename)
+function vibeworkspace.open_workspace_file(_filename)
+  local filename = _filename or vibeworkspace.abs_filename
   local workspace = loadfile(filename)
   workspace = workspace and workspace()
   if workspace then
@@ -282,22 +284,30 @@ end
 --
 local run = core.run
 function core.run(...)
+  core.log('vibe core run')
+  local reload = #core.docs == 0
+    
   local temp = run(...)
 
-  if #core.docs == 0 then
+  if reload then
+    core.log("trying to load vibe workspace")
     local temp = loadfile(vibeworkspace.savepath())
     vibeworkspace.abs_filename = temp and temp()
+    core.log("abs_filename=%s", vibeworkspace.abs_filename)
 
-    core.try(vibeworkspace.load_workspace)
+    core.try(vibeworkspace.open_workspace_file)
 
     local on_quit_project = core.on_quit_project
     function core.on_quit_project()
       core.try(vibeworkspace.save_workspace)
       on_quit_project()
     end
+  else
+    core.log('nah, dont need to load workspace')
   end
 
   core.run = run
+  core.log('/vibe core run')
   return temp
 end
 
@@ -325,6 +335,10 @@ command.add(nil,{
       vibeworkspace.open_workspace_file(common.home_expand(text))
     end)
   end,
+})
+
+command.add( function() return vibeworkspace.abs_filename end, {
+  ["vibe:workspace:save-workspace"] = vibeworkspace.save_workspace,
 })
 
 return vibeworkspace

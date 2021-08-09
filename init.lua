@@ -216,6 +216,7 @@ function vibe.process_stroke(stroke)
           performed = command.perform(cmd)
         
           if performed then 
+            core.log_quiet('performed %s', cmd)
             if cmd:sub(1,5)=='vibe:' then
               -- pass. I expect my commands to make use of num_arg
             else
@@ -244,6 +245,12 @@ function vibe.process_stroke(stroke)
       end
       if performed then
         vibe.reset_seq()
+      else
+        core.log_quiet('nothing performed..')
+        if not keymap.have_nmap_starting_with(vibe.stroke_seq) then
+          core.log_quiet('no commands for ' .. vibe.stroke_seq)
+          vibe.reset_seq()
+        end
       end
       core.log_quiet('have commands, return true')
       return true

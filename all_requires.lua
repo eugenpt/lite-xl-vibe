@@ -19,3 +19,5 @@ local SavableView = require "plugins.lite-xl-vibe.SavableView"
 local ResultsView = require "plugins.lite-xl-vibe.ResultsView"
 local FileView = require "plugins.lite-xl-vibe.FileView"
 
+local vibe = core.vibe
+

@@ -40,8 +40,6 @@ function help.stroke_suggestions()
   local items = {}
   local short
   for _, item in ipairs(core.vibe.stroke_suggestions) do
-    short = item:sub(1,#core.vibe.stroke_seq + 1)
-    
     local found = nil
     for hint_stroke,hint in pairs(help.group_hints) do
       if (#item >= #hint_stroke)
@@ -56,26 +54,32 @@ function help.stroke_suggestions()
     if found then
       items[short] = {help.group_hints[short]}
     else
-      items[item] = keymap.nmap[item]
+      local map = keymap.nmap[item]
+      if #map==1 and command.map[map[1]]==nil and keymap.nmap[map[1]] then
+        -- remap to sequence
+        items[item] = keymap.nmap[map[1]]
+      else
+        items[item] = map
+      end
     end
   end
   
+  local items_f = {}
   -- filter?
   for stroke, coms in pairs(items) do
-    local j=1
-    while j<=#coms do
-      if command.map[coms[j]] and (command.map[coms[j]].predicate()==false) then
-        -- this is a command that is not active
-        table.remove(coms, j)
+    local hcoms = {}
+    for _,com in ipairs(coms) do
+      if command.map[com] and (not command.map[com].predicate()) then
+        -- pass
       else
-        j = j + 1
+        table.insert(hcoms, com)
       end
     end
-    if #coms == 0 then
-      items[stroke] = nil
+    if #hcoms>0 then
+      items_f[stroke] = hcoms
     end
   end
-  return items
+  return items_f
 end
 
 -------------------------------------------------------------------------------
@@ -104,6 +108,11 @@ function status.draw_suggestions_box(self)
   table.sort(strokes)
   -- j for limitness. is that a word?
   local j=0
+  
+  local widths = {}
+  local max_x = 0
+
+    j = 0
   for _, sug in ipairs(strokes) do
     local coms = Ss[sug]
     j = j + 1
@@ -114,7 +123,11 @@ function status.draw_suggestions_box(self)
     local rx, ry, rw, rh = self.position.x, self.position.y - j*h , self.size.x, h
     renderer.draw_rect(rx, ry, rw, rh, style.background3)
     local x = common.draw_text(font, style.accent, sug:sub(#core.vibe.stroke_seq+1).."  |  ", nil, rx, ry, 0, h)
-    common.draw_text(font, style.text, table.concat(coms,' '), nil, x, ry, 0, h)
+    x = common.draw_text(font, style.text, table.concat(coms,' '), nil, x, ry, 0, h)
+    
+    if x>max_x then 
+      max_x = x
+    end
   end
 end
 

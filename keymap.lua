@@ -64,9 +64,13 @@ end
 
 function keymap.have_nmap_starting_with(seq)
   -- crude but it'll do for now
-  for jseq,_ in pairs(keymap.nmap) do
+  for jseq, coms in pairs(keymap.nmap) do
     if #jseq>#seq and jseq:sub(1,#seq)==seq then
-      return true
+      for _,com in ipairs(coms) do
+        if command.map[com]==nil or (command.map[com].predicate()) then
+          return true
+        end
+      end
     end
   end
   return false
@@ -75,9 +79,11 @@ end
 function keymap.nmap_starting_with(seq)
   local items = {}
   -- yeah..
-  for jseq,_ in pairs(keymap.nmap) do
+  for jseq,com in pairs(keymap.nmap) do
     if #jseq>#seq and jseq:sub(1,#seq)==seq then
-      table.insert(items, jseq)
+      if command.map[com]==nil or (command.map[com].predicate()) then
+        table.insert(items, jseq)
+      end
     end
   end
   return items
@@ -134,7 +140,7 @@ keymap.add_nmap {
   [":s"] = "find-replace:replace",
   ["n"] = "find-replace:repeat-find",
   ["N"] = "find-replace:previous-find",
-  ["dd"] = "0iS-<down><ESC>d",
+  ["dd"] = "<ESC>0vjd",
   [">>"] = "doc:indent",
   ["\\<\\<"] = "doc:unindent",
   
@@ -158,7 +164,7 @@ keymap.add_nmap {
   ["p"] = "vibe:paste",
   
   ["*"] = "viw/<CR>n",  -- yeah, <CR> is an input to CommandView
-  ["<delete>"] = "doc:delete",
+  ["<delete>"] = "vibe:delete",
   
   --
   ["C-wv"] = "root:split-right",  
@@ -190,7 +196,9 @@ keymap.add_nmap {
   ["<space>ir"] = "vibe:registers:search-and-paste",
   ["<space>y"] = "vibe:registers:search-and-copy",
   ["<space>qr"] = "core:restart",
+  ["<space>qq"] = "core:quit",
   ["<space>qL"] = "vibe:workspace:open-workspace-file",
+  ["<space>qs"] = "vibe:workspace:save-workspace",
   ["<space>qS"] = "vibe:workspace:save-workspace-as",
   ["<space>bi"] = "vibe:tabs-list",
   ["<space>bd"] = "root:close",
