@@ -65,6 +65,7 @@ function vibe.reset_seq()
     vibe.flags['requesting_help_stroke_sugg'] = false
   else
     vibe.stroke_suggestions = {}
+    vibe.help.last_stroke_time = system.get_time()
   end
 end
 
@@ -116,7 +117,12 @@ function keymap.on_key_pressed(k)
     -- .. for now at least
     return vibe.on_key_pressed__orig(k)
   end
-  vibe.help.last_stroke_time = system.get_time()
+  
+  if not vibe.help.is_time_to_show_sug() then
+    core.log("not tts")
+  vibe.help.last_stroke_time = system.get_time()-- - (vibe.help.is_time_to_show_sug() and 10000 or 0)
+  end
+  core.log(system.get_time() - vibe.help.last_stroke_time)
 
   -- I need the finer control on this (I think..)
   local mk = vibe.kb.modkey_map[k]

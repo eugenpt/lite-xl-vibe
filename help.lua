@@ -97,11 +97,15 @@ local function get_line_height()
   return math.floor(font:get_height() * config.line_height)
 end
 
+function help.is_time_to_show_sug()
+  return (system.get_time() - help.last_stroke_time) > config.vibe.stroke_sug_delay
+end
+
 local status = core.vibe.interface -- I know.
 
 function status.draw_suggestions_box(self)
-  if system.get_time() - help.last_stroke_time < config.vibe.stroke_sug_delay then
-    return nil
+  if not help.is_time_to_show_sug() then
+      return nil
   end
   
   local h = get_line_height()
