@@ -202,6 +202,9 @@ command.add("core.docview", {
     -- If you want, you could use doom's default bookmark name.. I won't
     -- core.command_view:set_text(doc().filename)
     local doc_filename = doc().abs_filename
+    if misc.has_selection() then
+      core.command_view:set_text(doc():get_text(doc():get_selection()))
+    end
     core.command_view:enter("Create or go to mark", function(text, item)
       if item then
         if item.global then
