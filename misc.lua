@@ -24,7 +24,6 @@ local config = require "core.config"
 local common = require "core.common"
 local translate = require "core.doc.translate"
 
-
 -- for tests
 local test
 
@@ -527,6 +526,10 @@ fp:close()
 -- commands
 -------------------------------------------------------------------------------
 
+misc.exec_history = {}
+misc.exec_text = ''
+
+
 command.add(nil, {
   -- I find this sort of useful for debugging
   --   (it may be already present in lite/lite-xl,
@@ -560,13 +563,18 @@ command.add(nil, {
   end,
   
   ["core:exec-input"] = function()
-    core.command_view:enter("Exec", function(text)
-      -- first, try to execute
-      
+    core.command_view:set_text(misc.exec_text)
+    core.command_view:enter("Exec", function(text, item)
       core.log("%s", misc.str(assert(load(require_str .. "\n\nreturn "..text))()))
+      if (item == nil) or (text ~= item.text) then
+        table.insert(misc.exec_history, text)
+      end
+    end, function(text)
+      return common.fuzzy_match(misc.exec_history, text)
     end)
+    misc.exec_text = ''
   end,
-
+  
   ["core:exec-input-and-insert"] = function()
     core.command_view:enter("Exec and insert at cursor", function(text)
       local s = assert(load(require_str .. "\n\nreturn "..text))()

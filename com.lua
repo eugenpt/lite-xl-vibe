@@ -194,4 +194,23 @@ command.add("core.docview", {
   end,
 })
 
+-- can't put this into misc since ResultsView depends on misc
+command.add(nil, {
+  ["core:exec-history"] = function()
+    local mv = ResultsView("Execution History",function()
+      local items = {}
+      for _,item in ipairs(misc.exec_history) do
+        table.insert(items, { text=item })
+      end                             
+      core.log('items_fun : %i items',#items)
+      return items
+    end, function(res)
+      misc.exec_text = res.text
+      command.perform('root:close')
+      command.perform("core:exec-input")
+    end)
+    core.root_view:get_active_node_default():add_view(mv)
+  end,
+})
+
 return com

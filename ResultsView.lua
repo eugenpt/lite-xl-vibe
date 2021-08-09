@@ -40,7 +40,7 @@ local SavableView = require "plugins.lite-xl-vibe.SavableView"
 local ResultsView = SavableView:extend()
 
 local function default_sort_fun(item)
-  return item.title..item.title..item.text
+  return (item.title or '')..(item.text or '')
 end
 
 function ResultsView:save_info()
@@ -49,7 +49,7 @@ function ResultsView:save_info()
 end
 
 function ResultsView.load_info(info)
-  return ResultsView(info.title)
+  return nil -- ResultsView(info.title)
 end
 
 function ResultsView:new(title, items_fun, on_click_fun, sort_funs)

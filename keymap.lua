@@ -192,6 +192,7 @@ keymap.add_nmap {
   ["<space>bs"] = "doc:save",
   ["<space>bS"] = "doc:save-as",
   ["<space>ol"] = "core:open-log",
+  ["<space>oe"] = "core:exec-history",
   ["<space>om"] = "vibe:marks:show-all",
   ["<space>or"] = "vibe:registers-macro:list-all",
   ["<space>of"] = "vibe:open-file",
