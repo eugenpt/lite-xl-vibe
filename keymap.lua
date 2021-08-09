@@ -72,6 +72,17 @@ function keymap.have_nmap_starting_with(seq)
   return false
 end
 
+function keymap.nmap_starting_with(seq)
+  local items = {}
+  -- yeah..
+  for jseq,_ in pairs(keymap.nmap) do
+    if #jseq>#seq and jseq:sub(1,#seq)==seq then
+      table.insert(items, jseq)
+    end
+  end
+  return items
+end
+
 
 -- These are to be executed even when strokes appear in a sequence
 keymap.add_nmap_override {

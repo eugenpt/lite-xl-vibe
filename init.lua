@@ -29,6 +29,8 @@ vibe.target_register = nil
 vibe.target_register = nil
 vibe.registers = require("plugins.lite-xl-vibe.registers")
 
+vibe.stroke_suggestions = {}
+
 local misc = require "plugins.lite-xl-vibe.misc"
 vibe.translate = require "plugins.lite-xl-vibe.translate"
 require "plugins.lite-xl-vibe.keymap"
@@ -55,6 +57,7 @@ end
 function vibe.reset_seq()
   vibe.stroke_seq = ''
   vibe.num_arg = ''
+  vibe.stroke_suggestions = {}
 end
 
 function vibe.run_repeat_seq(seq, num)
@@ -184,6 +187,8 @@ function vibe.process_stroke(stroke)
           if not keymap.have_nmap_starting_with(vibe.stroke_seq) then
             core.log_quiet('no commands for ' .. vibe.stroke_seq)
             vibe.reset_seq()
+          else
+            vibe.stroke_suggestions = keymap.nmap_starting_with(vibe.stroke_seq)
           end
         end
       end
