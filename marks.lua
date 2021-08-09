@@ -113,12 +113,46 @@ function marks.translation_fun(symbol)
          end
 end
 
+function marks.have_global_mark_fun(symbol)
+  return function() return marks.global[symbol] end
+end
+
+function marks.have_local_mark_fun(symbol)
+  return function()
+    return doc() and (
+          (
+          marks._local[doc().abs_filename] 
+          and marks._local[doc().abs_filename][symbol]
+          ) or (
+          marks.global[symbol]
+          and marks.global[symbol].abs_filename==doc().abs_filename
+          and marks.global[symbol]
+          )
+        )
+  end
+end
+
 -------------------------------------------------------------------------------
 -- commands and keymaps for one-symbol marks
 
-local translations = {}
+local function commands_from_tranlations(translations, no_select, no_move)
+  local commands = {}
+  
+  for name, fn in pairs(translations) do
+    if not no_move then
+      commands["doc:move-to-" .. name] = function() doc():move_to(fn, dv()) end
+    end
+    if not no_select then
+      commands["doc:select-to-" .. name] = function() doc():select_to(fn, dv()) end
+      commands["doc:delete-to-" .. name] = function() doc():delete_to(fn, dv()) end
+    end
+  end
 
-for c,C in pairs(kb.shift_keys) do
+  return commands
+end
+
+for _,c in ipairs(kb.letters) do
+  local C = c:upper()
 command.add("core.docview", {
     ['vibe:marks:set-local-'..c] = function()
       marks.set_mark(c)
@@ -128,8 +162,16 @@ command.add("core.docview", {
     end,
   })
   
-  translations['local-'..c] = marks.translation_fun(c)
-  translations['global-'..C] = marks.translation_fun(C)
+  command.add( marks.have_local_mark_fun(c), 
+               commands_from_tranlations({['local-'..c] = marks.translation_fun(c)}))
+    
+  local translations = {['global-'..C] = marks.translation_fun(C)}
+  command.add( marks.have_global_mark_fun(C), 
+               commands_from_tranlations(translations, true))
+  -- but selects only go to locally defined marks!
+  command.add( marks.have_local_mark_fun(C), 
+               commands_from_tranlations(translations, false, true))
+               
   
   keymap.add_nmap({
     ['m'..c] = 'vibe:marks:set-local-'..c,
@@ -141,15 +183,6 @@ command.add("core.docview", {
   })
 end
 
-local commands = {}
-
-for name, fn in pairs(translations) do
-  commands["doc:move-to-" .. name] = function() doc():move_to(fn, dv()) end
-  commands["doc:select-to-" .. name] = function() doc():select_to(fn, dv()) end
-  commands["doc:delete-to-" .. name] = function() doc():delete_to(fn, dv()) end
-end
-
-command.add("core.docview", commands)
 
 
 -------------------------------------------------------------------------------

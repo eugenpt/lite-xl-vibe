@@ -77,7 +77,7 @@ local shift_keys = {
 keyboard.letters = {}
 keyboard.LETTERS = {}
 keyboard.digits = {'0','1','2','3','4','5','6','7','8','9'}
-local letterstr = "qwertyuioopasdfghjklzxcvbnm"
+local letterstr = "qwertyuiopasdfghjklzxcvbnm"
 for i=1, #letterstr do
   shift_keys[letterstr:sub(i,i)] = letterstr:sub(i,i):upper()
   table.insert(keyboard.letters, letterstr:sub(i,i))
