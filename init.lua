@@ -119,7 +119,7 @@ function keymap.on_key_pressed(k)
   end
   
   if not vibe.help.is_showing then
-    vibe.help.last_stroke_time = system.get_time()-- - (vibe.help.is_time_to_show_sug() and 10000 or 0)
+    vibe.help.last_stroke_time = system.get_time()
   end
 
   -- I need the finer control on this (I think..)
@@ -185,12 +185,17 @@ function vibe.process_stroke(stroke)
       if commands then 
         core.log_quiet('nmap_override |%s| to %s', vibe.last_stroke, misc.str(commands))
       else
-        commands = keymap.nmap[vibe.stroke_seq]
+        
+        if stroke=='0' and vibe.num_arg~='' then
+        
+        else
+          commands = keymap.nmap[vibe.stroke_seq]
+        end
 
-        if (stroke:isNumber() and not (vibe.num_arg=='' and stroke=='0'))then
+        if (not commands) and (stroke:isNumber() and not (vibe.num_arg=='' and stroke=='0'))then
           vibe.num_arg = vibe.num_arg .. stroke
           -- and also don't put it into seq
-          vibe.stroke_seq = vibe.stroke_seq:sub(1,#vibe.stroke_seq - 1)
+          vibe.stroke_seq = vibe.stroke_seq:sub(1, #vibe.stroke_seq - 1)
           return true
         end
         
