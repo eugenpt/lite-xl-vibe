@@ -95,7 +95,7 @@ keymap.add_nmap_override {
   ["C-g"] = "vibe:escape",
   ["C-["] = "vibe:escape",
   ["<ESC>"] = "vibe:escape",
-  ["A-h"] = "vibe:help-suggest-stroke",
+  ["A-h"] = { "vibe:help:scroll", "vibe:help-suggest-stroke" },
 }
 
 keymap.add_nmap {
@@ -185,6 +185,8 @@ keymap.add_nmap {
   -- ["C-x3"] = "root:split-right", -- hmm.. doesnt work since 3 is read as num_arg
   
   -- hint of Doom emacs?
+  ['<space><CR>'] = 'vibe:marks:create-or-move-to-named-mark',
+  ['<space>m'] = 'vibe:marks:create-or-move-to-named-mark',
   ["<space>x"] = "vibe:open-scratch-buffer",
   ["<space>/"] = "project-search:fuzzy-find",
   ["<space>:"] = "A-x",
@@ -200,6 +202,19 @@ keymap.add_nmap {
   ["<space>qL"] = "vibe:workspace:open-workspace-file",
   ["<space>qs"] = "vibe:workspace:save-workspace",
   ["<space>qS"] = "vibe:workspace:save-workspace-as",
+  ["<space>ff"] = "core:find-file",
+  ["<space>fo"] = "core:open-file",
+  ["<space>fi"] = "vibe:tabs-list",
+  ["<space>fd"] = "root:close",
+  ["<space>fk"] = "root:close",
+  ["<space>fl"] = "vibe:switch-to-last-tab",
+  ["<space>fn"] = "root:switch-to-next-tab",
+  ["<space>f]"] = "root:switch-to-next-tab",
+  ["<space>f["] = "root:switch-to-previous-tab",
+  ["<space>fp"] = "root:switch-to-previous-tab",
+  ["<space>fN"] = "core:new-doc",
+  ["<space>fs"] = "doc:save",
+  ["<space>fS"] = "doc:save-as",
   ["<space>bi"] = "vibe:tabs-list",
   ["<space>bd"] = "root:close",
   ["<space>bk"] = "root:close",
@@ -432,7 +447,7 @@ end
 local object_letters = misc.copy(misc.matching_objectss)
 object_letters['word'] = {'w'}
 object_letters['WORD'] = {'W'}
-object_letters['block'] = {'b','B'}
+object_letters['block'] = {'b','B','p','P'} -- `p` for Paragraph
 
 
 for obj_name,obj_lets in pairs(object_letters) do

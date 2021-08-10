@@ -268,9 +268,10 @@ command.add("core.docview", {
   end,
 })
 
--- and proper DOOM Emacs keymap
-keymap.add_nmap({
-  ['<space><CR>'] = 'vibe:marks:create-or-move-to-named-mark',
+-- and kinda DOOM Emacs keymap
+keymap.add_direct({
+  ['alt+return'] = 'vibe:marks:create-or-move-to-named-mark',
+  ['alt+m'] = 'vibe:marks:create-or-move-to-named-mark',
 })
 
 -------------------------------------------------------------------------------

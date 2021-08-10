@@ -15,11 +15,21 @@ local help = {}
 help.last_stroke_time = system.get_time()
 
 help.group_hints = {
+  [":"] = "Prefix (stuff..)...",
   ["<space>"] = "PREFIX ...",
+  ['<space>f'] = 'Buffers/Files/taBs...',
   ['<space>b'] = 'Buffers/Files/taBs...',
   ['<space>o'] = 'Open...',
   ['<space>t'] = 'Toggle...',
   ['<space>q'] = 'App/Workspace...',
+
+  ["m"] = 'Set Mark...',
+  ["'"] = 'Go/Select to mark...',
+  ["`"] = 'Go/Select to mark...',
+  ["t"] = "Move to char...",
+  ["f"] = "Move to char(inclusive)...",
+  ["T"] = "Move(back) to char...",
+  ["F"] = "Move(back) to char(inclusive)...",
   ['v'] = 'Select to...',
   ['vi'] = 'Select inside...',
   ["v'"] = 'Select to mark...',
@@ -28,12 +38,31 @@ help.group_hints = {
   ["vt"] = "Select to char...",
   ["vF"] = "Select(back) to char(inclusive)...",
   ["vT"] = "Select(back) to char...",
-  ["m"] = 'Set Mark...',
+  ["d"] = "Delete to..",
+  ["d'"] = 'Delete to mark...',
+  ["d`"] = 'Delete to mark...',
+  ["df"] = "Delete to char(inclusive)...",
+  ["dt"] = "Delete to char...",
+  ["dF"] = "Delete(back) to char(inclusive)...",
+  ["dT"] = "Delete(back) to char...",
+  ["c"] = "Change to...",
+  ["c'"] = 'Change to mark...',
+  ["c`"] = 'Change to mark...',
+  ["cf"] = "Change to char(inclusive)...",
+  ["ct"] = "Change to char...",
+  ["cF"] = "Change(back) to char(inclusive)...",
+  ["cT"] = "Change(back) to char...",
+  
+  ["r"] = "Replace symbol with...",
+    
+  ["vi"] = "Select inside...",
+  ["di"] = "Delete inside...",
+  ["yi"] = "Yank(copy) inside...",
+  ["ci"] = "Change inside...",
+
+  ["q"] = "Start/Stop recording macro...",
+  ["@"] = "Run macro...",
   ['"'] = 'Register..',
-  ["'"] = 'Go/Select to mark...',
-  ["`"] = 'Go/Select to mark...',
-  ["@"] = "Run macros...",
-  [":"] = "Prefix (stuff..)...",
   ["*"] = "Find word under cursor",
 }
 
@@ -89,6 +118,8 @@ end
 command.add( nil, {
   ["vibe:help-suggest-stroke"] = function()
     core.vibe.flags['requesting_help_stroke_sugg'] = true
+    help.last_stroke_time = 0
+    help.stroke_sug_shift = 0
   end,
 })
 
@@ -103,8 +134,14 @@ end
 
 local status = core.vibe.interface -- I know.
 
+-- for `scrolling` suggestions
+help.stroke_sug_shift = 0
+help.stroke_sug_max_ix = 0
+
 function status.draw_suggestions_box(self)
   if not help.is_time_to_show_sug() then
+      help.is_showing = false
+      help.stroke_sug_shift = 0
       return nil
   end
   
@@ -130,10 +167,11 @@ function status.draw_suggestions_box(self)
     end
   end
 
-  local sj=0
+  local sj=help.stroke_sug_shift
   j = 0
   while sj<#strokes do
     sj = sj + 1
+    help.stroke_sug_max_ix = sj
     local sug = strokes[sj]
     local coms = Ss[sug]
     j = j + 1
@@ -151,6 +189,8 @@ function status.draw_suggestions_box(self)
     renderer.draw_rect(rx + min_x, ry, rw, rh, style.background3)
     local x = common.draw_text(font, style.accent, " " .. (" "*(max_stroke_w - #sug)) ..sug:sub(#core.vibe.stroke_seq+1).."  |  ", nil, rx+min_x, ry, 0, h)
     x = common.draw_text(font, style.text, table.concat(coms,' '), nil, x, ry, 0, h)
+
+    help.is_showing = true
     
     if x>max_x then 
       max_x = x
@@ -165,6 +205,12 @@ function StatusView:draw()
   core.root_view:defer_draw(status.draw_suggestions_box, self)
 end
 
+command.add(function() return help.is_time_to_show_sug() end, {
+  ["vibe:help:scroll"] = function()
+    help.stroke_sug_shift = help.stroke_sug_max_ix
+    core.vibe.flags['requesting_help_stroke_sugg'] = true
+  end,
+})
 
 return help
 
