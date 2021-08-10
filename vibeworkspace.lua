@@ -284,7 +284,6 @@ end
 --
 local run = core.run
 function core.run(...)
-  core.log('vibe core run')
   local reload = #core.docs == 0
     
   local temp = run(...)

@@ -64,7 +64,6 @@ function FileView:new(path)
     for _, item in ipairs(items) do
       item.search_text = (item.type=="dir" and "Dir" or "File" ) .. item.filename
     end
-    core.log('show_dir : %i items',#items)
     return items
   end, function(res)
     if res.type == "dir" then

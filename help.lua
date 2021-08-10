@@ -212,6 +212,10 @@ command.add(function() return help.is_time_to_show_sug() end, {
   end,
 })
 
+keymap.add({
+  ['alt+h'] = { "vibe:help:scroll", "vibe:help-suggest-stroke" },
+})
+
 return help
 
 

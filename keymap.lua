@@ -263,29 +263,6 @@ keymap.add_nmap {
 }
 
 -------------------------------------------------------------------------------
--- simple objects, no matching                                               --
--------------------------------------------------------------------------------
--- Seriously, for just ' and " this is so much overkill)).. 
-local actions = {'v','d','c'}
-
-local nmts = {
-  ['i'] = {'T','t'},
-  ['a'] = {'F','f'},
-}
-
-local objects = {'"',"'"}
-
-for _,o in ipairs(objects) do
-  for _,a in ipairs(actions) do
-    for c,nmt in pairs(nmts) do
-      keymap.add_nmap {
-        [a..c..o] = nmt[1]..o..a..nmt[2]..o,
-      }
-    end
-  end
-end
-
--------------------------------------------------------------------------------
 -- project-search                                                            --
 -------------------------------------------------------------------------------
 keymap.add_nmap({
@@ -331,6 +308,7 @@ keymap.add_nmap({
   ["gg"]          = "vibe:results:move-to-start-of-doc",
   ["G"]           = "vibe:results:move-to-end-of-doc",
   ["q"]             = "vibe:results:close",
+  ["<ESC>"]             = "vibe:results:close",
 
   -- also try'n'keep the usual mappings (why not?)
   ["<up>"]                 = "vibe:results:select-previous",
@@ -360,6 +338,29 @@ keymap.add_nmap({
 })
 
 -------------------------------------------------------------------------------
+-- simple objects, no matching                                               --
+-------------------------------------------------------------------------------
+-- Seriously, for just ' and " this is so much overkill)).. 
+local actions = {'v','d','c'}
+
+local nmts = {
+  ['i'] = {'T','t'},
+  ['a'] = {'F','f'},
+}
+
+local objects = {'"',"'"}
+
+for _,o in ipairs(objects) do
+  for _,a in ipairs(actions) do
+    for c,nmt in pairs(nmts) do
+      keymap.add_nmap {
+        [a..c..o] = nmt[1]..o..a..nmt[2]..o,
+      }
+    end
+  end
+end
+
+------------------------------------------------------------------------------
 -- snme minor tweaks for insert mode from emacs/vim/..                       --
 -------------------------------------------------------------------------------
 keymap.add_direct {

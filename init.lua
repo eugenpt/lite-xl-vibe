@@ -119,10 +119,8 @@ function keymap.on_key_pressed(k)
   end
   
   if not vibe.help.is_showing then
-    core.log("not tts")
     vibe.help.last_stroke_time = system.get_time()-- - (vibe.help.is_time_to_show_sug() and 10000 or 0)
   end
-  core.log(system.get_time() - vibe.help.last_stroke_time)
 
   -- I need the finer control on this (I think..)
   local mk = vibe.kb.modkey_map[k]

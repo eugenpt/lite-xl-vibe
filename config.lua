@@ -13,4 +13,7 @@ config.vibe.misc_str_max_depth = 8
 config.vibe.max_stroke_sugg = 10
 config.vibe.stroke_sug_delay = 0.500
 
+-- set this to nil to stop showing. Or to sth else)
+config.vibe.permanent_status_tooltip = "Alt-h for help and it's scroll. i to insert, escape or ctrl+[ to normal"
+
 return config

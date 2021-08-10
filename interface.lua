@@ -53,6 +53,8 @@ function StatusView:get_items()
               .. core.vibe.debug_str:sub(#core.vibe.debug_str - math.ceil(config.vibe.debug_str_max/2)
                                         ,#core.vibe.debug_str))
         or core.vibe.debug_str,
+      (config.vibe.permanent_status_tooltip 
+        and self.separator2 .. config.vibe.permanent_status_tooltip  or '')
     }, {
       style.text, indent_label, indent_size,
       style.dim, self.separator2, style.text,
