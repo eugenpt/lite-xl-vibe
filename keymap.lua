@@ -89,6 +89,12 @@ function keymap.nmap_starting_with(seq)
   return items
 end
 
+function keymap.mode_map()
+  return core.vibe.mode == 'normal'
+    and misc.table_join(keymap.nmap, keymap.nmap_override)
+    or keymap.map
+end
+
 
 -- These are to be executed even when strokes appear in a sequence
 keymap.add_nmap_override {
@@ -119,6 +125,7 @@ keymap.add_nmap {
   ["b"] = "doc:move-to-previous-word-start",
   ["B"] = "doc:move-to-previous-WORD-start",
   ["e"] = "doc:move-to-next-word-end",
+  ["E"] = "doc:move-to-next-WORD-end",
   ["0"] = "doc:move-to-start-of-line",
   ["_"] = "0W",
   ["$"] = "doc:move-to-end-of-line",

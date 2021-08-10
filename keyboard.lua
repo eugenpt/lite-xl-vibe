@@ -28,15 +28,14 @@ keyboard.modkey_map = {
   ["left alt"]    = "alt",
   ["right option"]= "alt",
   ["left option"] = "alt",
-  ["right alt"]   = "altgr",
+  ["right alt"]   = "alt",
 }
 
-local modkeys = { "ctrl", "alt", "altgr", "shift", "cmd", "vibe_magic"}
+local modkeys = { "ctrl", "alt", "shift", "cmd", "vibe_magic"}
 
 local modkeys_sh = {
   [ "ctrl" ] = "C",
   [ "alt" ] = "A",
-  [ "altgr" ] = "A",
   [ "shift" ] = "S",
   [ "cmd"  ] = "M",
   [ "vibe_magic" ] = "X-", -- imaginary keystroke, only for nmaps

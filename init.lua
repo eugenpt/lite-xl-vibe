@@ -61,12 +61,17 @@ function vibe.reset_seq()
   vibe.stroke_seq = ''
   vibe.num_arg = ''
   if vibe.flags['requesting_help_stroke_sugg'] then
-    vibe.stroke_suggestions = keymap.nmap_starting_with(vibe.stroke_seq)
+    if vibe.mode=='normal' then
+      vibe.stroke_suggestions = keymap.nmap_starting_with(vibe.stroke_seq)
+    else
+      vibe.stroke_suggestions = misc.keys(keymap.map)
+    end
     vibe.flags['requesting_help_stroke_sugg'] = false
   else
     vibe.stroke_suggestions = {}
     vibe.help.last_stroke_time = system.get_time()
   end
+  vibe.help.update_suggestions()    
 end
 
 function vibe.run_repeat_seq(seq, num)
@@ -127,10 +132,7 @@ function keymap.on_key_pressed(k)
   if mk then
     vibe.last_stroke = k
     keymap.modkeys[mk] = true
-    -- work-around for windows where `altgr` is treated as `ctrl+alt`
-    if mk == "altgr" then
-      keymap.modkeys["ctrl"] = false
-    end
+    -- here was some altgr stuff, I don't like it.
     return false
   end
   -- now finally parse and process the stroke
@@ -178,7 +180,7 @@ function vibe.process_stroke(stroke)
       if commands then
         core.log_quiet('|%s| imapped to %s',stroke__orig,  misc.str(commands))
       else
-        core.log_quiet('insert,no coms')
+        core.log_quiet('insert,no coms for |%s|', stroke__orig)
       end
     elseif vibe.mode == "normal" then
       commands = keymap.nmap_override[vibe.last_stroke]

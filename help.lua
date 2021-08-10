@@ -10,11 +10,12 @@ local kb = require "plugins.lite-xl-vibe.keyboard"
 local misc = require "plugins.lite-xl-vibe.misc"
 local ResultsView = require "plugins.lite-xl-vibe.ResultsView"
 
+local vibe = core.vibe
 local help = {}
 
 help.last_stroke_time = system.get_time()
 
-help.group_hints = {
+help.group_hints = {['normal'] = {
   [":"] = "Prefix (stuff..)...",
   ["<space>"] = "PREFIX ...",
   ['<space>f'] = 'Buffers/Files/taBs...',
@@ -64,15 +65,29 @@ help.group_hints = {
   ["@"] = "Run macro...",
   ['"'] = 'Register..',
   ["*"] = "Find word under cursor",
-}
+},
+['insert'] = {
+
+}}
 
 function help.stroke_suggestions()
+  if vibe.flags['requesting_help_stroke_sugg'] or #vibe.stroke_seq>0 then
+  if vibe.mode=='normal' then
+    vibe.stroke_suggestions = keymap.nmap_starting_with(vibe.stroke_seq)
+  else
+    vibe.stroke_suggestions = misc.keys(keymap.map)
+  end
+  else
+    vibe.stroke_suggestions = {}
+  end
   -- start with dumb stroke suggestions
+  local group_hints = help.group_hints[core.vibe.mode] or {}
+  local mode_map = keymap.mode_map()
   local items = {}
   local short
   for _, item in ipairs(core.vibe.stroke_suggestions) do
     local found = nil
-    for hint_stroke,hint in pairs(help.group_hints) do
+    for hint_stroke,hint in pairs(group_hints) do
       if (#item >= #hint_stroke)
          and (#hint_stroke > #core.vibe.stroke_seq)
          and item:sub(1,#hint_stroke)==hint_stroke then
@@ -83,12 +98,12 @@ function help.stroke_suggestions()
     end
     
     if found then
-      items[short] = {help.group_hints[short]}
+      items[short] = {group_hints[short]}
     else
-      local map = keymap.nmap[item]
-      if #map==1 and command.map[map[1]]==nil and keymap.nmap[map[1]] then
+      local map = mode_map[item]
+      if map and #map==1 and command.map[map[1]]==nil and mode_map[map[1]] then
         -- remap to sequence
-        items[item] = keymap.nmap[map[1]]
+        items[item] = mode_map[map[1]]
       else
         items[item] = map
       end
@@ -111,6 +126,21 @@ function help.stroke_suggestions()
     end
   end
   return items_f
+end
+
+
+help.suggestions = {}
+help.sug_strokes_sorted = {}
+help.stroke_sug_len = 0
+
+function help.update_suggestions()
+  help.suggestions = help.stroke_suggestions()
+  -- Sort the suggestions ..
+  help.sug_strokes_sorted = misc.keys(help.suggestions)
+  table.sort(help.sug_strokes_sorted)
+  
+  help.stroke_sug_len = #help.sug_strokes_sorted
+  core.log("update sugg. count=%i", help.stroke_sug_len)
 end
 
 -------------------------------------------------------------------------------
@@ -149,10 +179,6 @@ function status.draw_suggestions_box(self)
   -- local x, y = self:get_content_offset()
   local rx, ry, rw, rh = self.position.x, self.position.y - h , self.size.x, h
   
-  local Ss = core.vibe.help.stroke_suggestions()
-  -- Sort the suggestions ..
-  local strokes = misc.keys(Ss)
-  table.sort(strokes)
   -- j for limitness. is that a word?
   local j=0
   
@@ -161,7 +187,7 @@ function status.draw_suggestions_box(self)
   local min_x = 0
   
   local max_stroke_w = 0
-  for _, stroke in ipairs(strokes) do
+  for _, stroke in ipairs(help.sug_strokes_sorted) do
     if #stroke > max_stroke_w then
       max_stroke_w = #stroke
     end
@@ -169,11 +195,11 @@ function status.draw_suggestions_box(self)
 
   local sj=help.stroke_sug_shift
   j = 0
-  while sj<#strokes do
+  while sj<#help.sug_strokes_sorted do
     sj = sj + 1
     help.stroke_sug_max_ix = sj
-    local sug = strokes[sj]
-    local coms = Ss[sug]
+    local sug = help.sug_strokes_sorted[sj]
+    local coms = help.suggestions[sug]
     j = j + 1
     if j>config.vibe.max_stroke_sugg then
       max_x = max_x + h
@@ -208,6 +234,9 @@ end
 command.add(function() return help.is_time_to_show_sug() end, {
   ["vibe:help:scroll"] = function()
     help.stroke_sug_shift = help.stroke_sug_max_ix
+    if help.stroke_sug_shift >=   help.stroke_sug_len then
+      help.stroke_sug_shift = 0
+    end
     core.vibe.flags['requesting_help_stroke_sugg'] = true
   end,
 })

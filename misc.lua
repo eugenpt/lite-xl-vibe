@@ -213,6 +213,17 @@ function misc.keys(table)
   return r
 end
 
+function misc.table_join(a,...)
+  if a == nil then
+    return {}
+  end
+  local R = misc.copy(a)
+  for a,b in pairs(misc.table_join(...)) do
+    R[a] = b
+  end
+  return R
+end
+
 function misc.list_unique(list)
   local r = {}
   for _,a in ipairs(list) do

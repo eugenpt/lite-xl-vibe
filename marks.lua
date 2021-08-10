@@ -239,7 +239,7 @@ command.add("core.docview", {
       core.command_view:set_text(doc():get_text(doc():get_selection()))
     end
     core.command_view:enter("Create or go to mark", function(text, item)
-      if item then
+      if item and (text == item.text) then
         if item.global then
           marks.goto_global_mark(item.symbol)
         else
