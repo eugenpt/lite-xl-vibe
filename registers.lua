@@ -192,10 +192,18 @@ function core.on_quit_project()
   on_quit_project()
 end
 
+local function registers_clear()
+  registers = {}
+  core.vibe.clipboard_ring = {}
+  core.vibe.clipboard_ring_ix = 0
+  core.vibe.clipboard_ring_max = 0
+end
+
 
 command.add(nil, {
   ["vibe:save-registers"] = registers_save,
   ["vibe:load-registers"] = registers_load,
+  ["vibe:clear-registers"] = registers_clear,
 })
 
 return registers
