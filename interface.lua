@@ -62,9 +62,24 @@ function StatusView:get_items()
       style.font, style.dim, self.separator2, style.text,
       #dv.doc.lines, " lines",
       self.separator,
-      dv.doc.crlf and "CRLF" or "LF",
-      style.text, self.separator2, '#'..core.vibe.num_arg,
-      style.text, self.separator2, core.vibe.last_stroke,
+      style.code_font,
+      dv.doc.crlf and "CRLF" or "  LF",
+      style.text, ' |', 
+      
+                  'h'.. (core.vibe.help and
+                  (tostring(#core.vibe.help.stroke_seq_for_sug)
+                  ..':'
+                  ..tostring(#core.vibe.stroke_suggestions)
+                  ..':'
+                  ..tostring(#core.vibe.help.sug_strokes_sorted)
+                  
+                  ..':'
+                  ..(core.vibe.help.is_time_to_show_sug() and '+' or '-')
+                  ..':'
+                  ..(core.vibe.flags['requesting_help_stroke_sugg'] and '+' or '-')
+                  ) or '-'),
+      style.text, '|', string.format('#% 3s',core.vibe.num_arg),
+      style.text, '|', string.format("% 7s",core.vibe.last_stroke), 
     }
   end
 

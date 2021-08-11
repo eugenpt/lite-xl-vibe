@@ -150,19 +150,23 @@ keymap.add_nmap {
   ["dd"] = "<ESC>0vjd",
   [">>"] = "doc:indent",
   ["\\<\\<"] = "doc:unindent",
+  [">"] = "vibe:indent",
+  ["\\<"] = "vibe:unindent",
   
   -- these probably should be in vmap. if only someone created it.. ;)
   ["y"] = "vibe:copy",
   ["d"] = "vibe:delete",
+  ["c"] = "di",
   
   ["x"] = "vibe:delete-symbol-under-cursor",
   -- actions through sequences, huh? I do like that.
-  ["o"] = "$i<CR>",
-  ["O"] = "0i<CR><ESC>ki<tab>",
+  ["o"] = "<ESC>$i<CR>",
+  ["O"] = "<ESC>0i<CR><ESC>ki<tab>",
   ["a"] = "li",
-  ["A"] = "$i",
+  ["A"] = "<ESC>$i",
+  ["I"] = "<ESC>_i",
   ["C"] = "Di", 
-  ["D"] = "v$d",
+  ["D"] = "<ESC>v$d",
   
   ["v$"] = "iS-<end><ESC>",
   ["y$"] = "v$y<ESC>",
@@ -371,6 +375,8 @@ end
 -- snme minor tweaks for insert mode from emacs/vim/..                       --
 -------------------------------------------------------------------------------
 keymap.add_direct {
+  ["alt+space"] = "<ESC><space>",
+  ["ctrl+space"] = "<ESC>",
   ["ctrl+p"] = { "autocomplete:previous", "command:select-previous", "doc:move-to-previous-line" },
   ["ctrl+n"] = { "autocomplete:next", "command:select-next", "doc:move-to-next-line" },
   ["ctrl+h"] = "doc:backspace",

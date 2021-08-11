@@ -139,6 +139,12 @@ command.add(misc.has_selection, {
     system.set_clipboard(text)
     command.perform("doc:delete")
   end,
+  ["vibe:indent"] = function()
+    command.perform("doc:indent")
+  end,
+  ["vibe:unindent"] = function()
+    command.perform("doc:unindent")
+  end,
 })
 
 command.add(nil, {

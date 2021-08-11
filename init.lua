@@ -60,17 +60,9 @@ end
 function vibe.reset_seq()
   vibe.stroke_seq = ''
   vibe.num_arg = ''
-  if vibe.flags['requesting_help_stroke_sugg'] then
-    if vibe.mode=='normal' then
-      vibe.stroke_suggestions = keymap.nmap_starting_with(vibe.stroke_seq)
-    else
-      vibe.stroke_suggestions = misc.keys(keymap.map)
-    end
-    vibe.flags['requesting_help_stroke_sugg'] = false
-  else
-    vibe.stroke_suggestions = {}
-    vibe.help.last_stroke_time = system.get_time()
-  end
+  vibe.help.stroke_seq_for_sug = vibe.stroke_seq
+  vibe.help.last_stroke_time = system.get_time()
+  vibe.flags['requesting_help_stroke_sugg'] = false
   vibe.help.update_suggestions()    
 end
 
@@ -142,6 +134,7 @@ end
 function vibe.process_stroke(stroke)
     core.log_quiet("process_stroke |%s|", stroke)
     -- first - current stroke
+    vibe.pre_last_stroke = vibe.last_stroke
     vibe.last_stroke = stroke
     local stroke__orig = vibe.kb.stroke_to_orig_stroke(stroke)
     
@@ -173,8 +166,10 @@ function vibe.process_stroke(stroke)
     local commands = {}
     
     vibe.debug_str = vibe.last_executed_seq
+    vibe.pre_stroke_seq = vibe.stroke_seq
     vibe.stroke_seq = vibe.stroke_seq .. stroke
     
+    vibe.help.stroke_seq_for_sug = vibe.stroke_seq
     if vibe.mode == "insert" then
       commands = keymap.map[stroke__orig]
       if commands then
@@ -205,10 +200,11 @@ function vibe.process_stroke(stroke)
           core.log_quiet('|%s| nmapped to %s', vibe.stroke_seq, misc.str(commands))
         else  
           if not keymap.have_nmap_starting_with(vibe.stroke_seq) then
-            core.log_quiet('no commands for ' .. vibe.stroke_seq)
+            core.log('no commands for ' .. vibe.stroke_seq)
             vibe.reset_seq()
           else
-            vibe.stroke_suggestions = keymap.nmap_starting_with(vibe.stroke_seq)
+            vibe.help.update_suggestions()
+            -- vibe.stroke_suggestions = keymap.nmap_starting_with(vibe.stroke_seq)
           end
         end
       end
@@ -239,6 +235,17 @@ function vibe.process_stroke(stroke)
                 end
               end
             end
+            
+            if cmd=="vibe:help-suggest-stroke" or cmd=="vibe:help:scroll" then
+              -- roll back
+              vibe.help.stroke_seq_for_sug = vibe.pre_stroke_seq
+              vibe.stroke_seq = vibe.pre_stroke_seq
+              vibe.last_stroke = vibe.pre_last_stroke
+              -- kinda force to draw
+              vibe.help.last_stroke_time = 0
+              vibe.help.update_suggestions()
+              return true
+            end
             break 
           end
         else
@@ -249,6 +256,7 @@ function vibe.process_stroke(stroke)
           else
             vibe.reset_seq()
             vibe.run_stroke_seq(cmd)
+            return true
           end
           -- for now let's think of sequences as default-performed
           performed = true

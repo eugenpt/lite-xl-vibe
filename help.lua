@@ -70,13 +70,14 @@ help.group_hints = {['normal'] = {
 
 }}
 
+help.stroke_seq_for_sug = ''
 function help.stroke_suggestions()
-  if vibe.flags['requesting_help_stroke_sugg'] or #vibe.stroke_seq>0 then
-  if vibe.mode=='normal' then
-    vibe.stroke_suggestions = keymap.nmap_starting_with(vibe.stroke_seq)
-  else
-    vibe.stroke_suggestions = misc.keys(keymap.map)
-  end
+  if vibe.flags['requesting_help_stroke_sugg'] or #help.stroke_seq_for_sug>0 then
+    if vibe.mode=='normal' then
+      vibe.stroke_suggestions = keymap.nmap_starting_with(help.stroke_seq_for_sug)
+    else
+      vibe.stroke_suggestions = misc.keys(keymap.map)
+    end
   else
     vibe.stroke_suggestions = {}
   end
@@ -87,10 +88,11 @@ function help.stroke_suggestions()
   local short
   for _, item in ipairs(core.vibe.stroke_suggestions) do
     local found = nil
-    for hint_stroke,hint in pairs(group_hints) do
-      if (#item >= #hint_stroke)
-         and (#hint_stroke > #core.vibe.stroke_seq)
-         and item:sub(1,#hint_stroke)==hint_stroke then
+    
+    for j=#help.stroke_seq_for_sug+1,#item do
+      local hint_stroke = item:sub(1,j)
+      local hint = group_hints[hint_stroke]
+      if hint then
         found = true
         short = hint_stroke
         break
@@ -111,7 +113,7 @@ function help.stroke_suggestions()
   end
   
   local items_f = {}
-  -- filter?
+  -- filter only active commands
   for stroke, coms in pairs(items) do
     local hcoms = {}
     for _,com in ipairs(coms) do
@@ -140,18 +142,11 @@ function help.update_suggestions()
   table.sort(help.sug_strokes_sorted)
   
   help.stroke_sug_len = #help.sug_strokes_sorted
-  core.log("update sugg. count=%i", help.stroke_sug_len)
+  -- core.log("update sugg. count=%i", help.stroke_sug_len)
 end
 
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
-command.add( nil, {
-  ["vibe:help-suggest-stroke"] = function()
-    core.vibe.flags['requesting_help_stroke_sugg'] = true
-    help.last_stroke_time = 0
-    help.stroke_sug_shift = 0
-  end,
-})
 
 local font = style.code_font
 local function get_line_height()
@@ -230,6 +225,13 @@ function StatusView:draw()
   status.statusview__draw__orig(self)
   core.root_view:defer_draw(status.draw_suggestions_box, self)
 end
+
+command.add( nil, {
+  ["vibe:help-suggest-stroke"] = function()
+    core.vibe.flags['requesting_help_stroke_sugg'] = true
+    help.stroke_sug_shift = 0
+  end,
+})
 
 command.add(function() return help.is_time_to_show_sug() end, {
   ["vibe:help:scroll"] = function()
