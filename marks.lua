@@ -70,6 +70,7 @@ function marks.set_mark(symbol, global_flag)
     end
     marks._local[abs_filename][symbol] = mark
   end
+  core.log("Mark [%s] set", text)
 end
 
 function marks.goto_global_mark(symbol)
@@ -80,6 +81,7 @@ function marks.goto_global_mark(symbol)
       core.root_view:open_doc(core.open_doc(mark.abs_filename))
     end
     doc():set_selection(mark.line, mark.col)
+    core.log("Jumped to (global) mark [%s]", symbol)
   else
     core.vibe.debug_str = 'no mark for '..symbol
   end
@@ -90,8 +92,17 @@ function marks.goto_local_mark(symbol)
   if mark then
     core.root_view:open_doc(core.open_doc(mark.abs_filename))
     doc():set_selection(mark.line, mark.col)
+    core.log("Jumped to (local) mark [%s]", symbol)
   else
     core.vibe.debug_str = 'no mark for ' .. symbol
+  end
+end
+
+function marks.goto_mark(symbol)
+  if marks.global[symbol] then
+    marks.goto_global_mark(symbol)
+  else
+    marks.goto_local_mark(symbol)
   end
 end
 
@@ -239,14 +250,17 @@ command.add("core.docview", {
       core.command_view:set_text(doc():get_text(doc():get_selection()))
     end
     core.command_view:enter("Create or go to mark", function(text, item)
-      if item and (text == item.text) then
-        if item.global then
-          marks.goto_global_mark(item.symbol)
-        else
-          marks.goto_local_mark(item.symbol)
-        end
+      if item
+        and item.text 
+        and (item.text:sub(1,math.min(#text,#item.text))
+               == text:sub(1,math.min(#text,#item.text))) then
+        marks.goto_mark(item.symbol)
       else 
-        marks.set_mark(text, true)
+        if marks.have_local_mark_fun(text) then
+          marks.goto_mark(text)  
+        else
+          marks.set_mark(text, true)
+        end
       end
     end, function(text)
       local items = {}
@@ -355,6 +369,7 @@ local function fill_results()
     core.log('items_fun : %i items',#items)
     return items
   end, function(res)
+    command.perform("root:close")
     local dv = core.root_view:open_doc(core.open_doc(res.file))
     core.root_view.root_node:update_layout()
     dv.doc:set_selection(res.line, res.col)
