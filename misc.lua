@@ -505,7 +505,7 @@ function misc.find_in_line_unmatched(symbol,symbol_match,backwards,include,_doc,
         end
       end
     end
-    if line ~= line2 or col == col2 then
+    if line==line2 and col==col2 then --line ~= line2 or col == col2 then
       core.vibe.debug_str = symbol .. ' not found'
       return _line, _col
     end

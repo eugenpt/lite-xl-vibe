@@ -181,6 +181,23 @@ end
 
 command.add("core.docview", commands)
 
+--
+
+command.add(misc.has_selection, {
+  ["doc:move-to-selection-start"] = function()
+    local line,col,line2,col2 = doc():get_selection(true) -- true for sort
+    doc():set_selection(line,col,line2,col2)
+  end,
+  ["doc:move-to-selection-end"] = function()
+    local line,col,line2,col2 = doc():get_selection(true) -- true for sort
+    doc():set_selection(line2,col2,line,col)
+  end,
+  ["doc:move-to-other-edge-of-selection"] = function()
+    local line,col,line2,col2 = doc():get_selection() -- true for sort
+    doc():set_selection(line2,col2,line,col)
+  end,
+})
+
 -- 
 
 local objects = misc.keys(misc.matching_objectss)
@@ -191,7 +208,14 @@ objects[#objects+1] = 'WORD'
 for _, obj in ipairs(objects) do
 command.add("core.docview",{
   ["doc:select-"..obj] = function()
-    command.perform("doc:move-to-previous-"..obj.."-start")
+    -- in case of selection, go to start of it
+    if misc.has_selection() then
+      -- repeated backwards search needs to be jump-started
+      command.perform("doc:move-to-selection-start")
+      command.perform("doc:select-to-previous-char")
+    end
+    command.perform("doc:select-to-previous-"..obj.."-start")
+    command.perform("doc:move-to-selection-end")
     command.perform("doc:select-to-next-"..obj.."-end")
   end,
 })

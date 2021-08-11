@@ -160,16 +160,18 @@ keymap.add_nmap {
   
   ["x"] = "vibe:delete-symbol-under-cursor",
   -- actions through sequences, huh? I do like that.
-  ["o"] = "<ESC>$i<CR>",
+  ["o"] = {"doc:move-to-other-edge-of-selection", "<ESC>$i<CR>"},
   ["O"] = "<ESC>0i<CR><ESC>ki<tab>",
   ["a"] = "li",
   ["A"] = "<ESC>$i",
   ["I"] = "<ESC>_i",
   ["C"] = "Di", 
   ["D"] = "<ESC>v$d",
+  ["V"] = "<ESC>0vj",
   
   ["v$"] = "iS-<end><ESC>",
   ["y$"] = "v$y<ESC>",
+  ["vv"] = "0vj",
   ["Y"] = "y$",
   ["yy"] = "0iS-<down><ESC>y<up>",
   ["p"] = "vibe:paste",
@@ -353,7 +355,7 @@ keymap.add_nmap({
 -- simple objects, no matching                                               --
 -------------------------------------------------------------------------------
 -- Seriously, for just ' and " this is so much overkill)).. 
-local actions = {'v','d','c'}
+local actions = {'v','y','d','c'}
 
 local nmts = {
   ['i'] = {'T','t'},
@@ -415,6 +417,7 @@ for _,i in ipairs(kb.all_typed_symbols) do
   for c, cname in pairs(tr) do
    keymap.add_nmap({
     ["v" .. c .. kb.escape_stroke(i)] = 'doc:select-to-'..cname..'-'..i,
+    ["y" .. c .. kb.escape_stroke(i)] = 'v'..c..kb.escape_stroke(i)..'y',
     ["d" .. c .. kb.escape_stroke(i)] = 'doc:delete-to-'..cname..'-'..i,
     ["c" .. c .. kb.escape_stroke(i)] = 'd'..c..kb.escape_stroke(i)..'i',
   })
