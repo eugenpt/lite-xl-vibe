@@ -12,6 +12,7 @@ local keymap = require "core.keymap"
 local style = require "core.style"
 local StatusView = require "core.statusview"
 local DocView = require "core.docview"
+local View = require "core.view"
 
 local com = require("plugins.lite-xl-vibe.com")
 
@@ -64,26 +65,16 @@ function StatusView:get_items()
       self.separator,
       style.code_font,
       dv.doc.crlf and "CRLF" or "  LF",
-      style.text, ' |', 
-      
-                  'h'.. (core.vibe.help and
-                  (tostring(#core.vibe.help.stroke_seq_for_sug)
-                  ..':'
-                  ..tostring(#core.vibe.stroke_suggestions)
-                  ..':'
-                  ..tostring(#core.vibe.help.sug_strokes_sorted)
-                  
-                  ..':'
-                  ..(core.vibe.help.is_time_to_show_sug() and '+' or '-')
-                  ..':'
-                  ..(core.vibe.flags['requesting_help_stroke_sugg'] and '+' or '-')
-                  ) or '-'),
-      style.text, '|', string.format('#% 3s',core.vibe.num_arg),
+      style.text, ' |', string.format('#% 3s',core.vibe.num_arg),
       style.text, '|', string.format("% 7s",core.vibe.last_stroke), 
     }
   end
 
   return {
+      style.text, style.icon_font, "P",
+      style.code_font, style.text, self.separator2,
+      style.accent, get_mode_str(), style.text, self.separator2,
+      style.dim, style.font, style.text,
     style.text, 
     style.font,
     core.vibe.debug_str,
@@ -91,7 +82,10 @@ function StatusView:get_items()
     style.icon_font, "g",
     style.font, style.dim, self.separator2,
     #core.docs, style.text, " / ",
-    #core.project_files, " files"
+    #core.project_files, " files",
+      style.code_font,
+      style.text, ' |', string.format('#% 3s',core.vibe.num_arg),
+      style.text, '|', string.format("% 7s",core.vibe.last_stroke), 
   }
 end
 -------------------------------------------------------------------------------
@@ -119,5 +113,55 @@ end
 
 
 core.log('interface loaded?')
+
+-------------------------------------------------------------------------------
+-- Empty View Hint
+-------------------------------------------------------------------------------
+local Node = getmetatable(core.root_view.root_node)
+local node = Node("leaf")
+local EmptyView = getmetatable(node.views[1])
+
+local function draw_text(x, y, color)
+  local th = style.big_font:get_height()
+  local dh = 2 * th + style.padding.y * 2
+  local x1, y1 = x, y + (dh - th) / 2
+  x = renderer.draw_text(style.big_font, "Lite XL Vibe", x1, y1, color)
+  renderer.draw_text(style.font, "version " .. VERSION, x1, y1 + th, color)
+  x = x + style.padding.x
+  renderer.draw_rect(x, y, math.ceil(1 * SCALE), dh, color)
+  local lines = {
+    { fmt = "%s to run a command", cmd = "core:find-command" },
+    { fmt = "%s to open a file from the project", cmd = "core:find-file" },
+    { fmt = "%s to change project folder", cmd = "core:change-project-folder" },
+    { fmt = "%s to open a project folder", cmd = "core:open-project-folder" },
+    { text = " " },
+    { text = "you are in "..get_mode_str().." mode now" },
+    { text = "Escape / Ctrl+[ to enter NORMAL mode as in VIM"  },
+    { text = "while in NORMAL mode, use <i> to enter INSERT mode again"  },
+    { text = " " },
+    { text = "Press Alt+h to show/scroll stroke suggestions" },
+    { text = " " },
+    { text = "A good place to start is to press <space>" },
+  }
+  th = style.font:get_height()
+  y = y + (dh - (th + style.padding.y) * #lines) / 2
+  local w = 0
+  for _, line in ipairs(lines) do
+    local text = line.cmd and string.format(line.fmt, keymap.get_binding(line.cmd)) or line.text
+    w = math.max(w, renderer.draw_text(style.font, text, x + style.padding.x, y, color))
+    y = y + th + style.padding.y
+  end
+  return w, dh
+end
+
+function EmptyView:draw()
+  self:draw_background(style.background)
+  local w, h = draw_text(0, 0, { 0, 0, 0, 0 })
+  local x = self.position.x + math.max(style.padding.x, (self.size.x - w) / 2)
+  local y = self.position.y + (self.size.y - h) / 2
+  draw_text(x, y, style.dim)
+end
+  
+-------------------------------------------------------------------------------
 
 return status

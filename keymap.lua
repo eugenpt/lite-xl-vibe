@@ -127,7 +127,7 @@ keymap.add_nmap {
   ["e"] = "doc:move-to-next-word-end",
   ["E"] = "doc:move-to-next-WORD-end",
   ["0"] = "doc:move-to-start-of-line",
-  ["_"] = "0W",
+  ["_"] = "0EB",
   ["$"] = "doc:move-to-end-of-line",
   ["C-u"] = "doc:move-to-previous-page",
   ["C-d"] = "doc:move-to-next-page",
@@ -244,6 +244,7 @@ keymap.add_nmap {
   ["<space>of"] = "vibe:open-file",
   ["<space>od"] = "vibe:open-select-dir",
   ["<space>o\\-"] = "vibe:open-select-dir",
+  ["<space>ef"] = "core:exec-file",
   -- toggles
   ["<space>tm"] = "minimap:toggle-visibility",
   ["<space>tt"] = "treeview:toggle",
