@@ -261,6 +261,8 @@ keymap.add_nmap {
   ['<space>sm'] = 'vibe:marks:create-or-move-to-named-mark',
   ["<space>wv"] = "root:split-right",  
   ["<space>ws"] = "root:split-down",
+  ["<space>wq"] = 'core:window-close',
+  ["<space>wc"] = 'core:window:close-all-files',
   -- toggles
   ["<space>tm"] = "minimap:toggle-visibility",
   -- ["<space>tt"] = "treeview:toggle",

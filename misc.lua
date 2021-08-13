@@ -734,9 +734,33 @@ function Node:close_all()
   end
 end
 
+function Node:close()
+  if self.type=="leaf" then
+    -- for _,v in ipairs(self.views) do
+    --   self:close_view(nil,v)
+    -- end
+    self.views = {}
+    local view = EmptyView()
+    self:add_view(view)
+    self:close_view(core.root_view.root_node, view)
+  else
+    self.a:close()
+    self.b:close()
+  end
+end
+
 misc.Node = Node
 misc.EmptyView = EmptyView
 
+command.add(nil, {
+  ['core:window:close-all-files'] = function()
+    core.active_view.vibe_parent_node:close_all()
+  end,
+  
+  ['core:window-close'] = function()
+    core.active_view.vibe_parent_node:close()
+  end,
+})
 -------------------------------------------------------------------------------
 
 return misc

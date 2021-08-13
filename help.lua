@@ -23,6 +23,7 @@ help.group_hints = {['normal'] = {
   ['<space>o'] = 'Open...',
   ['<space>s'] = 'Search...',
   ['<space>t'] = 'Toggle...',
+  ['<space>w'] = 'Window...',
   ['<space>q'] = 'App/Workspace...',
 
   ["m"] = 'Set Mark...',

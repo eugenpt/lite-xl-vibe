@@ -326,11 +326,6 @@ function core.run(...)
 
     core.try(vibeworkspace.open_workspace_file)
 
-    local on_quit_project = core.on_quit_project
-    function core.on_quit_project()
-      core.try(vibeworkspace.save_workspace)
-      on_quit_project()
-    end
   else
     core.log('nah, dont need to load workspace')
   end
@@ -338,6 +333,14 @@ function core.run(...)
   core.run = run
   core.log('/vibe core run')
   return temp
+end
+
+local on_quit_project = core.on_quit_project
+function core.on_quit_project()
+  if vibeworkspace.abs_filename then
+    core.try(vibeworkspace.save_workspace)
+  end
+  on_quit_project()
 end
 
 -------------------------------------------------------------------------------
