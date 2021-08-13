@@ -122,16 +122,19 @@ local escape_simple_keys = {
 for i = 1, 64 do
   table.insert(escape_simple_keys, 'f' .. i)
 end
+
+keyboard.escape_char_sub__inv = {}
+for a,b in pairs(escape_char_sub) do
+  keyboard.escape_char_sub__inv[b] = a
+end
 for _,str in ipairs(escape_simple_keys) do
   escape_char_sub[str] = "<" .. str .. ">"
+  -- so that these take precedence
+  keyboard.escape_char_sub__inv["<"..str..">"] = str
 end
 
-local escape_char_sub__inv = {}
-for a,b in pairs(escape_char_sub) do
-  escape_char_sub__inv[b] = a
-end
 -- I thought this would help with commandview submit in sequence
-escape_char_sub__inv["<CR>"] = "return"
+keyboard.escape_char_sub__inv["<CR>"] = "return"
 
 function keyboard.escape_stroke(k)
   local r = escape_char_sub[k]
@@ -198,7 +201,7 @@ end
 function keyboard.stroke_to_orig_stroke(stroke)
   local R, lstroke = stroke_strip_mod(stroke)
   -- if it's one of the escaped characters
-  local s = escape_char_sub__inv[lstroke]
+  local s = keyboard.escape_char_sub__inv[lstroke]
   if s then
     return R .. s
   end

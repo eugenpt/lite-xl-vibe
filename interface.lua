@@ -15,6 +15,7 @@ local DocView = require "core.docview"
 local View = require "core.view"
 
 local com = require("plugins.lite-xl-vibe.com")
+local misc = require "plugins.lite-xl-vibe.misc"
 
 local status = {}
 
@@ -31,7 +32,8 @@ function StatusView:get_items()
     local dirty = dv.doc:is_dirty()
     local indent = dv.doc.indent_info
     local indent_label = (indent and indent.type == "hard") and "tabs: " or "spaces: "
-    local indent_size = indent and tostring(indent.size) .. (indent.confirmed and "" or "*") or "unknown" 
+    local indent_size = indent and tostring(indent.size) .. (indent.confirmed and "" or "*") or "unknown"
+
 
     return {
       dirty and style.accent or style.text, style.icon_font, "f",
@@ -117,9 +119,12 @@ core.log('interface loaded?')
 -------------------------------------------------------------------------------
 -- Empty View Hint
 -------------------------------------------------------------------------------
-local Node = getmetatable(core.root_view.root_node)
-local node = Node("leaf")
-local EmptyView = getmetatable(node.views[1])
+-- -- this did not work
+-- local Node = getmetatable(core.root_view.root_node)
+-- local node = Node("leaf")
+-- local EmptyView = getmetatable(node.views[1])
+-- This, however, worked, yer it relies on active_view being an EmptyView. ..
+local EmptyView = getmetatable(core.active_view)
 
 local function draw_text(x, y, color)
   local th = style.big_font:get_height()
@@ -153,6 +158,7 @@ local function draw_text(x, y, color)
   end
   return w, dh
 end
+
 
 function EmptyView:draw()
   self:draw_background(style.background)

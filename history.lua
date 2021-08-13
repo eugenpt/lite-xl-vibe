@@ -65,7 +65,7 @@ function history.push_mark()
       }
       history.marks[history.marks_max].j=history.marks_ix
       
-      history.marks[history.marks_max].text = mark_text(mark)
+      history.marks[history.marks_max].text = mark_text(history.marks[history.marks_max])
     end
     history.last_event_time = system.get_time()
   end
