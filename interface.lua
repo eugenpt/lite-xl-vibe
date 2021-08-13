@@ -147,6 +147,7 @@ local function draw_text(x, y, color)
     { text = "Press Alt+h to show/scroll stroke suggestions" },
     { text = " " },
     { text = "A good place to start is to press <space>" },
+    { text = " .. and move the mouse a bit, to force drawing of the tooltip .." },
   }
   th = style.font:get_height()
   y = y + (dh - (th + style.padding.y) * #lines) / 2
