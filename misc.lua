@@ -150,15 +150,9 @@ assert(test:sub_suffix_literal('suffix','sub')=='string_sub')
 
 
 
-function string:find_literal(substr)
+function string:find_literal(substr, init)
   -- literal find, instead of pattern-based 
-  --  lua may have it, but I am not aware of it
-  for j=1, (#self - #substr + 1) do
-    if self:sub(j, j + #substr - 1) == substr then
-      return j
-    end
-  end
-  return nil
+  return string.find(self, substr, init or 1, true)
 end
 
 function string:isNumber()
@@ -280,6 +274,16 @@ function misc.fuzzy_match_key(list, key, needle, files)
   table.sort(res, misc.compare_key_fun('score'))
   for i, item in ipairs(res) do
     res[i] = item.text
+  end
+  return res
+end
+
+function misc.literal_match_key(list, key, needle)
+  local res = {}
+  for _, item in ipairs(list) do
+    if string.find_literal(item[key], needle) then
+      table.insert(res, item)
+    end
   end
   return res
 end
@@ -669,5 +673,11 @@ function core.confirm_close_all(close_fn, ...)
 end
   
 -------------------------------------------------------------------------------
+function misc.command_match_sug(text, item)
+  return item
+        and item.text 
+        and (item.text:sub(1,math.min(#text,#item.text))
+               == text:sub(1,math.min(#text,#item.text)))
+end
 
 return misc

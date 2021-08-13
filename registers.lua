@@ -123,11 +123,18 @@ end
 command.add("core.docview", {
   ["vibe:registers:search-and-paste"] = function()
     core.command_view:enter("Insert from register (clipboard)", function(text, item)
-      if item then
-        system.set_clipboard(item.content, true) -- true for skip ring
+      -- this might confuse some people,
+      --  the register selected may be matched by the input text
+      --    and not by the highlighted line in the CommandView
+      local s = misc.command_match_sug(text, item) 
+                and item.content
+                or registers[text]
+      if s then
+        system.set_clipboard(s, true) -- true for skip ring
         command.perform("vibe:paste")
       else 
         -- like.. ??
+        core.error("No record for [%s]", text)
       end
     end, register_fuzzy_sort({add_ring=true}))
   end,
@@ -135,7 +142,7 @@ command.add("core.docview", {
 command.add(misc.has_selection, {
   ["vibe:registers:search-and-copy"] = function()
     core.command_view:enter("Copy to register (clipboard)", function(text, item)
-      if item then
+      if misc.command_match_sug(text, item) then
         core.vibe.target_register = item.symbol
       else 
         core.vibe.target_register = text

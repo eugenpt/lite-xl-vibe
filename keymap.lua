@@ -197,6 +197,9 @@ keymap.add_nmap {
   ["C-y"] = "vibe:rotate-clipboard-ring",
   -- ["C-x3"] = "root:split-right", -- hmm.. doesnt work since 3 is read as num_arg
   
+  ["C-i"] = "vibe:history:move-back",
+  ["C-o"] = "vibe:history:move-forward",
+  
   -- hint of Doom emacs?
   ['<space><CR>'] = 'vibe:marks:create-or-move-to-named-mark',
   ['<space>m'] = 'vibe:marks:create-or-move-to-named-mark',
@@ -239,6 +242,8 @@ keymap.add_nmap {
   ["<space>bN"] = "core:new-doc",
   ["<space>bs"] = "doc:save",
   ["<space>bS"] = "doc:save-as",
+  ["<space>oj"] = "vibe:history:list-all",
+  ["<space>oh"] = "vibe:history:list-all",
   ["<space>ol"] = "core:open-log",
   ["<space>oe"] = "core:exec-history",
   ["<space>om"] = "vibe:marks:show-all",
@@ -246,10 +251,17 @@ keymap.add_nmap {
   ["<space>of"] = "vibe:open-file",
   ["<space>od"] = "vibe:open-select-dir",
   ["<space>o\\-"] = "vibe:open-select-dir",
-  ["<space>ef"] = "core:exec-file",
+  ["<space>sf"] = "core:find-file",
+  ["<space>st"] = "vibe:switch-to-tab-search",
+  ["<space>sF"] = "find-replace:find-pattern",
+  ["<space>sp"] = "project-search:find",
+  ["<space>sP"] = "project-search:fuzzy-find",
+  ["<space>sj"] = "vibe:history:search",
+  ["<space>sR"] = "vibe:registers-macro:list-all",
+  ['<space>sm'] = 'vibe:marks:create-or-move-to-named-mark',
   -- toggles
   ["<space>tm"] = "minimap:toggle-visibility",
-  ["<space>tt"] = "treeview:toggle",
+  -- ["<space>tt"] = "treeview:toggle",
   ["<space>tf"] = "core:toggle-fullscreen",
   ["<space>tc"] = "doc:toggle-line-comments",
   ["<space>tw"] = "draw-whitespace:toggle",
@@ -398,6 +410,7 @@ keymap.add_direct {
   ["ctrl+j"] = "root:switch-to-previous-tab",  
   -- ["ctrl+y"] = "vibe:rotate-clipboard-ring",
   ["alt+y"] = "vibe:rotate-clipboard-ring",
+  ["ctrl+/"] = "project-search:fuzzy-find",
 }
 
 -------------------------------------------------------------------------------

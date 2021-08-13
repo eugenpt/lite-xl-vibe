@@ -201,20 +201,20 @@ end
 -------------------------------------------------------------------------------
 -- -- based on lite-xl/lite-plugins/master/plugins/markers.lua
 -------------------------------------------------------------------------------
-local function shift_mark(mark, at, diff)
+function marks.shift_mark(mark, at, diff)
   mark['line'] = mark['line'] >= at and mark['line'] + diff or mark['line']
 end
 
-local function shift_lines(doc, at, diff)
+function marks.shift_lines(doc, at, diff)
   if diff == 0 then return end
   for _, mark in pairs(marks.global) do
     if mark.abs_filename == doc.abs_filename then
-      shift_mark(mark, at, diff)
+      marks.shift_mark(mark, at, diff)
     end
   end  
   if marks._local[doc.abs_filename] then
     for _, mark in pairs(marks._local[doc.abs_filename]) do
-      shift_mark(mark, at, diff)
+      marks.shift_mark(mark, at, diff)
     end
   end
 end
@@ -228,7 +228,7 @@ function Doc:raw_insert(line, col, text, ...)
   for _ in text:gmatch("\n") do
     line_count = line_count + 1
   end
-  shift_lines(self, line, line_count)
+  marks.shift_lines(self, line, line_count)
 end
 
 
@@ -236,7 +236,7 @@ local raw_remove = Doc.raw_remove
 
 function Doc:raw_remove(line1, col1, line2, col2, ...)
   raw_remove(self, line1, col1, line2, col2, ...)
-  shift_lines(self, line2, line1 - line2)
+  marks.shift_lines(self, line2, line1 - line2)
 end
 
 -------------------------------------------------------------------------------
@@ -250,10 +250,7 @@ command.add("core.docview", {
       core.command_view:set_text(doc():get_text(doc():get_selection()))
     end
     core.command_view:enter("Create or go to mark", function(text, item)
-      if item
-        and item.text 
-        and (item.text:sub(1,math.min(#text,#item.text))
-               == text:sub(1,math.min(#text,#item.text))) then
+      if misc.command_match_sug(text, item) then
         marks.goto_mark(item.symbol)
       else 
         if marks.have_local_mark_fun(text) then

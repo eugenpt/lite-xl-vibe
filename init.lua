@@ -42,6 +42,7 @@ vibe.interface = require "plugins.lite-xl-vibe.interface"
 require "plugins.lite-xl-vibe.FileView"
 
 require "plugins.lite-xl-vibe.visual_mode"
+vibe.history = require "plugins.lite-xl-vibe.history"
 
 vibe.workspace = require "plugins.lite-xl-vibe.vibeworkspace"
 

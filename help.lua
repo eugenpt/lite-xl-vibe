@@ -21,6 +21,7 @@ help.group_hints = {['normal'] = {
   ['<space>f'] = 'Buffers/Files/taBs...',
   ['<space>b'] = 'Buffers/Files/taBs...',
   ['<space>o'] = 'Open...',
+  ['<space>s'] = 'Search...',
   ['<space>t'] = 'Toggle...',
   ['<space>q'] = 'App/Workspace...',
 
@@ -58,6 +59,7 @@ help.group_hints = {['normal'] = {
     
   ["vi"] = "Select inside...",
   ["di"] = "Delete inside...",
+  ["y"] = "Yank...",
   ["yi"] = "Yank(copy) inside...",
   ["ci"] = "Change inside...",
 

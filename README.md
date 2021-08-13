@@ -23,19 +23,22 @@ Press `i` while in `NORMAL` mode to go back to `INSERT` mode
  
 # Features
 
+- Help on keystrokes and combinations via `Alt-H`
+
 - (Book-)Marks, including named ones (`Space+Return`) and one-keystroke ones 
   (`m`+letter to set, `'`/`\``+letter to go to a mark, uppercase for global marks)
 - Registers (one for each letter - you can copy to them and paste from them using `"`+letter as prefix for copy/paste command)
 - Clipboard Ring (after paste press `Ctrl+y` to change pasted text to one copied previously)
+- History of cursor positions (`<space>oj` to list all or `<space>sj` to search)
 - navigation to previous/next word (`b`/`w`/`e`)/WORD (`W`/`B`)/block (`[`/`]`)
 - deletion/selection(`d`/`v`/`c`) to previous/next word/.../mark
 - deletion/selection/..(`d`/`v`/`c`) inside(`i`) word(`w`)/()/[]/block(`b`) 
   (so `vi(` to select inside matching parenthesis, `ciw` to change inside of word)
 - macros (`q`+letter to start recording, `q` again to stop, `@`+letter to run)
 
-- vim-like custom bindings to lite commands or to sequences of strokes (keymap.add\_nmap({["strokes"]="command/sequence"})
+- vim-like custom bindings to lite commands or to sequences of strokes (`keymap.add\_nmap({["strokes"]="command/sequence"}`)
 
-- minimalistic File browser (`<space>of` and type in any directory )
+- minimalistic File browser (`<space>od` to open one of project dirs or `<space>of` and type in any directory )
 
 ##### DOOM/Emacs thingies:
 - `<space><return>` for (book-)marks
@@ -48,7 +51,8 @@ Press `i` while in `NORMAL` mode to go back to `INSERT` mode
 - `<space>:` for commands
 - `<space>;` for exec lua input (and show result in log and status)
 - `<space>C-;` for exec lua input and insert results at cursor
-- `<space>/` for fuzzy search in project
+- `<space>/` or `<space>sP` for fuzzy search in project
+- `Alt+h` for help on furhter keystrokes/combinations
 
 
 ## Differences in INSERT mode
@@ -57,6 +61,7 @@ Press `i` while in `NORMAL` mode to go back to `INSERT` mode
 - `Ctrl+e` moves cursor to end of the line
 - `Ctrl+p` - the previous line
 - `Ctrl+n` - the next line (to open new doc use `Ctrl+Shift+N`)
+- `Ctrl+m` - same as `return`
 - `Ctrl+/` opens `Fuzzy Find in Project`, for toggle comments press `Ctrl+x Ctrl+;`
 
 

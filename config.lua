@@ -16,4 +16,10 @@ config.vibe.stroke_sug_delay = 0.500
 -- set this to nil to stop showing. Or to sth else)
 config.vibe.permanent_status_tooltip = "Alt-h for help and it's scroll. i to insert, escape or ctrl+[ to normal"
 
+-- max line difference to join jumplist events
+config.vibe.history_max_dline_to_join = 5
+
+-- max time difference to join jumplist events
+config.vibe.history_max_dt_to_join = 0.5
+
 return config
