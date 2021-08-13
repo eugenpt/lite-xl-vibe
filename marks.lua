@@ -70,7 +70,7 @@ function marks.set_mark(symbol, global_flag)
     end
     marks._local[abs_filename][symbol] = mark
   end
-  core.log("Mark [%s] set", text)
+  core.log("Mark [%s] set", symbol)
 end
 
 function marks.goto_global_mark(symbol)
@@ -253,7 +253,7 @@ command.add("core.docview", {
       if misc.command_match_sug(text, item) then
         marks.goto_mark(item.symbol)
       else 
-        if marks.have_local_mark_fun(text) then
+        if marks.have_local_mark_fun(text)() then
           marks.goto_mark(text)  
         else
           marks.set_mark(text, true)

@@ -124,7 +124,7 @@ core.log('interface loaded?')
 -- local node = Node("leaf")
 -- local EmptyView = getmetatable(node.views[1])
 -- This, however, worked, yer it relies on active_view being an EmptyView. ..
-local EmptyView = getmetatable(core.active_view)
+local EmptyView = misc.EmptyView
 
 local function draw_text(x, y, color)
   local th = style.big_font:get_height()
@@ -167,6 +167,7 @@ function EmptyView:draw()
   local y = self.position.y + (self.size.y - h) / 2
   draw_text(x, y, style.dim)
 end
+
   
 -------------------------------------------------------------------------------
 

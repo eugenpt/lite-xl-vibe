@@ -259,6 +259,8 @@ keymap.add_nmap {
   ["<space>sj"] = "vibe:history:search",
   ["<space>sR"] = "vibe:registers-macro:list-all",
   ['<space>sm'] = 'vibe:marks:create-or-move-to-named-mark',
+  ["<space>wv"] = "root:split-right",  
+  ["<space>ws"] = "root:split-down",
   -- toggles
   ["<space>tm"] = "minimap:toggle-visibility",
   -- ["<space>tt"] = "treeview:toggle",

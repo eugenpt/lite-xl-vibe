@@ -4,9 +4,13 @@ local common = require "core.common"
 local DocView = require "core.docview"
 local LogView = require "core.logview"
 
+local misc = require "plugins.lite-xl-vibe.misc"
 local SavableView = require "plugins.lite-xl-vibe.SavableView"
 
 local vibeworkspace = {}
+vibeworkspace.add_save = {
+  ['misc.exec_history'] = {},
+}
 
 function vibeworkspace.workspace_files_for(project_dir)
   local basename = common.basename(project_dir)
@@ -215,6 +219,26 @@ function vibeworkspace.save_directories()
 end
 
 
+function vibeworkspace.add_save_str()
+  local add_save = {}
+  for k,v in pairs(vibeworkspace.add_save) do
+    add_save[k] = (v.save and v.save() or misc.get_dotsep(k))
+  end
+  return common.serialize(add_save)
+end
+
+function vibeworkspace.load_saved(add_saved)
+  for k,v in pairs(add_saved) do
+    if vibeworkspace.add_save[k] then
+      if vibeworkspace.add_save[k].load then
+        vibeworkspace.add_save[k].load(v)
+      else
+        misc.set_dotsep(k,v)
+      end
+    end
+  end
+end
+
 function vibeworkspace.save_workspace(filename)
   local root = vibeworkspace.get_unlocked_root(core.root_view.root_node)
   local workspace_filename = filename or vibeworkspace.abs_filename
@@ -222,7 +246,8 @@ function vibeworkspace.save_workspace(filename)
   if fp then
     local node_text = common.serialize(vibeworkspace.save_node(root))
     local dir_text = common.serialize(vibeworkspace.save_directories())
-    local str = string.format("return { path = %q, documents = %s, directories = %s }\n", core.project_dir, node_text, dir_text)
+    local str = string.format("return { path = %q, documents = %s, directories = %s, add_saved= %s }\n"
+                              , core.project_dir, node_text, dir_text, vibeworkspace.add_save_str())
     fp:write(str)
     fp:close()
     vibeworkspace.abs_filename = workspace_filename
@@ -275,6 +300,11 @@ function vibeworkspace.open_workspace_file(_filename)
     core.set_project_dir(workspace.path)
     vibeworkspace.load_workspace(workspace)
     vibeworkspace.abs_filename = filename
+    
+    vibeworkspace.add_saved = workspace.add_saved
+    if workspace.add_saved then
+      vibeworkspace.load_saved(workspace.add_saved)
+    end
   else
     core.error("cannot load workspace from %s", filename)
   end

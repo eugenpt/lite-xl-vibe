@@ -33,6 +33,7 @@ vibe.registers = require("plugins.lite-xl-vibe.registers")
 vibe.stroke_suggestions = {}
 
 local misc = require "plugins.lite-xl-vibe.misc"
+vibe.misc = misc
 vibe.translate = require "plugins.lite-xl-vibe.translate"
 require "plugins.lite-xl-vibe.keymap"
 vibe.com = require "plugins.lite-xl-vibe.com"

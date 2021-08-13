@@ -109,6 +109,34 @@ function misc.clipboard_ring_rotate()
 end
 
 -------------------------------------------------------------------------------
+-- Really global stuff
+-------------------------------------------------------------------------------
+
+-- so that get_dotsep('misc.exec_history') == core.vibe.misc.exec_history
+function misc.get_dotsep(s, obj)
+  core.log("get_dotsep, s=%s obj=%s", s, tostring(obj))
+  if not obj then
+    obj = core.vibe
+  end
+  local dotix = s:find_literal('.')
+  if dotix then
+    return misc.get_dotsep(s:sub(dotix+1), obj[s:sub(1,dotix-1)])
+  else
+    return obj[s]
+  end
+end
+
+function misc.set_dotsep(s, v, obj)
+  if obj == nil then
+    obj = core.vibe
+  end
+  local dotix = s:find_literal('.')
+  if dotix then
+    misc.set_dotsep(s:sub(dotix+1), v, obj[s:sub(1,dotix-1)])
+  else
+    obj[s] = v
+  end
+end
 
 local function str_mul(str,num)
   local r = ''
@@ -679,5 +707,36 @@ function misc.command_match_sug(text, item)
         and (item.text:sub(1,math.min(#text,#item.text))
                == text:sub(1,math.min(#text,#item.text)))
 end
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+local Node = getmetatable(core.root_view.root_node)
+local EmptyView = getmetatable(core.active_view)
+
+local node__add_view__orig = Node.add_view 
+
+function Node:add_view(view)
+  node__add_view__orig(self,view)
+  view.vibe_parent_node = self
+end
+
+
+function Node:close_all()
+  if self.type=="leaf" then
+    -- for _,v in ipairs(self.views) do
+    --   self:close_view(nil,v)
+    -- end
+    self.views = {}
+    self:add_view(EmptyView())
+  else
+    self.a:close_all()
+    self.b:close_all()
+  end
+end
+
+misc.Node = Node
+misc.EmptyView = EmptyView
+
+-------------------------------------------------------------------------------
 
 return misc
