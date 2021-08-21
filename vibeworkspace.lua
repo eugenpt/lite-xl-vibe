@@ -7,10 +7,23 @@ local LogView = require "core.logview"
 local misc = require "plugins.lite-xl-vibe.misc"
 local SavableView = require "plugins.lite-xl-vibe.SavableView"
 
+
 local vibeworkspace = {}
 vibeworkspace.add_save = {
   ['misc.exec_history'] = {},
 }
+-- Oh yeah I just did that.
+-- The above initialized is the sth sth I've come up with to save stuff.
+-- It is a table 
+--  each value is a table
+--   if value has `save` key, 
+--    use it as function to get sth serializeable
+--   otherwise, 
+--    use the key to the value as input for misc.get_dotsep
+--      (which basically does misc.get_dotsep('misc.lala') == vibe.misc.lala )
+--     and get serialized version of that to save to the workspace file
+--   ~same for load
+
 
 function vibeworkspace.workspace_files_for(project_dir)
   local basename = common.basename(project_dir)
