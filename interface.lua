@@ -59,9 +59,9 @@ function StatusView:get_items()
       (config.vibe.permanent_status_tooltip 
         and self.separator2 .. config.vibe.permanent_status_tooltip  or '')
     }, {
-      style.text, indent_label, indent_size,
+      style.dim, self.separator2, style.text, indent_label, indent_size,
       style.dim, self.separator2, style.text,
-      style.icon_font, "g",
+      -- style.icon_font, "g", -- why is this here anyway?
       style.font, style.dim, self.separator2, style.text,
       #dv.doc.lines, " lines",
       self.separator,
@@ -81,15 +81,74 @@ function StatusView:get_items()
     style.font,
     core.vibe.debug_str,
   }, {
-    style.icon_font, "g",
+    -- style.icon_font, "g",
     style.font, style.dim, self.separator2,
-    #core.docs, style.text, " / ",
+    style.text, self.separator2, #core.docs, " / ",
     #core.project_files, " files",
       style.code_font,
       style.text, ' |', string.format('#% 3s',core.vibe.num_arg),
       style.text, '|', string.format("% 7s",core.vibe.last_stroke), 
   }
 end
+
+local function draw_items(self, items, x, y, draw_fn)
+  local font = style.font
+  local color = style.text
+
+  for _, item in ipairs(items) do
+    if type(item) == "userdata" then
+      font = item
+    elseif type(item) == "table" then
+      color = item
+    else
+      x = draw_fn(font, color, item, nil, x, y, 0, self.size.y)
+    end
+  end
+
+  return x
+end
+
+
+local function text_width(font, _, text, _, x)
+  return x + font:get_width(text)
+end
+
+
+function StatusView:draw_items(items, right_align, yoffset)
+  local x, y = self:get_content_offset()
+  y = y + (yoffset or 0)
+  if right_align then
+    local w = draw_items(self, items, 0, 0, text_width)    
+    x = x + self.size.x - w - style.padding.x
+    
+    renderer.draw_rect(x, y, self.size.x, self.size.y + y % 1, style.background2)
+    
+    -- this return is what's changed
+    draw_items(self, items, x, y, common.draw_text)
+  else
+    x = x + style.padding.x
+    draw_items(self, items, x, y, common.draw_text)
+  end
+end
+
+
+function StatusView:draw()
+  self:draw_background(style.background2)
+
+  if self.message then
+    self:draw_items(self.message, false, self.size.y)
+  end
+
+  if self.tooltip_mode then
+    self:draw_items(self.tooltip)
+  else
+    local left, right = self:get_items()
+    self:draw_items(left)
+    self:draw_items(right, true)
+    self:draw_items(right, true, self.size.y) -- I mean, why not have it there
+  end
+end
+
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 

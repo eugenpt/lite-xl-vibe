@@ -16,6 +16,9 @@ local help = {}
 help.last_stroke_time = system.get_time()
 
 help.group_hints = {['normal'] = {
+  -- sth not in the Comments
+  ["C-g"] = "Clear sequence",
+  
   [":"] = "Prefix (stuff..)...",
   ["<space>"] = "PREFIX ...",
   ['<space>f'] = 'Buffers/Files/taBs...',
