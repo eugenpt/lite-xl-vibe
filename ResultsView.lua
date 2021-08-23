@@ -69,8 +69,12 @@ function ResultsView:new(title, items_fun, on_click_fun, sort_funs)
 end
 
 function ResultsView:fill_results()
-  self.selected_idx = 1
   self.results_src = self.items_fun()
+  self:reset_search()
+end
+
+function ResultsView:reset_search()
+  self.selected_idx = 1
   self.results = misc.copy(self.results_src)
 end
 
@@ -300,6 +304,7 @@ command.add(ResultsView, {
       if text == '' then
         resultsview.results = resultsview.results_src
         resultsview:sort()
+        resultsview:reset_search()
       else
         resultsview.results = misc.fuzzy_match_key(resultsview.results_src, 'search_text', text)
       end
@@ -309,6 +314,10 @@ command.add(ResultsView, {
       --   dv:scroll_to_make_visible(sel[1], sel[2])
       -- end
     end)
+  end,
+  
+  ["vibe:results:drop-search"] = function()
+    core.active_view:reset_search()
   end,
   
   ["vibe:results:sort"] = function()
@@ -337,7 +346,8 @@ keymap.add {
   ["end"]                = "vibe:results:move-to-end-of-doc",
   ["ctrl+f"]             = "vibe:results:search",
   ["ctrl+s"]             = "vibe:results:sort",
-  ["escape"]             = "vibe:results:close",
+  ["escape"]             = "vibe:results:drop-search",
+  ["ctrl+q"]             = "vibe:results:close",
 }
 
 return ResultsView

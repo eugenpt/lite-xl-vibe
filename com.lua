@@ -39,6 +39,9 @@ command.add(nil, {
     else
       core.vibe.reset_seq()
     end
+    if core.active_view:is(ResultsView) then
+      command.perform("vibe:results:drop-search")
+    end
   end,
   ["vibe:run-strokes"] = function()
     core.command_view:enter("Strokes to run:", function(text)

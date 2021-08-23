@@ -338,7 +338,7 @@ keymap.add_nmap({
   ["gg"]          = "vibe:results:move-to-start-of-doc",
   ["G"]           = "vibe:results:move-to-end-of-doc",
   ["q"]             = "vibe:results:close",
-  ["<ESC>"]             = "vibe:results:close",
+  ["<ESC>"]             = "vibe:results:drop-search",
 
   -- also try'n'keep the usual mappings (why not?)
   ["<up>"]                 = "vibe:results:select-previous",

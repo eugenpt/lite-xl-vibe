@@ -30,17 +30,17 @@ local FileView = ResultsView:extend()
 
 function FileView:save_info()
   -- not really that helpful
-  return { path=self.path }
+  return { path=self.path, history=self.history, history_cur_ix=self.history_cur_ix }
 end
 
 function FileView.load_info(info)
-  return FileView(info.path)
+  return FileView(info.path, info.history, info.history_cur_ix)
 end
 
-function FileView:new(path)
+function FileView:new(path, history, history_cur_ix)
   self.path = path or core.project_dir
-  self.history = { path }
-  self.history_cur_ix = 1
+  self.history = history or { path }
+  self.history_cur_ix = history_cur_ix or 1
   FileView.super.new(self,"F|"..self.path, function()
     local R = misc.list_dir(self.path)
     self.title = "F|"..self.path
