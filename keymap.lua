@@ -156,7 +156,7 @@ keymap.add_nmap {
   -- these probably should be in vmap. if only someone created it.. ;)
   ["y"] = "vibe:copy",
   ["d"] = "vibe:delete",
-  ["c"] = "di",
+  ["c"] = "vibe:change",
   
   ["x"] = "vibe:delete-symbol-under-cursor",
   -- actions through sequences, huh? I do like that.
@@ -263,6 +263,9 @@ keymap.add_nmap {
   ["<space>ws"] = "root:split-down",
   ["<space>wq"] = 'core:window-close',
   ["<space>wc"] = 'core:window:close-all-files',
+  ["C-x0"] = 'core:window-close',
+  ["C-x2"] = "root:split-down",
+  ["C-x3"] = "root:split-right",
   -- toggles
   ["<space>tm"] = "minimap:toggle-visibility",
   -- ["<space>tt"] = "treeview:toggle",
@@ -492,7 +495,7 @@ for obj_name,obj_lets in pairs(object_letters) do
       ['vi'..stroke] = "doc:select-"..obj_name,
       ['yi'..stroke] = "vi"..stroke .. "y",
       ['di'..stroke] = "vi"..stroke .. "d",
-      ['ci'..stroke] = "di"..stroke .. "i",
+      ['ci'..stroke] = "vi"..stroke .. "di",
     })
   end
 end
