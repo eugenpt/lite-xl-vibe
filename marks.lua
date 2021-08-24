@@ -327,8 +327,8 @@ end
 
 
 command.add(nil, {
-  ["vibe: Save Marks"] = marks.save,
-  ["vibe: Load Marks"] = marks.load,
+  ["vibe:marks:save"] = marks.save,
+  ["vibe:marks:load"] = marks.load,
 })
 
 -------------------------------------------------------------------------------

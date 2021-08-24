@@ -81,7 +81,7 @@ command.add(nil, {
   
   ["vibe:switch-to-last-tab"] = function()
     local node = core.root_view:get_active_node()
-    node:set_active_view(core.last_active_view)
+    node:set_active_view(misc.last_active_view)
   end,
   
   ["vibe:paste"] = function()

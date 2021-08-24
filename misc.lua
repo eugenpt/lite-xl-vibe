@@ -356,7 +356,6 @@ function misc.list_dir(path)
   return R
 end
 
-
 -- https://stackoverflow.com/a/4991602/2624911
 function misc.file_exists(name)
    local f=io.open(name,"r")
@@ -379,6 +378,8 @@ function misc.filesize_str(size)
   
   return s .. ' ' .. sfxs[exp + 1]
 end
+
+-----------------------------------
 
 function misc.get_tabs_list()
   local items = {}
@@ -783,5 +784,18 @@ command.add(nil, {
   end,
 })
 -------------------------------------------------------------------------------
+misc.core__set_active_view__orig = core.set_active_view
+function core.set_active_view(view)
+  if core.active_view
+     and view ~= core.active_view
+     and core.active_view ~= misc.last_active_view
+     and not (view:is(CommandView))
+     and not (core.active_view:is(CommandView))
+      then
+    -- when it's CommandView, switching to it as to last is crazy
+    misc.last_active_view = core.active_view
+  end
+  return misc.core__set_active_view__orig(view)
+end
 
 return misc
