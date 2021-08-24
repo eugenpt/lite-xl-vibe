@@ -54,6 +54,7 @@ function history.push_mark()
       mark.col = col
       mark.line_text = doc.lines[line]
       mark.text = mark_text(mark)
+      mark.time = 1*os.time()
     else
       history.marks_max = history.marks_max + 1
       history.marks_ix = history.marks_max
@@ -62,6 +63,7 @@ function history.push_mark()
         col = col,
         abs_filename = doc.abs_filename,
         line_text = doc.lines[line],
+        time = 1*os.time(),
       }
       history.marks[history.marks_max].j=history.marks_ix
       
@@ -75,6 +77,13 @@ history.doc__set_selection__orig = Doc.set_selection
 function Doc:set_selection(...)
   history.doc__set_selection__orig(self, ...)
   history.push_mark()  
+end
+history.doc__set_selections__orig = Doc.set_selections
+function Doc:set_selections(idx, ...)
+  history.doc__set_selections__orig(self, idx, ...)
+  if idx==1 then
+    history.push_mark()  
+  end
 end
 
 function history.goto_mark(mark)
@@ -125,13 +134,13 @@ command.add(nil, {
           line=mark.line, 
           col=mark.col, 
           j = j,
-          data=mark 
+          data=mark
         })
       end
       -- title: symbol and position
       for _,item in ipairs(items) do
-        item.title = string.format("[%s] %s at line %d (col %d): ",
-                                  item.j, item.file, item.line, item.col)
+        item.title = string.format("[%s] %s %s at line %d (col %d): ",
+                                  item.j, os.date('%x %X', item.data.time), item.file, item.line, item.col)
       end                             
       core.log('items_fun : %i items',#items)
       return items
