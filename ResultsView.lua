@@ -52,7 +52,7 @@ function ResultsView.load_info(info)
   return nil -- ResultsView(info.title)
 end
 
-function ResultsView:new(title, items_fun, on_click_fun, sort_funs)
+function ResultsView:new(title, items_fun, on_click_fun, sort_funs, draw_columns)
   ResultsView.super.new(self)
   self.module = "ResultsView"
   self.title = title
@@ -62,14 +62,22 @@ function ResultsView:new(title, items_fun, on_click_fun, sort_funs)
   self.on_click_fun = on_click_fun or function() end
   self.sort_funs = sort_funs
                     and (type(sort_funs)=='function' 
-                         and { sort_funs } or sort_funs)
-                    or { default_sort_fun }
+                         and { default=sort_funs } or sort_funs)
+                    or { name=default_sort_fun }
   self.sort_mode = -1
+  self.draw_columns = draw_columns or {'draw_items'}
   self:fill_results()
 end
 
 function ResultsView:fill_results()
   self.results_src = self.items_fun()
+  local color = common.lerp(style.text, style.accent, self.brightness / 100)
+  for _,item in pairs(self.results_src) do
+    item.draw_items = item.draw_items or {
+          style.font, style.dim, item.title or '',
+          style.code_font, color, item.text or ''
+      }
+  end
   self:reset_search()
 end
 
@@ -121,7 +129,7 @@ function ResultsView:update()
 end
 
 function ResultsView:get_results_yoffset()
-  return style.font:get_height() + style.padding.y * 3
+  return style.font:get_height() + style.padding.y * 3 + (#self.draw_columns > 1 and style.font:get_height()+style.padding.y or 0)
 end
 
 function ResultsView:get_line_height()
@@ -164,6 +172,10 @@ end
 function ResultsView:draw_items(items, x, y, w, h, draw_fn)
   local font = style.font
   local color = style.text
+  
+  if type(items)=="string" then
+    items = {items}
+  end
 
   for _, item in ipairs(items) do
     if type(item) == "userdata" then
@@ -186,62 +198,81 @@ function ResultsView:draw()
   local x, y = ox + style.padding.x, oy + style.padding.y
   local color = common.lerp(style.text, style.accent, self.brightness / 100)
   renderer.draw_text(style.font, 
-                     self.title .. (self.search_text
-                                    and ' Sarching for: '..self.search_text..''
-                                    or ''), 
+                     (self.title or '')
+                     .. ' | sort by '
+                       .. misc.keys(self.sort_funs)[math.abs(self.sort_mode)]
+                       .. (self.sort_mode < 0 and ' desc' or ' asc')
+                     .. (self.search_text
+                           and ' Sarching for: '..self.search_text..''
+                           or ''), 
                      x, y, color)
   
   -- horizontal line
   local yoffset = self:get_results_yoffset()
+  if #self.draw_columns>1 then
+    yoffset = yoffset - style.font:get_height()
+  end
+  local cox,coy = self:get_content_offset()
   local x = ox + style.padding.x
   local w = self.size.x - style.padding.x * 2
   local h = style.divider_size
   local color = common.lerp(style.dim, style.text, self.brightness / 100)
   renderer.draw_rect(x, oy + yoffset - style.padding.y, w, h, color)
   
+  local lh = style.font:get_height()
+  local lw = style.font:get_width("  |  ")
   -- results
   local y1, y2 = self.position.y, self.position.y + self.size.y
-  for i, item, x,y,w,h in self:each_visible_result() do
-    local color = style.text
-    if i == self.selected_idx then
-      color = style.accent
-      renderer.draw_rect(x, y, w, h, style.line_highlight)
+  local start_x = style.padding.x
+  local max_x = 0
+  for _,col_name in ipairs(self.draw_columns) do
+    start_x = max_x + lw
+    if #self.draw_columns > 1 then
+      -- column name on top
+      self:draw_items(
+        {style.dim, col_name}, 
+        cox + start_x,
+        yoffset + coy + style.divider_size,
+        self.size.x,
+        style.font:get_height(),
+        common.draw_text
+      )
     end
-    
-    x = x + style.padding.x
-    local draw_items = item.draw_items or {
-      style.font, style.dim, item.title or '',
-      style.code_font, color, item.text or ''
-    }
-    self:draw_items(draw_items, x, y, w, h, common.draw_text)
-      -- default to title and text
-      -- x = common.draw_text(style.font, style.dim, item.title or '', "left", x, y, w, h)
-      -- x = common.draw_text(style.code_font, color, item.text or '', "left", x, y, w, h)
+    for i, item, ox,y,w,h in self:each_visible_result() do
+      x = ox + start_x
+      local color = style.text
+      if i == self.selected_idx then
+        color = style.accent
+        renderer.draw_rect(x, y, w, h, style.line_highlight)
+      end
+      
+      self:draw_items(item[col_name], x, y, w, h, common.draw_text)
+      -- I am not sure renderer.draw_text inside common.<> returns x
+      x = self:draw_items(item[col_name], x, y, w, h, misc.text_width)
+      if x - ox > max_x then
+        max_x = x - ox
+      end
+    end
   end
   self:draw_scrollbar()
 end
 
 function ResultsView:next_sort_mode()
   self.sort_mode = self.sort_mode > 0 and -self.sort_mode or 1-self.sort_mode
-  if self.sort_mode > #self.sort_funs then
+  if self.sort_mode > #misc.keys(self.sort_funs) then
     self.sort_mode = 1
   end
 end
 
 function ResultsView:sort()
-  local items_src = self.results
-  local sort_vs = {}
-  local sort_vs_ixs = {}
-  for j, item in ipairs(items_src) do
-    local tv = self.sort_funs[math.abs(self.sort_mode)](item)
-    table.insert(sort_vs, tv)
-    sort_vs_ixs[tv] = j
-  end  
-  table.sort(sort_vs)
-  self.results = {}
-  for _,v in ipairs(sort_vs) do
-    table.insert(self.results, items_src[sort_vs_ixs[v]])
-  end
+  table.sort(self.results, misc.compare_fun( 
+                             self.sort_funs[
+                               misc.keys(
+                                 self.sort_funs
+                               )[math.abs(self.sort_mode)]
+                             ]
+                           )
+             )
   if self.sort_mode < 0 then
     self.results = misc.list_reverse(self.results)
   end

@@ -287,8 +287,12 @@ function misc.find_in_list(list, fun)
   return nil
 end
 
+function misc.compare_fun(fun)
+  return function(a,b) return fun(a)<fun(b) end
+end
+
 function misc.compare_key_fun(key)
-  return function(a,b) return a[key]>b[key] end
+  return function(a,b) return a[key]<b[key] end
 end
 
 function misc.fuzzy_match_key(list, key, needle, files)
@@ -357,6 +361,23 @@ end
 function misc.file_exists(name)
    local f=io.open(name,"r")
    if f~=nil then io.close(f) return true else return false end
+end
+
+function misc.filesize_str(size)
+  local sfxs = {"B", "KB", "MB", "GB", "TB", "PB"}
+  local exp = math.floor(math.log(size+1)/math.log(1024))
+  if exp>#sfxs then exp = #sfxs end
+  local v = size/math.pow(2, exp*10)
+ 
+  local s = string.format('%.3f', v)
+  
+  local dot_ix = s:find_literal('.') or #s
+  
+  s = (dot_ix > 4) and (s:sub(1,dot_ix-1)) or (s:sub(1,4))
+  
+  if s:sub(#s,#s)=='.' then s = s:sub(1,#s-1) end
+  
+  return s .. ' ' .. sfxs[exp + 1]
 end
 
 function misc.get_tabs_list()

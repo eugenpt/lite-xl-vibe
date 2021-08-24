@@ -48,10 +48,11 @@ function FileView:new(path, history, history_cur_ix)
     -- dirs
     table.insert(items, {
       abs_filename = misc.path_up(self.path),
-      draw_items = {"  .."},
-      filename = "..",
       type = "dir",
+      filename = "..",
+      draw_items = "  ..",
     })
+    --
     for _, dir in ipairs(R.dirs) do
       dir.draw_items = {style.accent , style.icon_font, "d",style.code_font, " ", dir.filename}
       table.insert(items, dir)
@@ -63,9 +64,16 @@ function FileView:new(path, history, history_cur_ix)
     end
     for _, item in ipairs(items) do
       item.search_text = (item.type=="dir" and "Dir" or "File" ) .. item.filename
+      -- columns
+      item.Name = item.draw_items
+      item.Size = item.size and misc.filesize_str(item.size or 0) or ''
+      item.Modified = item.modified and os.date("%a %Y-%m-%d %X", item.modified) or ''
     end
     return items
-  end, function(res)
+  end, 
+  
+  -- Action on click
+  function(res)
     if res.type == "dir" then
       local dv = core.active_view
       -- go to new path
@@ -81,9 +89,21 @@ function FileView:new(path, history, history_cur_ix)
     else
       core.root_view:open_doc(core.open_doc(res.abs_filename))
     end
-  end, function(item)
-    return item.search_text
-  end)
+  end, 
+  -- Sort funcs
+  {
+  ['name'] = function(item)
+    return item.type:sub(1,1)..item.search_text
+  end,
+  ['size'] = function(item)
+    return item.size or 0
+  end,
+  ['modified'] = function(item)
+    return item.modified or 0
+  end
+  },
+  -- columns to display
+  {'Name','Size','Modified'})
   self.module = "FileView"
 end
 
