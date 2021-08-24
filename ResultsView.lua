@@ -330,6 +330,13 @@ command.add(ResultsView, {
   end,
 })
 
+command.add_hook("vibe:escape", function()
+    if core.active_view:is(ResultsView) then
+      command.perform("vibe:results:drop-search")
+    end
+  end
+)
+
 -------------------------------------------------------------------------------
 
 keymap.add {
