@@ -76,6 +76,7 @@ end
 function ResultsView:reset_search()
   self.selected_idx = 1
   self.results = misc.copy(self.results_src)
+  self.search_text = nil
 end
 
 function ResultsView:get_name()
@@ -179,6 +180,25 @@ end
 
 function ResultsView:draw()
   self:draw_background(style.background)
+  
+  -- status
+  local ox, oy = self:get_content_offset()
+  local x, y = ox + style.padding.x, oy + style.padding.y
+  local color = common.lerp(style.text, style.accent, self.brightness / 100)
+  renderer.draw_text(style.font, 
+                     self.title .. (self.search_text
+                                    and ' Sarching for: '..self.search_text..''
+                                    or ''), 
+                     x, y, color)
+  
+  -- horizontal line
+  local yoffset = self:get_results_yoffset()
+  local x = ox + style.padding.x
+  local w = self.size.x - style.padding.x * 2
+  local h = style.divider_size
+  local color = common.lerp(style.dim, style.text, self.brightness / 100)
+  renderer.draw_rect(x, oy + yoffset - style.padding.y, w, h, color)
+  
   -- results
   local y1, y2 = self.position.y, self.position.y + self.size.y
   for i, item, x,y,w,h in self:each_visible_result() do
@@ -306,6 +326,7 @@ command.add(ResultsView, {
         resultsview:sort()
         resultsview:reset_search()
       else
+        resultsview.search_text = text
         resultsview.results = misc.fuzzy_match_key(resultsview.results_src, 'search_text', text)
       end
     end, function(explicit)
