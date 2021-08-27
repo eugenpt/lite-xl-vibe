@@ -17,12 +17,19 @@ local command = require "core.command"
 local config = require "core.config"
 local keymap = require "core.keymap"
 local DocView = require "core.docview"
+local StatusView = require "core.statusview"
+local LogView = require "core.docview"
 local Doc = require "core.doc"
 local CommandView = require "core.commandview"
+local RootView = require "core.rootview"
 local style = require "core.style"
 local config = require "core.config"
 local common = require "core.common"
 local translate = require "core.doc.translate"
+
+-- I mean. Why are these not exposed??
+local Node = getmetatable(core.root_view.root_node)
+local EmptyView = getmetatable(core.active_view)
 
 -- for tests
 local test
@@ -37,6 +44,110 @@ end
 local function doc()
   return core.active_view.doc
 end
+
+
+-------------------------------------------------------------------------------
+-- Lite compatibility                                                        --
+-------------------------------------------------------------------------------
+
+local USERDIR = rawget(_G,'USERDIR')
+
+if USERDIR == nil then
+  core.log("Lite compatibility..")
+  USERDIR = EXEDIR .. PATHSEP .. 'user' -- debug.getinfo(1).source:match("@?(.*/)")
+  keymap.add_direct = keymap.add_direct or keymap.add
+  
+  core.project_dir = core.project_dir or os.getenv("PWD") or io.popen("cd"):read()
+  core.project_directories = core.project_directories or {{name=core.project_dir}}
+  core.normalize_to_project_dir = core.normalize_to_project_dir or function(path)
+    return path
+  end
+  common.home_expand = common.home_expand or function(a) return a end
+  common.home_encode_list = common.home_encode_list or function(a) return a end
+  
+  common.serialize = common.serialize or function(val)
+    if type(val) == "string" then
+      return string.format("%q", val)
+    elseif type(val) == "table" then
+      local t = {}
+      for k, v in pairs(val) do
+        table.insert(t, "[" .. common.serialize(k) .. "]=" .. common.serialize(v))
+      end
+      return "{" .. table.concat(t, ",") .. "}"
+    end
+    return tostring(val)
+  end
+  
+  misc.core__quit__orig = core.quit
+  
+  core.quit = function()
+    core.confirm_close_docs(core.docs, function() misc.core__quit__orig(true) end)
+  end
+  
+  RootView.get_active_node_default = RootView.get_active_node_default or RootView.get_active_node
+
+  Node.close_all_docviews = Node.close_all_docviews or function(self,keep_active)
+    if self.type == "leaf" then
+      local i = 1
+      while i <= #self.views do
+        local view = self.views[i]
+        if view:is(DocView) and not view:is(CommandView) and not view:is(StatusView) and 
+          (not keep_active or view ~= self.active_view) then
+          table.remove(self.views, i)
+        else
+          i = i + 1
+        end
+      end
+      if #self.views == 0 and self.is_primary_node then
+        self:add_view(EmptyView())
+      end
+    else
+      self.a:close_all_docviews(keep_active)
+      self.b:close_all_docviews(keep_active)
+      if self.a:is_empty() and not self.a.is_primary_node then
+        self:consume(self.b)
+      elseif self.b:is_empty() and not self.b.is_primary_node then
+        self:consume(self.a)
+      end
+    end
+  end
+  
+  Node.is_empty = Node.is_empty or function (self)
+    if self.type == "leaf" then
+      return #self.views == 0 or (#self.views == 1 and self.views[1]:is(EmptyView))
+    else
+      return self.a:is_empty() and self.b:is_empty()
+    end
+  end
+
+  
+  RootView.close_all_docviews = RootView.close_all_docviews or function(self, keep_active)
+    self.root_node:close_all_docviews(keep_active)
+  end
+  
+  core.set_project_dir = core.set_project_dir or function(new_dir, change_project_fn)
+    local chdir_ok = pcall(system.chdir, new_dir)
+    if chdir_ok then
+      if change_project_fn then change_project_fn() end
+      core.project_dir = core.project_dir or os.getenv("PWD") or io.popen("cd"):read()
+      core.project_directories = core.project_directories or {{name=core.project_dir}}
+      core.project_files = {}
+      core.project_files_limit = false
+      return true
+    end
+    return false
+  end
+
+end
+
+
+misc.doc_abs_filename = function(doc)
+  return doc and (doc.abs_filename or system.absolute_path(doc.filename))
+end
+
+-- misc.USERDIR = USERDIR
+
+misc.USERDIR = rawget(_G,'USERDIR') or debug.getinfo(1).source:match("@?(.*/)")
 
 -------------------------------------------------------------------------------
 -- vim-like save to clipboard of all deleted text                            --
@@ -75,7 +186,7 @@ function system.set_clipboard(s, skip_ring)
     end
     core.vibe.flags['run_repeat_seq__started_clipboard'] = true
     -- accumulate repeated stuff
-    core.vibe.clipboard_ring[core.vibe.clipboard_ring_max] = 
+    core.vibe.clipboard_ring[core.vibe.clipboard_ring_max] =
         core.vibe.clipboard_ring[core.vibe.clipboard_ring_max] .. s
     core.vibe.clipboard_ring_ix = core.vibe.clipboard_ring_max
     core.vibe.clipboard_ring[core.vibe.clipboard_ring_max
@@ -95,7 +206,7 @@ function system.set_clipboard(s, skip_ring)
     end
     misc.system__set_clipboard(s)
   end
-end 
+end
 
 
 function misc.clipboard_ring_rotate()
@@ -155,7 +266,7 @@ getmetatable('string').__mul = function(s,n)
       return str_mul(s,n)
     end
   else
-    return str_mul(n,s)  
+    return str_mul(n,s)
   end
 end
 
@@ -179,7 +290,7 @@ assert(test:sub_suffix_literal('suffix','sub')=='string_sub')
 
 
 function string:find_literal(substr, init)
-  -- literal find, instead of pattern-based 
+  -- literal find, instead of pattern-based
   return string.find(self, substr, init or 1, true)
 end
 
@@ -194,7 +305,7 @@ function string:isNumber()
 end
 
 function misc.path_is_win_drive(path)
-  return (#path==2)and(path:sub(2,2)==':') 
+  return (#path==2)and(path:sub(2,2)==':')
 end
 
 function misc.path_up(path)
@@ -330,11 +441,11 @@ function misc.list_drives()
   for j=1,#letters do
     local path = letters:sub(j,j)..':'..'\\'
     local info = system.get_file_info(path)
-    if info then 
+    if info then
       info.filename = path
       info.abs_filename = letters:sub(j,j)..':'
       table.insert(R.dirs, info)
-      
+
     end
   end
   return R
@@ -367,15 +478,15 @@ function misc.filesize_str(size)
   local exp = math.floor(math.log(size+1)/math.log(1024))
   if exp>#sfxs then exp = #sfxs end
   local v = size/math.pow(2, exp*10)
- 
+
   local s = string.format('%.3f', v)
-  
+
   local dot_ix = s:find_literal('.') or #s
-  
+
   s = (dot_ix > 4) and (s:sub(1,dot_ix-1)) or (s:sub(1,4))
-  
+
   if s:sub(#s,#s)=='.' then s = s:sub(1,#s-1) end
-  
+
   return s .. ' ' .. sfxs[exp + 1]
 end
 
@@ -403,7 +514,7 @@ end
 -- scratch
 
 function misc.scratch_filepath()
-  return USERDIR .. PATHSEP .. "scratch.lua"
+  return misc.USERDIR .. PATHSEP .. "scratch.lua"
 end
 
 if not misc.file_exists(misc.scratch_filepath()) then
@@ -468,9 +579,9 @@ function misc.append_line_if_last_line(line)
 end
 
 function misc.find_in_line(symbol, backwards, include, _doc, _line, _col)
-  core.vibe.last_line_find = { 
-    ["backwards"] = backwards, 
-    ["symbol"] = symbol, 
+  core.vibe.last_line_find = {
+    ["backwards"] = backwards,
+    ["symbol"] = symbol,
     ["include"] = include,
   }
   if _doc == nil then
@@ -495,7 +606,7 @@ function misc.find_in_line(symbol, backwards, include, _doc, _line, _col)
         else
           return line, col
         end
-      else  
+      else
         if include then
           -- pass
         else
@@ -508,7 +619,7 @@ function misc.find_in_line(symbol, backwards, include, _doc, _line, _col)
       return _line, _col
     end
     line, col = line2, col2
-  end    
+  end
 end
 
 -- these are used later for translations and such
@@ -529,7 +640,7 @@ function misc.find_in_line_unmatched(symbol,symbol_match,backwards,include,_doc,
   local line = _line
   local col = _col
   local char
-  
+
   local n_unmatched = 0
   while true do
     local line2, col2 = _doc:position_offset(line, col, backwards and -1 or 1)
@@ -551,7 +662,7 @@ function misc.find_in_line_unmatched(symbol,symbol_match,backwards,include,_doc,
         else
           return line, col
         end
-      else  
+      else
         if include then
           -- pass
         else
@@ -564,7 +675,7 @@ function misc.find_in_line_unmatched(symbol,symbol_match,backwards,include,_doc,
       return _line, _col
     end
     line, col = line2, col2
-  end    
+  end
 end
 
 -------------------------------------------------------------------------------
@@ -607,7 +718,7 @@ for line in fp:lines() do
 end
 core.log(require_str)
 fp:close()
-    
+
 -------------------------------------------------------------------------------
 -- commands
 -------------------------------------------------------------------------------
@@ -632,22 +743,22 @@ command.add(nil, {
       if doc():has_selection() then
         text = doc():get_text(doc():get_selection())
       else
-        return nil  
+        return nil
       end
       doc():move_to(function() return line, col end, dv())
     end
     assert(load(text))()
   end,
-  
+
   ["core:test"] = function()
   end,
-  
+
   -- after some thoughts this was even more useful
   --  ( I mean you do need to `require` a lot of stuff.. )
   ["core:exec-file"] = function()
     assert(load(table.concat(doc().lines)))()
   end,
-  
+
   ["core:exec-input"] = function()
     core.command_view:set_text(misc.exec_text)
     core.command_view:enter("Exec", function(text, item)
@@ -660,7 +771,7 @@ command.add(nil, {
     end)
     misc.exec_text = ''
   end,
-  
+
   ["core:exec-input-and-insert"] = function()
     core.command_view:enter("Exec and insert at cursor", function(text)
       local s = assert(load(require_str .. "\n\nreturn "..text))()
@@ -669,14 +780,14 @@ command.add(nil, {
       core.active_view.doc:insert(line, col, misc.str(s))
     end)
   end,
---[[  
+--[[
   -- yeah, I do like vim
   ["so % core:exec-file"] = function()
     command.perform("core:exec-file")
   end,
   ["w doc:save"] = function()
     command.perform("doc:save")
-  end,  
+  end,
   ["q root:close"] = function()
     command.perform("root:close")
   end,
@@ -721,21 +832,19 @@ function core.confirm_close_docs(docs, close_fn, ...)
     close_fn(...)
   end
 end
-  
+
 -------------------------------------------------------------------------------
 function misc.command_match_sug(text, item)
   return item
-        and item.text 
+        and item.text
         and (item.text:sub(1,math.min(#text,#item.text))
                == text:sub(1,math.min(#text,#item.text)))
 end
 
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
-local Node = getmetatable(core.root_view.root_node)
-local EmptyView = getmetatable(core.active_view)
 
-local node__add_view__orig = Node.add_view 
+local node__add_view__orig = Node.add_view
 
 function Node:add_view(view)
   node__add_view__orig(self,view)
@@ -764,7 +873,7 @@ function Node:close()
     self.views = {}
     local view = EmptyView()
     self:add_view(view)
-    self:close_view(core.root_view.root_node, view)
+    self:close_active_view(core.root_view.root_node) --, view)
   else
     self.a:close()
     self.b:close()
@@ -778,7 +887,7 @@ command.add(nil, {
   ['core:window:close-all-files'] = function()
     core.active_view.vibe_parent_node:close_all()
   end,
-  
+
   ['core:window-close'] = function()
     core.active_view.vibe_parent_node:close()
   end,
@@ -797,5 +906,6 @@ function core.set_active_view(view)
   end
   return misc.core__set_active_view__orig(view)
 end
+
 
 return misc

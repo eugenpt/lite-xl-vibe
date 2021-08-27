@@ -49,7 +49,7 @@ marks._local = {}
 
 function marks.set_mark(symbol, global_flag)
   local line,col = doc():get_selection()
-  local abs_filename = doc().abs_filename
+  local abs_filename = misc.doc_abs_filename(doc())
   local mark = {
     ["abs_filename"] = abs_filename,
     ["line"] = line,
@@ -77,7 +77,7 @@ function marks.goto_global_mark(symbol)
   local mark = marks.global[symbol]
   if mark then
     core.log(common.serialize(mark))
-    if doc().abs_filename ~= mark.abs_filename then
+    if misc.doc_abs_filename(doc()) ~= mark.abs_filename then
       core.root_view:open_doc(core.open_doc(mark.abs_filename))
     end
     doc():set_selection(mark.line, mark.col)
@@ -88,7 +88,7 @@ function marks.goto_global_mark(symbol)
 end
 
 function marks.goto_local_mark(symbol)
-  local mark = marks._local[doc().abs_filename] and marks._local[doc().abs_filename][symbol]
+  local mark = marks._local[misc.doc_abs_filename(doc())] and marks._local[misc.doc_abs_filename(doc())][symbol]
   if mark then
     core.root_view:open_doc(core.open_doc(mark.abs_filename))
     doc():set_selection(mark.line, mark.col)
@@ -107,10 +107,11 @@ function marks.goto_mark(symbol)
 end
 
 function marks.translation(symbol, doc) -- line, col are not needed
+  local doc_abs_filename = misc.doc_abs_filename(doc)
   local mark = marks.global[symbol]
-               or (marks._local[doc.abs_filename]
-                   and marks._local[doc.abs_filename][symbol])
-  if mark and mark.abs_filename == doc.abs_filename then
+               or (marks._local[doc_abs_filename]
+                   and marks._local[doc_abs_filename][symbol])
+  if mark and mark.abs_filename == doc_abs_filename then
     -- pass?
   else
     marks.goto_global_mark(symbol)
@@ -132,11 +133,11 @@ function marks.have_local_mark_fun(symbol)
   return function()
     return doc() and (
           (
-          marks._local[doc().abs_filename] 
-          and marks._local[doc().abs_filename][symbol]
+          marks._local[misc.doc_abs_filename(doc())] 
+          and marks._local[misc.doc_abs_filename(doc())][symbol]
           ) or (
           marks.global[symbol]
-          and marks.global[symbol].abs_filename==doc().abs_filename
+          and marks.global[symbol].abs_filename==misc.doc_abs_filename(doc())
           and marks.global[symbol]
           )
         )
@@ -177,8 +178,12 @@ command.add("core.docview", {
                commands_from_tranlations({['local-'..c] = marks.translation_fun(c)}))
     
   local translations = {['global-'..C] = marks.translation_fun(C)}
-  command.add( marks.have_global_mark_fun(C), 
-               commands_from_tranlations(translations, true))
+  command.add( marks.have_global_mark_fun(C), {
+    ["doc:move-to-global-"..C] = function()
+      marks.goto_global_mark(C)    
+    end
+  })
+  
   -- but selects only go to locally defined marks!
   command.add( marks.have_local_mark_fun(C), 
                commands_from_tranlations(translations, false, true))
@@ -208,12 +213,12 @@ end
 function marks.shift_lines(doc, at, diff)
   if diff == 0 then return end
   for _, mark in pairs(marks.global) do
-    if mark.abs_filename == doc.abs_filename then
+    if mark.abs_filename == misc.doc_abs_filename(doc) then
       marks.shift_mark(mark, at, diff)
     end
   end  
-  if marks._local[doc.abs_filename] then
-    for _, mark in pairs(marks._local[doc.abs_filename]) do
+  if marks._local[misc.doc_abs_filename(doc)] then
+    for _, mark in pairs(marks._local[misc.doc_abs_filename(doc)]) do
       marks.shift_mark(mark, at, diff)
     end
   end
@@ -245,7 +250,7 @@ command.add("core.docview", {
   ['vibe:marks:create-or-move-to-named-mark'] = function()
     -- If you want, you could use doom's default bookmark name.. I won't
     -- core.command_view:set_text(doc().filename)
-    local doc_filename = doc().abs_filename
+    local doc_filename = misc.doc_abs_filename(doc())
     if misc.has_selection() then
       core.command_view:set_text(doc():get_text(doc():get_selection()))
     end
@@ -290,7 +295,7 @@ keymap.add_direct({
 -------------------------------------------------------------------------------
 
 function marks.filename()
-  return USERDIR .. PATHSEP .. "marks.lua"
+  return misc.USERDIR .. PATHSEP .. "marks.lua"
 end
 
 function marks.load(_filename)

@@ -27,7 +27,7 @@ vibeworkspace.add_save = {
 
 function vibeworkspace.workspace_files_for(project_dir)
   local basename = common.basename(project_dir)
-  local workspace_dir = USERDIR .. PATHSEP .. "ws"
+  local workspace_dir = misc.USERDIR .. PATHSEP .. "ws"
   local info_wsdir = system.get_file_info(workspace_dir)
   if not info_wsdir then
     local ok, err = system.mkdir(workspace_dir)
@@ -62,7 +62,7 @@ function vibeworkspace.consume_workspace_file(project_dir)
 end
 
 function vibeworkspace.savepath()
-  return USERDIR .. PATHSEP .. "vibe-ws.lua"
+  return misc.USERDIR .. PATHSEP .. "vibe-ws.lua"
 end
 
 function vibeworkspace.save_path()

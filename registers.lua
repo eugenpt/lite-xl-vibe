@@ -157,7 +157,7 @@ command.add(misc.has_selection, {
 -------------------------------------------------------------------------------
 
 local function registers_filename()
-  return USERDIR .. PATHSEP .. "registers.lua"
+  return misc.USERDIR .. PATHSEP .. "registers.lua"
 end
 
 local function registers_load(_filename)

@@ -39,13 +39,13 @@ end
 
 function history.push_mark()
   if core.active_view and core.active_view.doc 
-     and core.active_view.doc.abs_filename then
+     and (core.active_view.doc.abs_filename or core.active_view.doc.filename) then
     local doc = core.active_view.doc
     local line, col = doc:get_selection()
     
     local mark = history.marks[history.marks_ix]
     
-    if mark and mark.abs_filename == doc.abs_filename
+    if mark and mark.abs_filename == (doc.abs_filename or doc.filename)
        and (math.abs(mark.line - line)<=config.vibe.history_max_dline_to_join
             or (system.get_time() - history.last_event_time <= config.vibe.history_max_dt_to_join))
          then
@@ -61,7 +61,7 @@ function history.push_mark()
       history.marks[history.marks_max] = {
         line = line,
         col = col,
-        abs_filename = doc.abs_filename,
+        abs_filename = doc.abs_filename or doc.filename,
         line_text = doc.lines[line],
         time = 1*os.time(),
       }
@@ -89,7 +89,7 @@ end
 function history.goto_mark(mark)
   if core.active_view
      and core.active_view.doc 
-     and core.active_view.doc.abs_filename==mark.abs_filename 
+     and (core.active_view.doc.abs_filename or core.active_view.doc.filename)==mark.abs_filename 
   then
     -- pass, we are here
   else

@@ -164,7 +164,7 @@ command.add(nil, {
       local items = {}
       for _, doc in ipairs(core.docs) do
         table.insert(items, {
-          ["text"]   = doc.abs_filename,
+          ["text"]   = misc.doc_abs_filename(doc),
           ["doc"] = doc,
         })
       end

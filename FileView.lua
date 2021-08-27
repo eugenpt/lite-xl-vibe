@@ -118,8 +118,8 @@ end
 command.add(nil, {
   ["vibe:open-file"] = function()
     local view = core.active_view
-    if view.doc and view.doc.abs_filename then
-      local dirname, filename = view.doc.abs_filename:match("(.*)[/\\](.+)$")
+    if view.doc and (view.doc.abs_filename or view.doc.filename) then
+      local dirname, filename = misc.doc_abs_filename(view.doc):match("(.*)[/\\](.+)$")
       if dirname then
         dirname = core.normalize_to_project_dir(dirname)
         local text = dirname == core.project_dir and "" or common.home_encode(dirname) .. PATHSEP
@@ -151,7 +151,7 @@ command.add(nil, {
     local items = {}
     -- first - dir of the current file
     if core.active_view and core.active_view.doc then
-      items[misc.path_up(core.active_view.doc.abs_filename)] = 1
+      items[misc.path_up(misc.doc_abs_filename(core.active_view.doc))] = 1
     end
     -- then all working dirs
     for _, dir in ipairs(core.project_directories) do
