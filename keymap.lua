@@ -135,8 +135,6 @@ keymap.add_nmap {
   ["]"] = "doc:move-to-next-block-end",
   ["gg"] = "vibe:move-to-start-of-doc",
   ["G"] = "vibe:move-to-end-of-doc",
-  ["C-k"] = "root:switch-to-next-tab",
-  ["C-j"] = "root:switch-to-previous-tab",
   -- well..  also sort of navigation?
   ["C-m"] = { "autocomplete:complete", "command:submit", "doc:move-to-next-line", "dialog:select" },
   -- simple editing
@@ -261,14 +259,18 @@ keymap.add_nmap {
   ['<space>sm'] = 'vibe:marks:create-or-move-to-named-mark',
   ["<space>wv"] = "root:split-right",  
   ["<space>ws"] = "root:split-down",
+  ["<space>wh"] = "root:switch-to-left",
+  ["<space>wj"] = "root:switch-to-up",
+  ["<space>wk"] = "root:switch-to-down",
+  ["<space>wl"] = "root:switch-to-right",
   ["<space>wq"] = 'core:window-close',
-  ["<space>wc"] = 'core:window:close-all-files',
+  ["<space>wc"] = 'core:window:close-all-files', -- clear
   ["C-x0"] = 'core:window-close',
   ["C-x2"] = "root:split-down",
   ["C-x3"] = "root:split-right",
   -- toggles
   ["<space>tm"] = "minimap:toggle-visibility",
-  -- ["<space>tt"] = "treeview:toggle",
+  ["<space>tt"] = "treeview:toggle",
   ["<space>tf"] = "core:toggle-fullscreen",
   ["<space>tc"] = "doc:toggle-line-comments",
   ["<space>tw"] = "draw-whitespace:toggle",
@@ -528,6 +530,8 @@ keymap.add_nmap({
 keymap.add_nmap({
   ["C-h"] = "root:switch-to-left",
   ["C-l"] = "root:switch-to-right",
+  ["C-k"] = "root:switch-to-next-tab",
+  ["C-j"] = "root:switch-to-previous-tab",
   [":r"] = "core:restart",
   ["A-j"] = "root:move-tab-left",
   ["A-k"] = "root:move-tab-right",

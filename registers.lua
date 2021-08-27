@@ -34,7 +34,6 @@ local function stop_recording_macro(symbol)
 end
 
 for _,symbol in ipairs(kb.all_typed_symbols) do
-
 command.add(nil, {
   ["vibe:target-register-"..symbol] = function()
     core.log("vibe:target-register-"..symbol)
@@ -44,7 +43,7 @@ command.add(nil, {
 
 command.add(function() return not core.vibe.flags['recording_macro'] end,{
   ["vibe:macro:start-recording-"..symbol] = function()
-    start_recording_macro(symbol) 
+    start_recording_macro(symbol)
   end,
   ["vibe:macro:play-macro-"..symbol] = function()
     core.log_quiet('play macro for %s = |%s|', symbol, registers[symbol])
@@ -58,7 +57,7 @@ command.add(function() return core.vibe.flags['recording_macro'] end,{
   ["vibe:macro:stop-recording"] = function()
     -- remove the q
     -- -- TODO: write a proper thing here..
-    registers[core.vibe.recording_register] = 
+    registers[core.vibe.recording_register] =
       registers[core.vibe.recording_register]:sub(1,
         #registers[core.vibe.recording_register] - 1)
     --
@@ -126,13 +125,13 @@ command.add("core.docview", {
       -- this might confuse some people,
       --  the register selected may be matched by the input text
       --    and not by the highlighted line in the CommandView
-      local s = misc.command_match_sug(text, item) 
+      local s = misc.command_match_sug(text, item)
                 and item.content
                 or registers[text]
       if s then
         system.set_clipboard(s, true) -- true for skip ring
         command.perform("vibe:paste")
-      else 
+      else
         -- like.. ??
         core.error("No record for [%s]", text)
       end
@@ -144,7 +143,7 @@ command.add(misc.has_selection, {
     core.command_view:enter("Copy to register (clipboard)", function(text, item)
       if misc.command_match_sug(text, item) then
         core.vibe.target_register = item.symbol
-      else 
+      else
         core.vibe.target_register = text
       end
       command.perform("vibe:copy")
@@ -177,7 +176,7 @@ local function registers_load(_filename)
     system.set_clipboard(core.vibe.clipboard_ring[core.vibe.clipboard_ring_max], true)
   else
     core.error("vibe: Error while loading registers file")
-  end  
+  end
 end
 
 local function registers_save(_filename)
