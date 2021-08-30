@@ -26,14 +26,14 @@ vibe.flags['run_repeat_seq'] = false
 vibe.flags['recording_macro'] = false
 vibe.flags['requesting_help_stroke_sugg'] = false
 
+local misc = require "plugins.lite-xl-vibe.misc"
+vibe.misc = misc
+
 vibe.target_register = nil
 vibe.target_register = nil
 vibe.registers = require("plugins.lite-xl-vibe.registers")
-
 vibe.stroke_suggestions = {}
 
-local misc = require "plugins.lite-xl-vibe.misc"
-vibe.misc = misc
 vibe.translate = require "plugins.lite-xl-vibe.translate"
 require "plugins.lite-xl-vibe.keymap"
 vibe.com = require "plugins.lite-xl-vibe.com"
