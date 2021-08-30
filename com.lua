@@ -334,7 +334,7 @@ command.add(nil, {
         function(s, q) return common.fuzzy_match(s, q) and 1 end),
 })
 
-if regex then
+if rawget(_G,"regex") then
 command.add(nil, {
   ["vibe:inline-project-regex-search"] = com.inline_search.general_command_fun(
         function(s, q) 
