@@ -22,4 +22,7 @@ config.vibe.history_max_dline_to_join = 5
 -- max time difference to join jumplist events
 config.vibe.history_max_dt_to_join = 0.5
 
+-- max number of inline project search items to show
+config.vibe.inline_search_maxN = 10
+
 return config

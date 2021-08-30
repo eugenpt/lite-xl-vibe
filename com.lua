@@ -2,6 +2,7 @@
 local core = require "core"
 local command = require "core.command"
 local common = require "core.common"
+local config = require "core.config"
 local keymap = require "core.keymap"
 local style = require "core.style"
 local translate = require "core.doc.translate"
@@ -222,5 +223,125 @@ command.add(nil, {
     core.root_view:get_active_node_default():add_view(mv)
   end,
 })
+
+com.inline_search = {}
+com.inline_search.search_q = nil
+-- com.inline_search.match_fun = function(s, q) return common.fuzzy_match(s, q) and 1 end
+com.inline_search.match_fun = function(s, q) return s:lower():find(q, nil, true) end
+com.inline_search.thread_name = nil
+
+
+
+
+local function find_all_matches_in_file(t, abs_filename, fn)
+  local fp = io.open(abs_filename)
+  if not fp then return t end
+  local n = 1
+  for line in fp:lines() do
+    local s = fn(line)
+    if s then
+      -- Insert maximum 256 characters. If we insert more, for compiled files, which can have very long lines
+      -- things tend to get sluggish. If our line is longer than 80 characters, begin to truncate the thing.
+      local start_index = math.max(s - 80, 1)
+      table.insert(t, { 
+        abs_filename = abs_filename, 
+        text = core.normalize_to_project_dir(abs_filename)..' | '..(start_index > 1 and "..." or "") .. line:sub(start_index, 256 + start_index), 
+        line = n, 
+        col = s 
+      })
+      core.redraw = true
+      if #t >= config.vibe.inline_search_maxN then
+        return
+      end
+    end
+    if n % 100 == 0 then 
+      coroutine.yield()
+      if core.threads then
+        return
+      end
+    end
+    n = n + 1
+    core.redraw = true
+  end
+  fp:close()
+end
+
+local function project_search(thread_name, list, text, fn)
+  local i = 1
+  for dir_name, file in core.get_project_files() do
+    if com.inline_search.stop_flag then
+      return
+    end
+    if file.type == "file" then
+      local path = (dir_name == core.project_dir and "" or (dir_name .. PATHSEP))
+      find_all_matches_in_file(list, path .. file.filename, fn)
+      if #list >= config.vibe.inline_search_maxN then
+        return
+      end
+    end
+    i = i + 1
+  end
+  core.redraw = true
+end
+
+function com.inline_search:update_q(q)
+  if self.search_q == q then
+    -- pass
+  else
+    -- stop search
+    if core.threads[com.inline_search.thread_name] then
+      core.threads[com.inline_search.thread_name] = nil -- .stop = true
+    end
+    self.search_q = q
+    if q == nil then
+      return
+    end
+    local thread_name = 'inline_search'..tostring(system.get_time)
+    -- restart search
+    core.add_thread(function()
+      project_search(thread_name, core.command_view.suggestions, q, function(s) return com.inline_search.match_fun(s,q) end)
+    end, thread_name)
+    com.inline_search.thread_name = thread_name
+  end
+end
+
+com.inline_search.general_command_fun = function(match_fun)
+  return function()
+    com.inline_search.match_fun = match_fun
+    core.command_view:enter("Find in project:", function(text, item)
+      if item then
+        misc.goto_mark(item)
+      else
+      
+      end
+    end, 
+    --suggest
+    function(text)
+      com.inline_search:update_q(text)
+    end, 
+    -- cancel
+    function()
+      com.inline_search:update_q()
+  end)
+  end
+end
+
+
+command.add(nil, {
+  ["vibe:inline-project-search"] = com.inline_search.general_command_fun(
+        function(s, q) return s:lower():find(q, nil, true) end),
+  ["vibe:inline-project-fuzzy-search"] = com.inline_search.general_command_fun(
+        function(s, q) return common.fuzzy_match(s, q) and 1 end),
+})
+
+if regex then
+command.add(nil, {
+  ["vibe:inline-project-regex-search"] = com.inline_search.general_command_fun(
+        function(s, q) 
+          local re = regex.compile(q, "i")
+          return regex.cmatch(re, s) 
+        end),
+})
+end
 
 return com

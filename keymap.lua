@@ -105,6 +105,11 @@ keymap.add_nmap_override {
 }
 
 keymap.add_nmap {
+  ["C-g"] = "vibe:escape",
+  ["C-["] = "vibe:escape",
+  ["<ESC>"] = "vibe:escape",
+  ["A-h"] = { "vibe:help:scroll", "vibe:help-suggest-stroke" },
+  -- 
   ["i"] = "vibe:switch-to-insert-mode",
   ["C-P"] = "core:find-command",
   ["A-x"] = "core:find-command",
@@ -202,7 +207,7 @@ keymap.add_nmap {
   ['<space><CR>'] = 'vibe:marks:create-or-move-to-named-mark',
   ['<space>m'] = 'vibe:marks:create-or-move-to-named-mark',
   ["<space>x"] = "vibe:open-scratch-buffer",
-  ["<space>/"] = "project-search:fuzzy-find",
+  ["<space>/"] = "vibe:inline-project-search", -- "project-search:fuzzy-find",
   ["<space>:"] = "A-x",
   ["<space>;"] = "core:exec-input",
   ["<space>C-;"] = "core:exec-input-and-insert",
@@ -366,7 +371,7 @@ keymap.add_nmap({
   ["H"] = "vibe:fileview:go-back",
   ["L"] = "vibe:fileview:go-forward",
   ["K"] = "vibe:fileview:go-up",
-  ["C-k"] = "vibe:fileview:go-up",
+  -- ["C-k"] = "vibe:fileview:go-up", -- conflicts with next-tab
   ["C-<left>"] = "vibe:fileview:go-back",
   ["C-<right>"] = "vibe:fileview:go-forward",
   ["C-<up>"] = "vibe:fileview:go-up",
