@@ -568,6 +568,16 @@ function misc.drop_selection()
   doc():set_selection(line,col)
 end
 
+function misc.goto_mark(mark)
+  -- mark = {abs_filename=..,line=..,col=..}
+  if misc.doc_abs_filename(doc()) ~= mark.abs_filename then
+    core.log('jumping to file %s', mark.abs_filename)
+    core.root_view:open_doc(core.open_doc(mark.abs_filename))
+  end
+  doc():set_selection(mark.line, mark.col)
+end
+
+
 function misc.move_to_line(line)
   doc():move_to(function() return line,0 end, dv())
 end

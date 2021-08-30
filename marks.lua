@@ -74,14 +74,10 @@ function marks.set_mark(symbol, global_flag)
 end
 
 function marks.goto_global_mark(symbol)
-  local mark = marks.global[symbol]
+  -- also accepts mark as the argument
+  local mark = symbol.abs_filename and symbol or marks.global[symbol]
   if mark then
-    core.log(common.serialize(mark))
-    if misc.doc_abs_filename(doc()) ~= mark.abs_filename then
-      core.root_view:open_doc(core.open_doc(mark.abs_filename))
-    end
-    doc():set_selection(mark.line, mark.col)
-    core.log("Jumped to (global) mark [%s]", symbol)
+    misc.goto_mark(mark)
   else
     core.vibe.debug_str = 'no mark for '..symbol
   end
@@ -90,8 +86,7 @@ end
 function marks.goto_local_mark(symbol)
   local mark = marks._local[misc.doc_abs_filename(doc())] and marks._local[misc.doc_abs_filename(doc())][symbol]
   if mark then
-    core.root_view:open_doc(core.open_doc(mark.abs_filename))
-    doc():set_selection(mark.line, mark.col)
+    misc.goto_mark(mark)
     core.log("Jumped to (local) mark [%s]", symbol)
   else
     core.vibe.debug_str = 'no mark for ' .. symbol
