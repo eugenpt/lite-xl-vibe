@@ -531,17 +531,41 @@ local function doc()
 end
 
 local tablestr_depth = 0
-local function str(a)
+local str_infighter = {} -- Infinity Fighter. you'll see.
+local function str(a, cur_path)
+  cur_path = cur_path or 'root'
   local prefix = ' ' * tablestr_depth
   tablestr_depth = tablestr_depth + 1
   local R = ''
   if type(a) == 'table' then
+    if str_infighter[a] then
+      return '<'..str_infighter[a]..'>'
+    else
+      str_infighter[a] = cur_path
+    end
     if tablestr_depth > (config.vibe.misc_str_max_depth or 4) then
-      R = '<table>'
+      R = '<'..tostring(a)..'>'
     else
       R = '{'
+      local listN = 0
+      local is_list = true
       for j,ja in pairs(a) do
-        R = R .. '\n' .. prefix .. '[' .. tostring(j) .. '] = ' .. str(ja)
+        if type(j) ~= "number" then
+          is_list = false
+          break
+        end
+      end
+
+      for j,ja in pairs(a) do
+        listN = listN + 1
+        if not is_list or listN <= config.vibe.misc_str_max_list then
+          local s = '[' .. tostring(j) .. ']'
+          R = R .. '\n' .. prefix .. s .. ' = ' .. str(ja,cur_path..s)
+        end
+      end
+      if is_list and listN > config.vibe.misc_str_max_list then
+        R = R .. '\n' .. prefix
+            .. string.format("<%i more elements..>", listN - config.vibe.misc_str_max_list)
       end
       R = R .. '\n' .. prefix .. '}'
     end
@@ -556,6 +580,7 @@ end
 
 function misc.str(a)
   tablestr_depth = 0
+  str_infighter = {}
   return str(a)
 end
 
