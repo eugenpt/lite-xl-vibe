@@ -772,10 +772,31 @@ command.add(nil, {
   ["core:exec-input"] = function()
     core.command_view:set_text(misc.exec_text)
     core.command_view:enter("Exec", function(text, item)
-      core.log("%s", misc.str(assert(load(require_str .. "\n\nreturn "..text))()))
+      -- I do like persistent and changeable globals.
+      local temp = getmetatable(_G).__newindex
+      getmetatable(_G).__newindex = nil
+      -- try with return first to print some value
+      local F, err = load(require_str .. "\n\nreturn "..text)
+      if err then
+        -- try and guess the last assignment to display var's new value
+        local var = text:match("([^\n]+)=[^\n]+$")
+        F,err = load(
+          require_str .. "\n\n" 
+          .. text 
+          .. "\nreturn " .. (var or 'done')
+        )
+      end  
+      -- save to history (regardless of load success)
       if (item == nil) or (text ~= item.text) then
         table.insert(misc.exec_history, text)
       end
+      if F then
+        core.log("%s", misc.str(F()))
+      else
+        core.error("%s",err)
+      end
+      -- aand restore strict
+      getmetatable(_G).__newindex = temp
     end, function(text)
       return common.fuzzy_match(misc.exec_history, text)
     end)
