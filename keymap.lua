@@ -207,6 +207,8 @@ keymap.add_nmap {
   ['<space><CR>'] = 'vibe:marks:create-or-move-to-named-mark',
   ['<space>m'] = 'vibe:marks:create-or-move-to-named-mark',
   ["<space>x"] = "vibe:open-scratch-buffer",
+  ["<space>C-/"] = "vibe:inline-project-regex-search",
+  ["<space>?"] = "vibe:inline-project-fuzzy-search",
   ["<space>/"] = "vibe:inline-project-search", -- "project-search:fuzzy-find",
   ["<space>:"] = "A-x",
   ["<space>;"] = "core:exec-input",

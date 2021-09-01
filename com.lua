@@ -256,9 +256,6 @@ local function find_all_matches_in_file(t, abs_filename, fn)
     end
     if n % 100 == 0 then 
       coroutine.yield()
-      if core.threads then
-        return
-      end
     end
     n = n + 1
     core.redraw = true
