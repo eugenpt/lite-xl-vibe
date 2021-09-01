@@ -532,17 +532,19 @@ end
 
 local tablestr_depth = 0
 local str_infighter = {} -- Infinity Fighter. you'll see.
-local function str(a, cur_path)
+local function str(a, cur_path, ignore_prefix)
   cur_path = cur_path or 'root'
-  local prefix = ' ' * tablestr_depth
+  local prefix = ignore_prefix and '' or (' ' * tablestr_depth)
   tablestr_depth = tablestr_depth + 1
   local R = ''
-  if type(a) == 'table' then
+  if type(a) == "table" or type(a) == "function" then
     if str_infighter[a] then
-      return '<'..str_infighter[a]..'>'
+      return str_infighter[a]
     else
       str_infighter[a] = cur_path
     end
+  end
+  if type(a) == 'table' then
     if tablestr_depth > (config.vibe.misc_str_max_depth or 4) then
       R = '<'..tostring(a)..'>'
     else
@@ -559,8 +561,8 @@ local function str(a, cur_path)
       for j,ja in pairs(a) do
         listN = listN + 1
         if not is_list or listN <= config.vibe.misc_str_max_list then
-          local s = '[' .. tostring(j) .. ']'
-          R = R .. '\n' .. prefix .. s .. ' = ' .. str(ja,cur_path..s)
+          local s = '[' .. str(j, cur_path, true) .. ']'
+          R = R .. '\n' .. prefix .. s .. ' = ' .. str(ja,cur_path..s) ..','
         end
       end
       if is_list and listN > config.vibe.misc_str_max_list then
@@ -578,10 +580,10 @@ local function str(a, cur_path)
   return prefix .. R
 end
 
-function misc.str(a)
+function misc.str(a, path)
   tablestr_depth = 0
   str_infighter = {}
-  return str(a)
+  return str(a, path)
 end
 
 function misc.has_selection()
@@ -802,13 +804,15 @@ command.add(nil, {
       getmetatable(_G).__newindex = nil
       -- try with return first to print some value
       local F, err = load(require_str .. "\n\nreturn "..text)
+      local var_name = text
       if err then
+        core.log("return didnt work")
         -- try and guess the last assignment to display var's new value
-        local var = text:match("([^\n]+)=[^\n]+$")
+        var_name = text:match("(%a[%a%d]*)%s*=[^\n]+$")
         F,err = load(
           require_str .. "\n\n" 
           .. text 
-          .. "\nreturn " .. (var or 'done')
+          .. "\nreturn " .. (var_name or '"done"')
         )
       end  
       -- save to history (regardless of load success)
@@ -816,7 +820,7 @@ command.add(nil, {
         table.insert(misc.exec_history, text)
       end
       if F then
-        core.log("%s", misc.str(F()))
+        core.log("%s", misc.str(F(), var_name))
       else
         core.error("%s",err)
       end

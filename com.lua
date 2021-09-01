@@ -289,7 +289,7 @@ function com.inline_search:update_q(q)
     -- pass
   else
     -- stop search
-    if core.threads[com.inline_search.thread_name] then
+    if com.inline_search.thread_name and core.threads[com.inline_search.thread_name] then
       core.threads[com.inline_search.thread_name] = nil -- .stop = true
     end
     self.search_q = q
