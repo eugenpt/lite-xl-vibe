@@ -199,13 +199,15 @@ local function draw_text(x, y, color)
     { fmt = "%s to change project folder", cmd = "core:change-project-folder" },
     { fmt = "%s to open a project folder", cmd = "core:open-project-folder" },
     { text = " " },
+    { text = "Ctrl+N/P selects next/previous of the suggestions" },
+    { text = " " },
     { text = "you are in "..get_mode_str().." mode now" },
     { text = "Escape / Ctrl+[ to enter NORMAL mode as in VIM"  },
     { text = "while in NORMAL mode, use <i> to enter INSERT mode again"  },
     { text = " " },
     { text = "Press Alt+h to show/scroll stroke suggestions" },
     { text = " " },
-    { text = "A good place to start is to press <space>" },
+    { text = "A good place to start is to press " .. (core.vibe.mode=="normal" and "" or "<ESC>") .. "<space>" },
     { text = " .. and move the mouse a bit, to force drawing of the tooltip .." },
   }
   th = style.font:get_height()

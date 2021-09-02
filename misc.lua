@@ -91,8 +91,12 @@ if USERDIR == nil then
       local i = 1
       while i <= #self.views do
         local view = self.views[i]
-        if view:is(DocView) and not view:is(CommandView) and not view:is(StatusView) and 
-          (not keep_active or view ~= self.active_view) then
+        if view:is(DocView) 
+           and not view:is(CommandView) 
+           and not view:is(StatusView) 
+           and not view:is(misc.EmptyView) 
+           -- and (not keep_active or view ~= self.active_view) 
+          then
           table.remove(self.views, i)
         else
           i = i + 1
