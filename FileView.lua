@@ -37,6 +37,28 @@ function FileView.load_info(info)
   return FileView(info.path, info.history, info.history_cur_ix)
 end
 
+function FileView:goto_path(path)
+  local old_path = self.path
+  -- go to new path
+  self.path = path
+  -- push history
+  self.history_cur_ix = self.history_cur_ix + 1
+  self.history[self.history_cur_ix] = self.path
+  -- clear further history
+  for j=self.history_cur_ix+1 , #self.history do
+    self.history[j] = nil
+  end
+  self:fill_results()
+  -- also - select previous path if it is in the list
+  for i, item in ipairs(self.results) do
+    if item.abs_filename == old_path then
+      self.selected_idx = i
+      self:scroll_to_make_selected_visible()
+      break
+    end
+  end
+end
+
 function FileView:new(path, history, history_cur_ix)
   self.path = path or core.project_dir
   self.history = history or { path }
@@ -76,16 +98,7 @@ function FileView:new(path, history, history_cur_ix)
   function(res)
     if res.type == "dir" then
       local dv = core.active_view
-      -- go to new path
-      dv.path = res.abs_filename
-      -- push history
-      dv.history_cur_ix = dv.history_cur_ix + 1
-      dv.history[dv.history_cur_ix] = dv.path
-      -- clear further history
-      for j=dv.history_cur_ix+1 , #dv.history do
-        dv.history[j] = nil
-      end
-      dv:fill_results()
+      dv:goto_path(res.abs_filename)
     else
       core.root_view:open_doc(core.open_doc(res.abs_filename))
     end
@@ -206,9 +219,7 @@ command.add(FileView, {
        and not misc.path_is_win_drive(fv.path) then
       core.error("Nowhere to go up")
     else
-      fv.history_cur_ix = fv.history_cur_ix + 1
-      fv.path = misc.path_up(fv.path)
-      fv:fill_results()    
+      fv:goto_path(misc.path_up(fv.path))
     end
   end,
 })
