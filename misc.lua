@@ -137,6 +137,14 @@ if USERDIR == nil then
     end
     return false
   end
+  
+  core.get_project_files = core.get_project_files or function()
+    return coroutine.wrap(function()
+      for _,f in ipairs(core.project_files) do
+        coroutine.yield(core.project_dir, f)
+      end
+    end)
+  end
 
 end
 
