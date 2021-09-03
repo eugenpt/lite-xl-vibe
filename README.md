@@ -4,10 +4,17 @@ VI(m?) Bindings (with a hint of Emacs) for [lite-xl](https://github.com/lite-xl/
 
 ## Installation
 
-just clone the repo as plugins subfolder
+For lite-xl just clone the repo as plugins subfolder
 ```
 git clone git@github.com:eugenpt/lite-xl-vibe.git ~/.config/lite-xl/plugins/lite-xl-vibe
 ```
+
+For lite, clone into plugins subfilder under lite installed path
+
+```
+git clone git@github.com:eugenpt/lite-xl-vibe.git <lite>/data/plugins/lite-xl-vibe
+```
+
 
 # Intro
 
