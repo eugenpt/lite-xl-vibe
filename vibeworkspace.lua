@@ -8,6 +8,7 @@ local misc = require "plugins.lite-xl-vibe.misc"
 local SavableView = require "plugins.lite-xl-vibe.SavableView"
 
 
+core.log("lite-xl-vibe.vibeworkspace")
 local vibeworkspace = {}
 vibeworkspace.add_save = {
   ['misc.exec_history'] = {},
@@ -285,11 +286,15 @@ function vibeworkspace.load_workspace(_workspace)
   end
 end
 
-local Node = getmetatable(core.root_view.root_node)
+local Node = misc.Node -- getmetatable(core.root_view.root_node)
 
-local node__close_all_docviews = Node.close_all_docviews
-function Node:close_all_docviews()
+local node__close_all_docviews = Node.close_all_docviews or Node.close_all
+core.log("Node = %s",misc.str(Node))
+core.log("Node.close_all = %s",misc.str(Node.close_all))
+core.log("node__close_all_docviews = %s",misc.str(node__close_all_docviews))
+function Node:close_all_docviews(...)
   -- also remove all savable views
+  --  not sure if this is really necessary..
   if self.type == "leaf" then
     local i = 1
     while i <= #self.views do
@@ -301,7 +306,7 @@ function Node:close_all_docviews()
       end
     end
   end
-  node__close_all_docviews(self)
+  node__close_all_docviews(self,...)
 end
 
 function vibeworkspace.open_workspace_file(_filename)
@@ -386,4 +391,5 @@ command.add( function() return vibeworkspace.abs_filename end, {
   ["vibe:workspace:save-workspace"] = vibeworkspace.save_workspace,
 })
 
+core.log("/lite-xl-vibe.vibeworkspace")
 return vibeworkspace

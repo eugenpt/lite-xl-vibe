@@ -63,6 +63,7 @@ if USERDIR == nil then
     return path
   end
   common.home_expand = common.home_expand or function(a) return a end
+  common.home_encode = common.home_encode or function(a) return a end
   common.home_encode_list = common.home_encode_list or function(a) return a end
   
   common.serialize = common.serialize or function(val)
@@ -124,9 +125,23 @@ if USERDIR == nil then
     end
   end
 
-  
   RootView.close_all_docviews = RootView.close_all_docviews or function(self, keep_active)
-    self.root_node:close_all_docviews(keep_active)
+    
+  --   self.root_node:close_all_docviews(keep_active)
+  -- end
+  -- local function temp()
+    -- close current window while it changes anything
+    local nViews = 0
+    while (core.root_view.root_node:nViews() ~= nViews) do
+      nViews = core.root_view.root_node:nViews()
+      if core.active_view.vibe_parent_node then
+        core.active_view.vibe_parent_node:close()
+      else 
+        break
+      end
+    end
+
+    -- self.root_node:close_all_docviews(keep_active)
   end
   
   core.set_project_dir = core.set_project_dir or function(new_dir, change_project_fn)
@@ -949,6 +964,15 @@ function Node:close()
   else
     self.a:close()
     self.b:close()
+  end
+end
+
+core.log('aAAA')
+function Node:nViews()
+  if self.type=="leaf" then
+    return #self.views
+  else
+    return self.a:nViews() + self.b:nViews()
   end
 end
 
