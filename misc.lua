@@ -297,6 +297,10 @@ getmetatable('string').__mul = function(s,n)
   end
 end
 
+function string:starts_with(prefix)
+  return prefix and #self > #prefix and self:sub(1, #prefix)==prefix
+end
+
 function string:isUpperCase()
   return self:upper()==self and self:lower()~=self
 end
@@ -329,6 +333,33 @@ function string:isNumber()
     end
   end
   return true
+end
+
+function string:is_command()
+  return command.map[self]~=nil
+end
+
+function string:is_stroke_seq()
+  -- well. 
+  return command.map[self]==nil
+end
+
+function command.com_by_name(name)
+  return command.map[name]
+end
+
+
+function command.com_is_runnable(com)
+  return com and com.predicate()
+end
+
+function command.com_by_name_runnable(name)
+  return command.com_is_runnable(command.com_by_name(name))
+end
+
+function command.can_execute(com_str)
+  return com_str:is_stroke_seq() or (com_str:is_command()
+                                     and command.com_by_name_runnable(com_str))
 end
 
 function misc.path_is_win_drive(path)

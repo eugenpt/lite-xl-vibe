@@ -64,10 +64,10 @@ end
 
 function keymap.have_nmap_starting_with(seq)
   -- crude but it'll do for now
-  for jseq, coms in pairs(keymap.nmap) do
-    if #jseq>#seq and jseq:sub(1,#seq)==seq then
-      for _,com in ipairs(coms) do
-        if command.map[com]==nil or (command.map[com].predicate()) then
+  for jseq, com_names in pairs(keymap.nmap) do
+    if jseq:starts_with(seq) then
+      for _,com_name in ipairs(com_names) do
+        if command.can_execute(com_name) then
           return true
         end
       end
