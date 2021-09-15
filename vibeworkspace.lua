@@ -329,7 +329,7 @@ function vibeworkspace.open_workspace_file(_filename)
 end
 
 -------------------------------------------------------------------------------
---
+-- this doesn't work really.
 local run = core.run
 function core.run(...)
   local reload = #core.docs == 0

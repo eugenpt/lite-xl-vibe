@@ -341,7 +341,7 @@ end
 
 function string:is_stroke_seq()
   -- well. 
-  return command.map[self]==nil
+  return not self:is_command()
 end
 
 function command.com_by_name(name)
@@ -357,9 +357,16 @@ function command.com_by_name_runnable(name)
   return command.com_is_runnable(command.com_by_name(name))
 end
 
+-- I'm pretty sure I've read too much of refactoring manuals.
 function command.can_execute(com_str)
-  return com_str:is_stroke_seq() or (com_str:is_command()
-                                     and command.com_by_name_runnable(com_str))
+  -- which one is more readable?
+  -- Try 0 (my old one):
+    local com = command.map[com_str]
+    -- nil => no such command => sequence?, if not, check predicate
+    return com==nil or com.predicate()
+  -- try 1: <where everything's a function>
+    -- return com_str:is_stroke_seq() or (com_str:is_command()
+    --                                   and command.com_by_name_runnable(com_str))
 end
 
 function misc.path_is_win_drive(path)

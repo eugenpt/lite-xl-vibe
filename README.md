@@ -9,7 +9,7 @@ For lite-xl just clone the repo as plugins subfolder
 git clone git@github.com:eugenpt/lite-xl-vibe.git ~/.config/lite-xl/plugins/lite-xl-vibe
 ```
 
-For lite, clone into plugins subfilder under lite installed path
+For lite, clone into plugins subfolder under lite installed path
 
 ```
 git clone git@github.com:eugenpt/lite-xl-vibe.git <lite>/data/plugins/lite-xl-vibe
