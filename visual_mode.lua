@@ -28,19 +28,19 @@ require "plugins.lite-xl-vibe.keymap"
 
 ----------------------------------------------------------------------------
 
-local ts = 'doc:move-to-'
-local ts2 = 'doc:select-to-'
-local ts3 = 'doc:delete-to-'
+local doc_move_to = 'doc:move-to-'
+local doc_select_to = 'doc:select-to-'
+local doc_delete_to = 'doc:delete-to-'
 for bind,coms in pairs(keymap.nmap) do
-  local com_name = misc.find_in_list(coms, function(item) return (item:sub(1,#ts)==ts) end)
+  local com_name = misc.find_in_list(coms, function(item) return (item:sub(1,#doc_move_to)==doc_move_to) end)
   if com_name then
     
-    local verbose = com_name:find_literal('-word-')
+    local verbose = com_name:find_literal('-start-of-line')
     if verbose then
     core.log('[%s] -> %s', bind, misc.str(coms))
     end
     
-    local sel_name = ts2..com_name:sub(#ts+1)
+    local sel_name = doc_select_to .. com_name:sub(#doc_move_to+1)
     
     if verbose then
       core.log('sel_name=[%s]',sel_name)

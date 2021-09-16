@@ -297,6 +297,8 @@ getmetatable('string').__mul = function(s,n)
   end
 end
 
+assert('test'*2 == 'testtest')
+
 function string:isUpperCase()
   return self:upper()==self and self:lower()~=self
 end
@@ -472,7 +474,6 @@ function misc.list_drives()
       info.filename = path
       info.abs_filename = letters:sub(j,j)..':'
       table.insert(R.dirs, info)
-
     end
   end
   return R
@@ -622,11 +623,15 @@ function misc.drop_selection()
   doc():set_selection(line,col)
 end
 
+function misc.open_doc(abs_filename)
+  core.root_view:open_doc(core.open_doc(abs_filename))
+end
+
 function misc.goto_mark(mark)
   -- mark = {abs_filename=..,line=..,col=..}
   if misc.doc_abs_filename(doc()) ~= mark.abs_filename then
     core.log('jumping to file %s', mark.abs_filename)
-    core.root_view:open_doc(core.open_doc(mark.abs_filename))
+    misc.open_doc(mark.abs_filename)
   end
   doc():set_selection(mark.line, mark.col)
 end
