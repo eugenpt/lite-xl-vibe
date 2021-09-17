@@ -576,6 +576,33 @@ function misc.text_width(font, _, text, _, x)
   return x + font:get_width(text)
 end
 
+function misc.draw_items(items, x, y, w, h, draw_fn)
+  draw_fn = draw_fn or common.draw_text
+
+  local font = style.font
+  local color = style.text
+  
+  if type(items)=="string" then
+    items = {items}
+  end
+
+  for _, item in ipairs(items) do
+    if type(item) == "userdata" then
+      font = item
+    elseif type(item) == "table" then
+      color = item
+    else
+      x = draw_fn(font, color, item, nil, x, y, w, h)
+    end
+  end
+
+  return x
+end
+
+function misc.get_items_width(items)
+  return misc.draw_items( items, 0, 0, 1e6, 1e6, misc.text_width )
+end
+
 -------------------------------------------------------------------------------
 -- scratch
 

@@ -52,7 +52,7 @@ function ResultsView.load_info(info)
   return nil -- ResultsView(info.title)
 end
 
-function ResultsView:new(title, items_fun, on_click_fun, sort_funs, draw_columns)
+function ResultsView:new(title, items_fun, on_click_fun, sort_funs, column_names)
   ResultsView.super.new(self)
   self.module = "ResultsView"
   self.title = title
@@ -65,13 +65,22 @@ function ResultsView:new(title, items_fun, on_click_fun, sort_funs, draw_columns
                          and { default=sort_funs } or sort_funs)
                     or { name=default_sort_fun }
   self.sort_mode = -1
-  self.draw_columns = draw_columns or {'draw_items'}
+  self.column_names = column_names or {'draw_items'}
   self:fill_results()
+end
+
+function ResultsView:need_to_draw_column_names()
+  return #self.column_names > 1
+end
+
+function ResultsView:color()
+  return common.lerp(style.text, style.accent, self.brightness / 100)
 end
 
 function ResultsView:fill_results()
   self.results_src = self.items_fun()
-  local color = common.lerp(style.text, style.accent, self.brightness / 100)
+  self:calc_column_xs()
+  local color = self:color()
   for _,item in pairs(self.results_src) do
     item.draw_items = item.draw_items or {
           style.font, style.dim, item.title or '',
@@ -79,6 +88,22 @@ function ResultsView:fill_results()
       }
   end
   self:reset_search()
+end
+
+function ResultsView:calc_column_xs()
+  self.column_xs = { 0 }
+  if self:need_to_draw_column_names() then
+    local x = 0
+    local sep_w = style.font:get_width("  |  ")
+    for _, col_name in ipairs(self.column_names) do
+      local w = misc.get_items_width( {style.dim, col_name} )
+      for _, item in ipairs(self.results_src) do
+        w = math.max(w, misc.get_items_width( item[col_name] ))
+      end
+      x = x + w + sep_w
+      table.insert(self.column_xs, x)
+    end
+  end
 end
 
 function ResultsView:reset_search()
@@ -129,7 +154,14 @@ function ResultsView:update()
 end
 
 function ResultsView:get_results_yoffset()
-  return style.font:get_height() + style.padding.y * 3 + (#self.draw_columns > 1 and style.font:get_height()+style.padding.y or 0)
+  return self:get_header_offset()
+           + (self:need_to_draw_column_names() 
+              and style.font:get_height() 
+              or 0)
+end
+
+function ResultsView:get_header_offset()
+  return self:get_line_height() + style.padding.y
 end
 
 function ResultsView:get_line_height()
@@ -169,92 +201,90 @@ function ResultsView:scroll_to_make_selected_visible()
   self.scroll.to.y = math.max(self.scroll.to.y, y + h - self.size.y)
 end
 
-function ResultsView:draw_items(items, x, y, w, h, draw_fn)
-  local font = style.font
-  local color = style.text
-  
-  if type(items)=="string" then
-    items = {items}
-  end
-
-  for _, item in ipairs(items) do
-    if type(item) == "userdata" then
-      font = item
-    elseif type(item) == "table" then
-      color = item
-    else
-      x = draw_fn(font, color, item, nil, x, y, w, h)
-    end
-  end
-
-  return x
-end
 
 function ResultsView:draw()
   self:draw_background(style.background)
   
-  -- status
-  local ox, oy = self:get_content_offset()
-  local x, y = ox + style.padding.x, oy + style.padding.y
-  local color = common.lerp(style.text, style.accent, self.brightness / 100)
-  renderer.draw_text(style.font, 
-                     (self.title or '')
-                     .. ' | sort by '
-                       .. misc.keys(self.sort_funs)[math.abs(self.sort_mode)]
-                       .. (self.sort_mode < 0 and ' desc' or ' asc')
-                     .. (self.search_text
-                           and ' Sarching for: '..self.search_text..''
-                           or ''), 
-                     x, y, color)
+  self:draw_header()
   
-  -- horizontal line
-  local yoffset = self:get_results_yoffset()
-  if #self.draw_columns>1 then
-    yoffset = yoffset - style.font:get_height()
+  if self:need_to_draw_column_names() then
+    self:draw_column_names()
   end
-  local cox,coy = self:get_content_offset()
+  
+  self:draw_results()
+  
+  self:draw_scrollbar()
+end
+
+function ResultsView:draw_header_line()
+  local yoffset = self:get_header_offset()
   local x = ox + style.padding.x
   local w = self.size.x - style.padding.x * 2
   local h = style.divider_size
-  local color = common.lerp(style.dim, style.text, self.brightness / 100)
+  local color = self:color()
   renderer.draw_rect(x, oy + yoffset - style.padding.y, w, h, color)
-  
-  local lh = style.font:get_height()
-  local lw = style.font:get_width("  |  ")
-  -- results
-  local y1, y2 = self.position.y, self.position.y + self.size.y
-  local start_x = style.padding.x
-  local max_x = 0
-  for _,col_name in ipairs(self.draw_columns) do
-    start_x = max_x + lw
-    if #self.draw_columns > 1 then
-      -- column name on top
-      self:draw_items(
-        {style.dim, col_name}, 
-        cox + start_x,
-        yoffset + coy + style.divider_size,
-        self.size.x,
-        style.font:get_height(),
-        common.draw_text
+end
+
+function ResultsView:get_current_sort_name()
+  return misc.keys(self.sort_funs)[math.abs(self.sort_mode)]
+end
+
+function ResultsView:get_header_text()
+   return  (self.title or '')
+           .. ' | sort by '
+           .. self:get_current_sort_name()
+           .. (self.sort_mode < 0 and ' desc' or ' asc')
+           .. (self.search_text
+               and ' Searching for: '..self.search_text..''
+               or '')
+end
+
+function ResultsView:draw_header()
+  local ox, oy = self:get_content_offset()
+  local x, y = ox + style.padding.x, oy + style.padding.y
+  local color = self:color()
+  renderer.draw_text(style.font, 
+                     self:get_header_text(),
+                     x, y, color)
+end
+
+function ResultsView:draw_column_name(col_name, x, y)
+  misc.draw_items(
+    {style.dim, col_name}, 
+    x,
+    y,
+    self.size.x,
+    style.font:get_height()
+  )
+end
+
+function ResultsView:draw_column_names()
+  local cox,coy = self:get_content_offset()
+  local yoffset = self:get_header_offset()
+  for col_j,col_name in ipairs(self.column_names) do
+    if self:need_to_draw_column_names() then
+      self:draw_column_name(
+        col_name, 
+        cox + self.column_xs[col_j],
+        yoffset + coy + style.divider_size
       )
     end
-    for i, item, ox,y,w,h in self:each_visible_result() do
-      x = ox + start_x
-      local color = style.text
-      if i == self.selected_idx then
-        color = style.accent
-        renderer.draw_rect(x, y, w, h, style.line_highlight)
-      end
+  end
+end
+
+function ResultsView:draw_results()
+  local cox,coy = self:get_content_offset()
+  
+  for i, item, ox,y,w,h in self:each_visible_result() do
+    if i == self.selected_idx then
+      renderer.draw_rect(ox, y, w, h, style.line_highlight)
+    end
+    for col_j,col_name in ipairs(self.column_names) do
+      local x = ox + self.column_xs[col_j]
       
-      self:draw_items(item[col_name], x, y, w, h, common.draw_text)
-      -- I am not sure renderer.draw_text inside common.<> returns x
-      x = self:draw_items(item[col_name], x, y, w, h, misc.text_width)
-      if x - ox > max_x then
-        max_x = x - ox
-      end
+      misc.draw_items(item[col_name], x, y, w, h)
     end
   end
-  self:draw_scrollbar()
 end
 
 function ResultsView:next_sort_mode()

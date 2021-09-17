@@ -164,14 +164,13 @@ command.add(nil, {
     local items = {}
     -- first - dir of the current file
     if core.active_view and core.active_view.doc then
-      items[misc.path_up(misc.doc_abs_filename(core.active_view.doc))] = 1
+      table.insert(items, misc.doc_abs_filename(core.active_view.doc))
     end
     -- then all working dirs
     for _, dir in ipairs(core.project_directories) do
-      items[dir.name] = 1
+      table.insert(items,dir.name)
     end
     --
-    items = misc.keys(items)
     if #items > 1 then
       local mv = ResultsView("Dir to open",function()
         local r = {}
