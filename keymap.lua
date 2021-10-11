@@ -79,10 +79,13 @@ end
 function keymap.nmap_starting_with(seq)
   local items = {}
   -- yeah..
-  for jseq,com in pairs(keymap.nmap) do
+  for jseq,coms in pairs(keymap.nmap) do
     if #jseq>#seq and jseq:sub(1,#seq)==seq then
-      if command.map[com]==nil or (command.map[com].predicate()) then
-        table.insert(items, jseq)
+      for _, com_name in ipairs(coms) do
+        if command.can_execute(com_name) then
+          table.insert(items, jseq)
+          break
+        end
       end
     end
   end
@@ -374,6 +377,9 @@ keymap.add_nmap({
   ["L"] = "vibe:fileview:go-forward",
   ["K"] = "vibe:fileview:go-up",
   ["r"] = "vibe:fileview:rename",
+  ["x"] = "vibe:fileview:delete-item",
+  ["+"] = "vibe:fileview:create-file",
+  ["nf"] = "vibe:fileview:create-file",
   -- ["C-k"] = "vibe:fileview:go-up", -- conflicts with next-tab
   ["C-<left>"] = "vibe:fileview:go-back",
   ["C-<right>"] = "vibe:fileview:go-forward",

@@ -388,7 +388,10 @@ function command.can_execute(com_str)
   -- Try 0 (my old one):
     local com = command.map[com_str]
     -- nil => no such command => sequence?, if not, check predicate
-    return com==nil or com.predicate()
+    -- return com==nil or com.predicate() -- or misc.is_docview()
+    return com and com.predicate() or misc.is_docview()
+    -- (com==nil and misc.is_docview())
+    --         or (com~=nil and com.predicate())
   -- try 1: <where everything's a function>
     -- return com_str:is_stroke_seq() or (com_str:is_command()
     --                                   and command.com_by_name_runnable(com_str))
@@ -566,6 +569,21 @@ function misc.file_exists(name)
    if f~=nil then io.close(f) return true else return false end
 end
 
+function misc.file_touch(filepath)
+  if misc.file_exists(filepath) then
+    core.error("File exists!")
+    return nil, "File "..filepath.." exists!"
+  else
+    local file, err = io.open(filepath, 'w')
+    if err == nil then
+      file:close()
+      return true
+    else
+      return nil, err
+    end
+  end
+end
+
 function misc.filesize_str(size)
   local sfxs = {"B", "KB", "MB", "GB", "TB", "PB"}
   local exp = math.floor(math.log(size+1)/math.log(1024))
@@ -648,6 +666,10 @@ end
 
 local function doc()
   return core.active_view.doc
+end
+
+function misc.is_docview()
+  return core.active_view:is(DocView)
 end
 
 local tablestr_depth = 0
@@ -903,21 +925,6 @@ enable_strict_global()
 
 local noop = function() end
 
--------------------------------------------------------------------------------
--- I like options to be set with explicit names, not numerous arguments
-function misc.enter_command_view(text, state)
-  state = {
-    submit = state.submit or noop,
-    suggest = state.suggest or noop,
-    cancel = state.cancel or noop,
-    validate = state.validate or function() return true end
-  }
-  
-  core.command_view:enter(
-    text, 
-    state.submit, state.suggest, state.cancel, state.validate
-  )
-end
 
 -------------------------------------------------------------------------------
 -- commands
@@ -1128,21 +1135,29 @@ command.add(nil, {
 
 misc.noop = function() end
 
-misc.command_view_enter = function(options)
-  -- for a little bit mode verbose option setting
+-------------------------------------------------------------------------------
+-- I like options to be set with explicit names, not numerous arguments
+misc.command_view_enter = function(title, options)
   -- options={
   --  title="Enter: or such",
   --  init="initial command view value",
   --  submit
-  --  suggest
+  --  suggest= either a list of all options or a function(text) return list end
   --  cancel
   --  validate
   -- }
-  core.command_view:set_text(options.init)
+  if options==nil then 
+    options = title
+  else
+    options.title = title
+  end
+  core.command_view:set_text(options.init or "")
   core.command_view:enter(
     options.title or "Enter:", -- like.. what did you expect as default?
     options.submit or function(item, text) log({item=item, text=text}) end, --
-    options.suggest or function(text) return end,
+    misc.is_table(options.suggest)
+      and function() return options.suggest end
+      or (options.suggest or misc.noop),
     options.cancel or misc.noop,
     options.validate or function() return true end
   )

@@ -230,6 +230,48 @@ command.add(FileView, {
       end
     })
   end,
+  
+  ["vibe:fileview:delete-item"] = function()
+    local item = core.active_view:get_selected_item()
+    misc.command_view_enter({
+      title="Really delete?",
+      init="Yes",
+      suggest={"Yes", "No"},
+      submit=function(text)
+        if text=="Yes" then
+          local ok, err = os.remove(item.abs_filename)
+          if ok==nil then
+            log("error while removing "..item.abs_filename)
+            core.error(err)
+          end
+          command.perform("vibe:results:refresh")
+        end
+      end,
+      validate=function(text)
+        return text=="Yes" or text=="No"
+      end,
+    })
+  end,
+  
+  ["vibe:fileview:create-file"] = function()
+    local root_path = core.active_view.path
+    misc.command_view_enter({
+      title="File to create",
+      submit=function(text)
+        local path = misc.path_join(root_path, text)
+        misc.file_touch(path)
+        command.perform("vibe:results:refresh")
+        core.active_view:select_item({ abs_filename=path })
+      end,
+      validate=function(text)
+        if misc.file_exists(misc.path_join(root_path, text)) then
+          core.error("File "..text.." exists!")
+          return false
+        end
+        return true
+      end
+    })
+  end,
 })
 
 keymap.add({
@@ -238,6 +280,8 @@ keymap.add({
   ["ctrl+left"] = "vibe:fileview:go-back",
   ["ctrl+right"] = "vibe:fileview:go-forward",
   ["ctrl+r"] = "vibe:fileview:rename",
+  ["delete"] = "vibe:fileview:delete-item",
+  ["ctrl+n"] = "vibe:fileview:create-file",
 })
 
 return FileView
