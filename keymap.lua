@@ -150,7 +150,7 @@ keymap.add_nmap {
   [":s"] = "find-replace:replace",
   ["n"] = "find-replace:repeat-find",
   ["N"] = "find-replace:previous-find",
-  ["dd"] = "<ESC>0vjd",
+  ["dd"] = "<ESC>0vj0d",
   [">>"] = "doc:indent",
   ["\\<\\<"] = "doc:unindent",
   [">"] = "vibe:indent",
@@ -337,7 +337,7 @@ keymap.add_nmap({
 keymap.add_nmap({
   ["s"]                  = "vibe:results:sort",
   ["<f5>"] = "vibe:results:refresh",
-  ["r"] = "vibe:results:refresh",
+  ["R"] = "vibe:results:refresh",
   ["/"]  = "vibe:results:search",
   ["C-f"]  = "vibe:results:search",
   ["k"]                 = "vibe:results:select-previous",
@@ -373,6 +373,7 @@ keymap.add_nmap({
   ["H"] = "vibe:fileview:go-back",
   ["L"] = "vibe:fileview:go-forward",
   ["K"] = "vibe:fileview:go-up",
+  ["r"] = "vibe:fileview:rename",
   -- ["C-k"] = "vibe:fileview:go-up", -- conflicts with next-tab
   ["C-<left>"] = "vibe:fileview:go-back",
   ["C-<right>"] = "vibe:fileview:go-forward",

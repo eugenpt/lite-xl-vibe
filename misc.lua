@@ -276,6 +276,29 @@ function misc.set_dotsep(s, v, obj)
   end
 end
 
+function misc.is_fun(x)
+  return type(x) == "function"
+end
+
+misc.is_function = misc.is_fun
+
+function misc.is_table(x)
+  return type(x) == "table"
+end
+
+function misc.tables_equal(test, ref, force_simmetrical)
+  if force_simmetrical then
+    return misc.compare_tables(test, ref) and misc.compare_tables(ref, test)
+  else
+    for key, value in pairs(ref) do
+      if test[key] ~= value then
+        return false
+      end
+    end
+    return true
+  end
+end
+
 local function str_mul(str,num)
   local r = ''
   for j=1,num do
@@ -382,6 +405,10 @@ function misc.path_up(path)
     return ''
   end
   return path:gsub(PATHSEP..'[^'..PATHSEP..']+$','')
+end
+
+function misc.path_join(path, dir, ...)
+  return dir and misc.path_join(path..PATHSEP..dir, ...) or path
 end
 
 function misc.slice(table,i0,i1)
@@ -854,6 +881,45 @@ core.log(require_str)
 fp:close()
 
 -------------------------------------------------------------------------------
+-- GLOBALS
+
+core._G__newindex = getmetatable(_G).__newindex
+
+local function disable_strict_global()
+  getmetatable(_G).__newindex = nil
+end
+
+local function enable_strict_global()
+  getmetatable(_G).__newindex = core._G__newindex
+end
+
+disable_strict_global()
+
+function log(A)
+  core.log("%s", misc.str(A))
+end
+
+enable_strict_global()
+
+local noop = function() end
+
+-------------------------------------------------------------------------------
+-- I like options to be set with explicit names, not numerous arguments
+function misc.enter_command_view(text, state)
+  state = {
+    submit = state.submit or noop,
+    suggest = state.suggest or noop,
+    cancel = state.cancel or noop,
+    validate = state.validate or function() return true end
+  }
+  
+  core.command_view:enter(
+    text, 
+    state.submit, state.suggest, state.cancel, state.validate
+  )
+end
+
+-------------------------------------------------------------------------------
 -- commands
 -------------------------------------------------------------------------------
 
@@ -897,8 +963,7 @@ command.add(nil, {
     core.command_view:set_text(misc.exec_text)
     core.command_view:enter("Exec", function(text, item)
       -- I do like persistent and changeable globals.
-      local temp = getmetatable(_G).__newindex
-      getmetatable(_G).__newindex = nil
+      disable_strict_global()
       -- try with return first to print some value
       local F, err = load(require_str .. "\n\nreturn "..text)
       local var_name = text
@@ -922,7 +987,7 @@ command.add(nil, {
         core.error("%s",err)
       end
       -- aand restore strict
-      getmetatable(_G).__newindex = temp
+      enable_strict_global()
     end, function(text)
       return common.fuzzy_match(misc.exec_history, text)
     end)
@@ -1058,6 +1123,31 @@ command.add(nil, {
     core.active_view.vibe_parent_node:close()
   end,
 })
+
+-------------------------------------------------------------------------------
+
+misc.noop = function() end
+
+misc.command_view_enter = function(options)
+  -- for a little bit mode verbose option setting
+  -- options={
+  --  title="Enter: or such",
+  --  init="initial command view value",
+  --  submit
+  --  suggest
+  --  cancel
+  --  validate
+  -- }
+  core.command_view:set_text(options.init)
+  core.command_view:enter(
+    options.title or "Enter:", -- like.. what did you expect as default?
+    options.submit or function(item, text) log({item=item, text=text}) end, --
+    options.suggest or function(text) return end,
+    options.cancel or misc.noop,
+    options.validate or function() return true end
+  )
+end
+
 -------------------------------------------------------------------------------
 misc.core__set_active_view__orig = core.set_active_view
 function core.set_active_view(view)

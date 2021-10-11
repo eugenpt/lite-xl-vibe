@@ -69,6 +69,10 @@ function ResultsView:new(title, items_fun, on_click_fun, sort_funs, column_names
   self:fill_results()
 end
 
+function ResultsView:get_selected_item()
+  return (self.selected_idx > 0) and self.results[self.selected_idx] or nil
+end
+
 function ResultsView:need_to_draw_column_names()
   return #self.column_names > 1
 end
@@ -110,6 +114,32 @@ function ResultsView:reset_search()
   self.selected_idx = 1
   self.results = misc.copy(self.results_src)
   self.search_text = nil
+end
+
+function ResultsView:select_item_on_fun(select_fun)
+  for i, item in ipairs(self.results) do
+    if select_fun(item) then
+      self.selected_idx = i
+      self:scroll_to_make_selected_visible()
+      return
+    end
+  end
+end
+
+function ResultsView:select_item_on_table(select_table)
+  self:select_item_on_fun(function(item)
+    return misc.tables_equal(item, select_table)
+  end)  
+end
+
+function ResultsView:select_item(select)
+  if misc.is_fun(select) then
+    self:select_item_on_fun(select)
+  elseif misc.is_table(select) then
+    self:select_item_on_table(select)
+  else
+    core.error("ResultsView:select_item for type(select)="..type(select).." ??")
+  end
 end
 
 function ResultsView:get_name()

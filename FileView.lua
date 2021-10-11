@@ -50,13 +50,7 @@ function FileView:goto_path(path)
   end
   self:fill_results()
   -- also - select previous path if it is in the list
-  for i, item in ipairs(self.results) do
-    if item.abs_filename == old_path then
-      self.selected_idx = i
-      self:scroll_to_make_selected_visible()
-      break
-    end
-  end
+  self:select_item({ abs_filename=old_path })
 end
 
 function FileView:new(path, history, history_cur_ix)
@@ -208,7 +202,7 @@ command.add(FileView, {
     else
       fv.history_cur_ix = fv.history_cur_ix + 1
       fv.path = fv.history[fv.history_cur_ix]
-      fv:fill_results()    
+      fv:fill_results()
     end
   end,
 
@@ -221,6 +215,21 @@ command.add(FileView, {
       fv:goto_path(misc.path_up(fv.path))
     end
   end,
+  
+  ["vibe:fileview:rename"] = function()
+    local item = core.active_view:get_selected_item()
+    
+    misc.command_view_enter({
+      title="Rename to:",
+      init=item.filename,
+      submit=function(text, item_)
+        local new_abs_filename = misc.path_join(misc.path_up(item.abs_filename), text)
+        os.rename(item.abs_filename, new_abs_filename)
+        command.perform("vibe:results:refresh")
+        core.active_view:select_item({ abs_filename = new_abs_filename })
+      end
+    })
+  end,
 })
 
 keymap.add({
@@ -228,6 +237,7 @@ keymap.add({
   ["ctrl+up"] = "vibe:fileview:go-up",
   ["ctrl+left"] = "vibe:fileview:go-back",
   ["ctrl+right"] = "vibe:fileview:go-forward",
+  ["ctrl+r"] = "vibe:fileview:rename",
 })
 
 return FileView
