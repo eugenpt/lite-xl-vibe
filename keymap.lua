@@ -11,6 +11,7 @@
 ]]--
 local core = require "core"
 local command = require "core.command"
+local config = require "core.config"
 local keymap = require "core.keymap"
 local translate = require "core.doc.translate"
 
@@ -379,6 +380,8 @@ keymap.add_nmap({
   ["r"] = "vibe:fileview:rename",
   ["x"] = "vibe:fileview:delete-item",
   ["+"] = "vibe:fileview:create-file",
+  ["C-="] = "vibe:fileview:create-dir",
+  ["nd"] = "vibe:fileview:create-dir",
   ["nf"] = "vibe:fileview:create-file",
   -- ["C-k"] = "vibe:fileview:go-up", -- conflicts with next-tab
   ["C-<left>"] = "vibe:fileview:go-back",
@@ -550,3 +553,6 @@ keymap.add_nmap({
   ["A-j"] = "root:move-tab-left",
   ["A-k"] = "root:move-tab-right",
 })
+
+
+keymap.add_nmap(config.user_nmap or {})

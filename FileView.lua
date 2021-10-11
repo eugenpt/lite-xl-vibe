@@ -156,13 +156,17 @@ command.add(nil, {
   ["vibe:open-select-dir"] = function()
     -- fill items
     local items = {}
-    -- first - dir of the current file
+    local current_doc_path = nil
+    -- And first - dir of the current file
     if core.active_view and core.active_view.doc then
-      table.insert(items, misc.doc_abs_filename(core.active_view.doc))
+      current_doc_path = misc.path_up(misc.doc_abs_filename(core.active_view.doc))
+      table.insert(items, current_doc_path)
     end
     -- then all working dirs
     for _, dir in ipairs(core.project_directories) do
-      table.insert(items,dir.name)
+      if dir.name ~= current_doc_path then
+        table.insert(items,dir.name)
+      end
     end
     --
     if #items > 1 then
@@ -177,6 +181,7 @@ command.add(nil, {
         show_directory(res.text)
       end)
       core.root_view:get_active_node_default():add_view(mv)
+      
     else
       show_directory(items[1])
     end
@@ -227,6 +232,14 @@ command.add(FileView, {
         os.rename(item.abs_filename, new_abs_filename)
         command.perform("vibe:results:refresh")
         core.active_view:select_item({ abs_filename = new_abs_filename })
+      end,
+      validate=function(text)
+        local new_abs_filename = misc.path_join(misc.path_up(item.abs_filename), text)
+        if item.filename~=text and misc.exists(new_abs_filename) then
+          log(text.." already exists!")
+          return false
+        end
+        return true
       end
     })
   end,
@@ -239,12 +252,20 @@ command.add(FileView, {
       suggest={"Yes", "No"},
       submit=function(text)
         if text=="Yes" then
-          local ok, err = os.remove(item.abs_filename)
-          if ok==nil then
+          local ok, err
+          if misc.isdir(item.abs_filename) then
+            ok, err = system.rmdir(item.abs_filename)
+            log(ok)
+            log(err)
+          else
+            ok, err = os.remove(item.abs_filename)
+          end
+          if not ok then
             log("error while removing "..item.abs_filename)
             core.error(err)
+          else
+            command.perform("vibe:results:refresh")
           end
-          command.perform("vibe:results:refresh")
         end
       end,
       validate=function(text)
@@ -272,6 +293,26 @@ command.add(FileView, {
       end
     })
   end,
+  
+  ["vibe:fileview:create-dir"] = function()
+    local root_path = core.active_view.path
+    misc.command_view_enter({
+      title="Dir to create",
+      submit=function(text)
+        local path = misc.path_join(root_path, text)
+        system.mkdir(path)
+        command.perform("vibe:results:refresh")
+        core.active_view:select_item({ abs_filename=path })
+      end,
+      validate=function(text)
+        if misc.exists(misc.path_join(root_path, text)) then
+          core.error("Dir "..text.." exists!")
+          return false
+        end
+        return true
+      end
+    })
+  end,
 })
 
 keymap.add({
@@ -282,6 +323,7 @@ keymap.add({
   ["ctrl+r"] = "vibe:fileview:rename",
   ["delete"] = "vibe:fileview:delete-item",
   ["ctrl+n"] = "vibe:fileview:create-file",
+  ["ctrl+shift+n"] = "vibe:fileview:create-dir",
 })
 
 return FileView

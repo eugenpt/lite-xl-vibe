@@ -407,7 +407,9 @@ function misc.path_up(path)
     --  up = '', alias for 'all drives are subfolders'
     return ''
   end
-  return path:gsub(PATHSEP..'[^'..PATHSEP..']+$','')
+  local rpath = path:gsub(PATHSEP..'[^'..PATHSEP..']+$','')
+  -- gsub returns two values, discard the second one
+  return rpath 
 end
 
 function misc.path_join(path, dir, ...)
@@ -467,6 +469,25 @@ function misc.values(table)
   for _,a in pairs(table) do
     r[#r+1]=a
   end
+end
+
+function table:find(value)
+  for k,v in pairs(self) do
+    if v == value then
+      return k
+    end
+  end
+  return nil
+end
+
+table.indexOf = table.find
+
+function table:values()
+  return misc.values(self)
+end
+
+function table:keys()
+  return misc.keys(self)
 end
 
 function misc.list_contains(list, fun)
@@ -548,7 +569,7 @@ function misc.list_drives()
 end
 
 function misc.list_dir(path)
-  core.log('misc.list_dir, path=%s',path)
+  -- core.log('misc.list_dir, path=%s',path)
   if path == '' then
     return misc.list_drives()
   end
@@ -567,6 +588,24 @@ end
 function misc.file_exists(name)
    local f=io.open(name,"r")
    if f~=nil then io.close(f) return true else return false end
+end
+
+-- https://stackoverflow.com/a/40195356/2624911
+function misc.exists(path)
+   local ok, err, code = os.rename(path, path)
+   if not ok then
+      if code == 13 then
+         -- Permission denied, but it exists
+         return true
+      end
+   end
+   return ok, err
+end
+
+--- Check if a directory exists in this path
+function misc.isdir(path)
+   -- "/" works on both Unix and Windows
+   return misc.exists(path.."/")
 end
 
 function misc.file_touch(filepath)
