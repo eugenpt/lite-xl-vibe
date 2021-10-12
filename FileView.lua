@@ -84,6 +84,7 @@ function FileView:new(path, history, history_cur_ix)
       item.Name = item.draw_items
       item.Size = item.size and misc.filesize_str(item.size or 0) or ''
       item.Modified = item.modified and os.date("%a %Y-%m-%d %X", item.modified) or ''
+      item.Ext = item.type=="dir" and "<dir>" or misc.file_ext(item.filename)
     end
     return items
   end, 
@@ -107,10 +108,13 @@ function FileView:new(path, history, history_cur_ix)
   end,
   ['modified'] = function(item)
     return item.modified or 0
+  end,
+  ['extension'] = function(item)
+    return item.Ext or ''
   end
   },
   -- columns to display
-  {'Name','Size','Modified'})
+  {'Name','Size','Modified','Ext'})
   self.module = "FileView"
 end
 

@@ -286,6 +286,10 @@ function misc.is_table(x)
   return type(x) == "table"
 end
 
+function misc.is_string(x)
+  return type(x) == "string"
+end
+
 function misc.tables_equal(test, ref, force_simmetrical)
   if force_simmetrical then
     return misc.compare_tables(test, ref) and misc.compare_tables(ref, test)
@@ -490,6 +494,14 @@ function table:keys()
   return misc.keys(self)
 end
 
+function table:map(fun)
+  local ret = {}
+  for k,v in pairs(fun) do
+    ret[k] = fun(v)
+  end
+  return ret
+end
+
 function misc.list_contains(list, fun)
   for _,item in ipairs(list) do
     if fun(item) then
@@ -606,6 +618,11 @@ end
 function misc.isdir(path)
    -- "/" works on both Unix and Windows
    return misc.exists(path.."/")
+end
+
+function misc.file_ext(filename)
+  local ext = filename:gsub(".*%.","")
+  return ext
 end
 
 function misc.file_touch(filepath)
@@ -1190,13 +1207,25 @@ misc.command_view_enter = function(title, options)
   else
     options.title = title
   end
+  
+  if misc.is_table(options.suggest) and options.suggest[1] then
+    if misc.is_string(options.suggest[1]) then
+      options.suggest = table.map(options.suggest, function(text) return {text=text} end)
+    end
+    if misc.is_table(options.suggest[1]) and options.suggest[1].text then
+      local list = options.suggest
+      options.suggest = function(text)
+        return misc.fuzzy_match_key(list, 'text', text)
+      end
+    else
+      core.error("Wrong command view options.suggest : "..misc.str(options.suggest))
+    end
+  end
   core.command_view:set_text(options.init or "")
   core.command_view:enter(
     options.title or "Enter:", -- like.. what did you expect as default?
     options.submit or function(item, text) log({item=item, text=text}) end, --
-    misc.is_table(options.suggest)
-      and function() return options.suggest end
-      or (options.suggest or misc.noop),
+    options.suggest or misc.noop,
     options.cancel or misc.noop,
     options.validate or function() return true end
   )

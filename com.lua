@@ -18,7 +18,7 @@ local function doc()
   return core.active_view.doc
 end
 
-local function is_mode(mode)
+local function is_mode_fun(mode)
   return function() return core.vibe.mode==mode end
 end
 

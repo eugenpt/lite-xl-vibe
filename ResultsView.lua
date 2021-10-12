@@ -432,9 +432,25 @@ command.add(ResultsView, {
     core.active_view:reset_search()
   end,
   
-  ["vibe:results:sort"] = function()
+  ["vibe:results:sort-next-mode"] = function()
     core.active_view:next_sort_mode()
     core.active_view:sort()
+  end,
+
+  ["vibe:results:sort-select-mode"] = function()
+    local items = {}
+    for ix,text in ipairs(misc.keys(core.active_view.sort_funs)) do
+      table.insert(items, {text=text.." asc", ix=ix})
+      table.insert(items, {text=text.." desc", ix=-ix})
+    end
+    misc.command_view_enter({
+      title="Select sort mode",
+      submit = function(text, item)
+        core.active_view.sort_mode = item.ix;
+        core.active_view:sort()
+      end,
+      suggest = items
+    })
   end,
 
   ["vibe:results:close"] = function()
@@ -464,7 +480,8 @@ keymap.add {
   ["home"]               = "vibe:results:move-to-start-of-doc",
   ["end"]                = "vibe:results:move-to-end-of-doc",
   ["ctrl+f"]             = "vibe:results:search",
-  ["ctrl+s"]             = "vibe:results:sort",
+  ["ctrl+s"]             = "vibe:results:sort-next-mode",
+  ["ctrl+shift+s"]       = "vibe:results:sort-select-mode",
   ["escape"]             = "vibe:results:drop-search",
   ["ctrl+q"]             = "vibe:results:close",
 }

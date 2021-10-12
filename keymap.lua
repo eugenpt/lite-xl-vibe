@@ -339,7 +339,10 @@ keymap.add_nmap({
 -- ±same for my general ResultsView
 -------------------------------------------------------------------------------
 keymap.add_nmap({
-  ["s"]                  = "vibe:results:sort",
+  ["s"]                  = "vibe:results:sort-next-mode",
+  ["S"] = "vibe:results:sort-select-mode",
+  ["<space>s"] = "vibe:results:sort-select-mode",
+  ["C-s"] = "vibe:results:sort-select-mode",
   ["<f5>"] = "vibe:results:refresh",
   ["R"] = "vibe:results:refresh",
   ["/"]  = "vibe:results:search",
