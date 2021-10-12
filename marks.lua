@@ -55,7 +55,9 @@ function marks.set_mark(symbol, global_flag)
     ["line"] = line,
     ["col"] = col,
     ["line_text"] = doc().lines[line],
+    ["line_items"] = core.active_view:get_line_draw_items(line),
     ["symbol"] = symbol,
+    ["time"] = 1*os.time(),
   }
   if global_flag or symbol:isUpperCase() then
     -- global
@@ -84,7 +86,8 @@ function marks.goto_global_mark(symbol)
 end
 
 function marks.goto_local_mark(symbol)
-  local mark = marks._local[misc.doc_abs_filename(doc())] and marks._local[misc.doc_abs_filename(doc())][symbol]
+  local cur_path = misc.doc_abs_filename(doc())
+  local mark = marks._local[cur_path] and marks._local[cur_path][symbol]
   if mark then
     misc.goto_mark(mark)
     core.log("Jumped to (local) mark [%s]", symbol)
@@ -337,42 +340,51 @@ command.add(nil, {
 
 
 local function fill_results()
-  local mv = ResultsView("(book-)Marks List",function()
-    local items = {}
-    -- global
-    for symbol, mark in pairs(marks.global) do
-      table.insert(items, { 
-        file=core.normalize_to_project_dir(mark.abs_filename) , 
-        text=mark.line_text , 
-        line=mark.line, 
-        col=mark.col, 
-        data=mark 
-      })
-    end
-    -- local..
-    for filename, markss in pairs(marks._local) do
-      for symbol, mark in pairs(markss) do
-        table.insert(items, {
-          file=core.normalize_to_project_dir(mark.abs_filename) ,
-          text=mark.line_text , 
-          line=mark.line, col=mark.col, data=mark } )
+  ResultsView.new_and_add({
+    title="(book-)Marks List",
+    items_fun = function()
+      local items = {}
+      -- global
+      for symbol, mark in pairs(marks.global) do
+        table.insert(items, { 
+          file=core.normalize_to_project_dir(mark.abs_filename) , 
+          text=mark.line_items or mark.line_text, 
+          line=mark.line, 
+          col=mark.col, 
+          data=mark,
+          symbol=mark.symbol
+        })
       end
-    end
-    -- title: symbol and position
-    for _,item in ipairs(items) do
-      item.title = string.format("[%s] %s at line %d (col %d): ",
-                                item.data.symbol, item.file, item.line, item.col)
-    end                             
-    core.log('items_fun : %i items',#items)
-    return items
-  end, function(res)
-    command.perform("root:close")
-    local dv = core.root_view:open_doc(core.open_doc(res.file))
-    core.root_view.root_node:update_layout()
-    dv.doc:set_selection(res.line, res.col)
-    dv:scroll_to_line(res.line, false, true)
-  end)
-  core.root_view:get_active_node_default():add_view(mv)
+      -- local..
+      for filename, markss in pairs(marks._local) do
+        for symbol, mark in pairs(markss) do
+          table.insert(items, {
+            file=core.normalize_to_project_dir(mark.abs_filename) ,
+            text=mark.line_items or mark.line_text, 
+            line=mark.line, col=mark.col, data=mark, 
+            symbol=mark.symbol
+          } )
+        end
+      end
+      -- title: symbol and position
+      for _,item in ipairs(items) do
+        item.search_text = string.format("[%s] %s at line %d (col %d): %s",
+          item.data.symbol, item.file, item.line, item.col, item.data.line_text)
+        item.Symbol = (#item.symbol > 4) and (item.symbol:sub(1,4).."..") or item.symbol
+        item.File = misc.path_shorten(item.file)
+      end                             
+      core.log('items_fun : %i items',#items)
+      return items
+    end, 
+    on_click_fun = function(res)
+      command.perform("root:close")
+      local dv = core.root_view:open_doc(core.open_doc(res.file))
+      core.root_view.root_node:update_layout()
+      dv.doc:set_selection(res.line, res.col)
+      dv:scroll_to_line(res.line, false, true)
+    end,
+    column_names = {"Symbol","File","text"}
+  })
 end
 
 command.add(nil, {

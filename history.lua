@@ -43,32 +43,38 @@ function history.push_mark()
     local doc = core.active_view.doc
     local line, col = doc:get_selection()
     
+    local current_mark = {
+        line = line,
+        col = col,
+        abs_filename = doc.abs_filename or doc.filename,
+        line_text = doc.lines[line],
+        line_items = core.active_view:get_line_draw_items(line),
+        time = 1*os.time(),
+    }
+    
     local mark = history.marks[history.marks_ix]
     
     if mark and mark.abs_filename == (doc.abs_filename or doc.filename)
        and (math.abs(mark.line - line)<=config.vibe.history_max_dline_to_join
             or (system.get_time() - history.last_event_time <= config.vibe.history_max_dt_to_join))
          then
-      -- simply update the `current` history item
-      mark.line = line
-      mark.col = col
-      mark.line_text = doc.lines[line]
-      mark.text = mark_text(mark)
-      mark.time = 1*os.time()
+      -- pass, update the current below
     else
+      -- create new
       history.marks_max = history.marks_max + 1
       history.marks_ix = history.marks_max
-      history.marks[history.marks_max] = {
-        line = line,
-        col = col,
-        abs_filename = doc.abs_filename or doc.filename,
-        line_text = doc.lines[line],
-        time = 1*os.time(),
-      }
-      history.marks[history.marks_max].j=history.marks_ix
-      
-      history.marks[history.marks_max].text = mark_text(history.marks[history.marks_max])
     end
+    history.marks[history.marks_ix] = {
+      line = line,
+      col = col,
+      abs_filename = doc.abs_filename or doc.filename,
+      line_text = doc.lines[line],
+      line_items = core.active_view:get_line_draw_items(line),
+      time = 1*os.time(),
+    }
+    history.marks[history.marks_ix].j=history.marks_ix
+    
+    history.marks[history.marks_ix].text = mark_text(history.marks[history.marks_max])
     history.last_event_time = system.get_time()
   end
 end
@@ -87,16 +93,8 @@ function Doc:set_selections(idx, ...)
 end
 
 function history.goto_mark(mark)
-  if core.active_view
-     and core.active_view.doc 
-     and (core.active_view.doc.abs_filename or core.active_view.doc.filename)==mark.abs_filename 
-  then
-    -- pass, we are here
-  else
-    core.root_view:open_doc(core.open_doc(mark.abs_filename))
-  end
+  misc.goto_mark(mark)
   history.marks_ix = mark.j
-  core.active_view.doc:set_selection(mark.line, mark.col)
 end
 
 
@@ -124,37 +122,45 @@ command.add(nil, {
   end,
   
   ["vibe:history:list-all"] = function()
-    local mv = ResultsView("Jumplist",function()
-      local items = {}
-      -- global
-      for j,mark in ipairs(history.marks) do
-        table.insert(items, { 
-          file=core.normalize_to_project_dir(mark.abs_filename) , 
-          text=mark.line_text , 
-          line=mark.line, 
-          col=mark.col, 
-          j = j,
-          data=mark
-        })
-      end
-      -- title: symbol and position
-      for _,item in ipairs(items) do
-        item.title = string.format("[%s] %s %s at line %d (col %d): ",
-                                  item.j, os.date('%x %X', item.data.time), item.file, item.line, item.col)
-      end                             
-      core.log('items_fun : %i items',#items)
-      return items
-    end, function(res)
-      command.perform("root:close")
-      local dv = core.root_view:open_doc(core.open_doc(res.file))
-      core.root_view.root_node:update_layout()
-      dv.doc:set_selection(res.line, res.col)
-      dv:scroll_to_line(res.line, false, true)
-    end)
+    local mv = ResultsView.new_and_add({
+      title="Jumplist",
+      items_fun=function()
+        local items = table.map_with_ix(
+          history.marks, 
+          function(j, mark)
+            return { 
+              File=core.normalize_to_project_dir(mark.abs_filename) , 
+              Text=mark.line_items or mark.line_text , 
+              line=mark.line, 
+              col=mark.col, 
+              j = j,
+              data=mark,
+              N = misc.str(j),
+              Line=misc.str(mark.line),
+              Date=os.date("%Y-%m-%d %X %a", mark.time),
+            }
+          end
+        )
+        for _,item in ipairs(items) do
+          item.search_text = string.format("[%s] %s %s at line %d (col %d): %s",
+            item.j, item.Date, item.File, item.line, item.col, item.data.line_text)
+  
+        end                             
+        core.log('items_fun : %i items',#items)
+        return items
+      end, 
+      on_click_fun=function(res)
+        command.perform("root:close")
+        local dv = core.root_view:open_doc(core.open_doc(res.File))
+        core.root_view.root_node:update_layout()
+        dv.doc:set_selection(res.line, res.col)
+        dv:scroll_to_line(res.line, false, true)
+      end,
+      column_names={'N','Date','File','Text'}
+    })
     if history.marks_ix and history.marks[history.marks_ix] then
         mv.selected_idx = history.marks_ix
     end
-    core.root_view:get_active_node_default():add_view(mv)
   end,
   
   ["vibe:history:search"] = function()

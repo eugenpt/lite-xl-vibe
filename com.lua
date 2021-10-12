@@ -3,6 +3,7 @@ local core = require "core"
 local command = require "core.command"
 local common = require "core.common"
 local config = require "core.config"
+local DocView = require "core.docview"
 local keymap = require "core.keymap"
 local style = require "core.style"
 local translate = require "core.doc.translate"
@@ -132,11 +133,13 @@ command.add(nil, {
       local node = core.root_view:get_active_node()
       node:set_active_view(core.vibe.tabs_list_view)
     else
-      local mv = ResultsView("Opened Files", misc.get_tabs_list, function(res)
-        local dv = core.root_view:open_doc(res.doc)
-      end)
-      core.vibe.tabs_list_view = mv
-      core.root_view:get_active_node_default():add_view(core.vibe.tabs_list_view)
+      core.vibe.tabs_list_view = ResultsView.new_and_add({
+        title="Opened Files", 
+        items_fun=misc.get_tabs_list, 
+        on_click_fun=function(res)
+          local dv = core.root_view:open_doc(res.doc)
+        end
+      })
     end
   end,
 })
@@ -209,19 +212,15 @@ command.add("core.docview", {
 -- can't put this into misc since ResultsView depends on misc
 command.add(nil, {
   ["core:exec-history"] = function()
-    local mv = ResultsView("Execution History",function()
-      local items = {}
-      for _,item in ipairs(misc.exec_history) do
-        table.insert(items, { text=item })
-      end                             
-      core.log('items_fun : %i items',#items)
-      return items
-    end, function(res)
-      misc.exec_text = res.text
-      command.perform('root:close')
-      command.perform("core:exec-input")
-    end)
-    core.root_view:get_active_node_default():add_view(mv)
+    ResultsView.new_and_add({
+      title="Execution History",
+      items=misc.exec_history,
+      on_click_fun=function(res)
+        misc.exec_text = res.text
+        command.perform('root:close')
+        command.perform("core:exec-input")
+      end
+    })
   end,
 })
 

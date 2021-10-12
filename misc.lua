@@ -420,6 +420,11 @@ function misc.path_join(path, dir, ...)
   return dir and misc.path_join(path..PATHSEP..dir, ...) or path
 end
 
+function misc.path_shorten(path)
+  local r = path:gsub("([^\\/][^\\/])([^\\/]*)([\\/])","%1%3")
+  return r
+end
+
 function misc.slice(table,i0,i1)
   i0 = i0 or 1
   i1 = i1 or #table
@@ -496,8 +501,16 @@ end
 
 function table:map(fun)
   local ret = {}
-  for k,v in pairs(fun) do
+  for k,v in pairs(self) do
     ret[k] = fun(v)
+  end
+  return ret
+end
+
+function table:map_with_ix(fun)
+  local ret = {}
+  for k,v in pairs(self) do
+    ret[k] = fun(k,v)
   end
   return ret
 end
@@ -1244,6 +1257,20 @@ function core.set_active_view(view)
     misc.last_active_view = core.active_view
   end
   return misc.core__set_active_view__orig(view)
+end
+
+
+function DocView:get_line_draw_items(idx)
+  local items = {}
+  local default_font = self:get_font()
+  for _, type, text in self.doc.highlighter:each_token(idx) do
+    local color = style.syntax[type]
+    local font = style.syntax_fonts[type] or default_font
+    table.insert(items, color)
+    table.insert(items, font)
+    table.insert(items, text)
+  end
+  return items
 end
 
 

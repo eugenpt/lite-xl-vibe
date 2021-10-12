@@ -83,7 +83,7 @@ function FileView:new(path, history, history_cur_ix)
       -- columns
       item.Name = item.draw_items
       item.Size = item.size and misc.filesize_str(item.size or 0) or ''
-      item.Modified = item.modified and os.date("%a %Y-%m-%d %X", item.modified) or ''
+      item.Modified = item.modified and os.date("%Y-%m-%d %X %a", item.modified) or ''
       item.Ext = item.type=="dir" and "<dir>" or misc.file_ext(item.filename)
     end
     return items
@@ -174,18 +174,14 @@ command.add(nil, {
     end
     --
     if #items > 1 then
-      local mv = ResultsView("Dir to open",function()
-        local r = {}
-        for _,path in ipairs(items) do
-          table.insert(r,{ text=path })
+      ResultsView.new_and_add({
+        title="Dir to open",
+        items=items,
+        on_click_fun=function(res)
+          command.perform('root:close')
+          show_directory(res.text)
         end
-        return r
-      end, function(res)
-        command.perform('root:close')
-        show_directory(res.text)
-      end)
-      core.root_view:get_active_node_default():add_view(mv)
-      
+      })
     else
       show_directory(items[1])
     end

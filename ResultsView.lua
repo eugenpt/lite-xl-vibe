@@ -43,6 +43,16 @@ local function default_sort_fun(item)
   return (item.title or '')..(item.text or '')
 end
 
+local function create_sort_func_dict(column_names)
+  local sort_funs = {}
+  for _, name in ipairs(column_names) do
+    sort_funs[name] = function(item)
+      return item[name]
+    end
+  end
+  return sort_funs
+end
+
 function ResultsView:save_info()
   -- not really that helpful
   return { title=self.title }
@@ -55,19 +65,67 @@ end
 function ResultsView:new(title, items_fun, on_click_fun, sort_funs, column_names)
   ResultsView.super.new(self)
   self.module = "ResultsView"
-  self.title = title
+  
+  if items_fun == nil and misc.is_table(title) then
+    local options = title
+    title = options.title
+    if options.items_fun == nil then
+      if options.items then
+        if misc.is_table(options.items) then
+          if misc.is_string(options.items[1]) then
+            options.items = table.map(
+                options.items, 
+                function(item) return { text = item } end
+              )
+          end
+          if misc.is_table(options.items[1]) then
+            local items = options.items
+            options.items_fun = function()
+              return items
+            end
+          end
+        end
+      end
+    end
+    items_fun = options.items_fun
+    on_click_fun = options.on_click_fun
+    sort_funs = options.sort_funs
+    column_names = options.column_names
+  end
+  self.title = title or 'Results ??'
   self.scrollable = true
   self.brightness = 0
   self.items_fun = items_fun or function() return {} end
   self.on_click_fun = on_click_fun or function() end
-  self.sort_funs = sort_funs
-                    and (type(sort_funs)=='function' 
+  sort_funs = sort_funs and (type(sort_funs)=='function' 
                          and { default=sort_funs } or sort_funs)
-                    or { name=default_sort_fun }
+  if column_names == nil then
+    self.column_names = {'draw_items'}
+    self.sort_funs = sort_funs or { name = default_sort_fun }
+  else
+    self.column_names = column_names
+    self.sort_funs = sort_funs
+                    or create_sort_func_dict(self.column_names)
+  end
   self.sort_mode = -1
-  self.column_names = column_names or {'draw_items'}
   self:fill_results()
 end
+
+function ResultsView.new_and_add(...)
+  -- accepts single table options={
+  --  title="Title",
+  --  items_fun = function() return items end,
+  --    or
+  --  items = {list of items as strings or tables}
+  --  on_click_fun = function(item) log(item) end
+  --  column_names = {list of displayed columns}
+  --  sort_func = {["sort_name_1"] = sort_fun_1}
+  --                , defaults to sorting columns
+  --  }
+  local mv = ResultsView(...)
+  core.root_view:get_active_node_default():add_view(mv)
+  return mv
+end  
 
 function ResultsView:get_selected_item()
   return (self.selected_idx > 0) and self.results[self.selected_idx] or nil

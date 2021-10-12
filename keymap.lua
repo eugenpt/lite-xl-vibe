@@ -12,6 +12,7 @@
 local core = require "core"
 local command = require "core.command"
 local config = require "core.config"
+local DocView = require "core.docview"
 local keymap = require "core.keymap"
 local translate = require "core.doc.translate"
 
@@ -341,7 +342,6 @@ keymap.add_nmap({
 keymap.add_nmap({
   ["s"]                  = "vibe:results:sort-next-mode",
   ["S"] = "vibe:results:sort-select-mode",
-  ["<space>s"] = "vibe:results:sort-select-mode",
   ["C-s"] = "vibe:results:sort-select-mode",
   ["<f5>"] = "vibe:results:refresh",
   ["R"] = "vibe:results:refresh",
@@ -487,7 +487,7 @@ end
 
 for _,c in ipairs(kb.all_typed_symbols) do
   local com_name ='vibe:replace-symbol-with-'..c 
-  command.add(nil, {
+  command.add(DocView, {
     [ com_name ] = function()
       local doc = core.active_view.doc
       local line,col,line2,col2 = doc:get_selection()
