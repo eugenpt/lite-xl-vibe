@@ -129,7 +129,7 @@ command.add(nil, {
           history.marks, 
           function(j, mark)
             return { 
-              File=core.normalize_to_project_dir(mark.abs_filename) , 
+              file=core.normalize_to_project_dir(mark.abs_filename) , 
               Text=mark.line_items or mark.line_text , 
               line=mark.line, 
               col=mark.col, 
@@ -144,14 +144,14 @@ command.add(nil, {
         for _,item in ipairs(items) do
           item.search_text = string.format("[%s] %s %s at line %d (col %d): %s",
             item.j, item.Date, item.File, item.line, item.col, item.data.line_text)
-  
+          item.File = misc.path_shorten(item.file)
         end                             
         core.log('items_fun : %i items',#items)
         return items
       end, 
       on_click_fun=function(res)
         command.perform("root:close")
-        local dv = core.root_view:open_doc(core.open_doc(res.File))
+        local dv = core.root_view:open_doc(core.open_doc(res.file))
         core.root_view.root_node:update_layout()
         dv.doc:set_selection(res.line, res.col)
         dv:scroll_to_line(res.line, false, true)
