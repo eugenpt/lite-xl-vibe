@@ -292,6 +292,30 @@ function vibe:get_mode_str()
   return self and (self.mode == 'insert' and "INSERT" or "NORMAL") or 'nil?'
 end
 
+command.add(nil, {
+  ["vibe:after-startup"] = function()
+    
+  end
+})
+
+core.add_thread(function()
+  while core.vibe.core_run_run==nil do
+    misc.sleep(1)
+  end
+  core.log("vibe:wait_for_startup finished waiting")
+  
+  -- wait a bit more..
+  -- system.sleep(0.3)
+  command.perform("vibe:after-startup")
+  
+  vibe.mode = config.vibe_starting_mode or 'insert'
+  
+  if config.vibe_startup_strokes then
+    core.log("running config.vibe_startup_strokes="..config.vibe_startup_strokes)
+    vibe.run_stroke_seq(config.vibe_startup_strokes)
+  end
+  core.log("vibe:wait_for_startup finished")
+end, 'vibe:wait_for_startup')
 
 core.log("lite-xl-vibe loaded.")
 return vibe

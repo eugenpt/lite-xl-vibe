@@ -976,15 +976,12 @@ fp:close()
 -- GLOBALS
 
 core._G__newindex = getmetatable(_G).__newindex
-core._G__index = getmetatable(_G).__index
 
 local function disable_strict_global()
   getmetatable(_G).__newindex = nil
-  getmetatable(_G).__index = nil
 end
 
 local function enable_strict_global()
-  getmetatable(_G).__index = core._G__index
   getmetatable(_G).__newindex = core._G__newindex
 end
 
@@ -1005,34 +1002,6 @@ local noop = function() end
 
 misc.exec_history = {}
 misc.exec_text = ''
-
-function misc.exec_with_requires(text)
-  -- I do like persistent and changeable globals.
-  disable_strict_global()
-  -- try with return first to print some value
-  local F, err = load(require_str .. "\n\nreturn "..text)
-  local var_name = text
-  if err then
-    core.log("return didnt work")
-    -- try and guess the last assignment to display var's new value
-    var_name = text:match("(%a[%a%d]*)%s*=[^\n]+$")
-    F,err = load(
-      require_str .. "\n\n" 
-      .. text 
-      .. "\nreturn " .. (var_name or '"done"')
-    )
-  end  
-  if F then
-    F = assert(F)()
-    core.log("%s", misc.str(F, var_name))
-  else
-    core.error("%s",err)
-  end
-  -- aand restore strict
-  enable_strict_global()
-  
-  return F, err
-end
 
 
 command.add(nil, {
@@ -1070,11 +1039,32 @@ command.add(nil, {
   ["core:exec-input"] = function()
     core.command_view:set_text(misc.exec_text)
     core.command_view:enter("Exec", function(text, item)
+      -- I do like persistent and changeable globals.
+      disable_strict_global()
+      -- try with return first to print some value
+      local F, err = load(require_str .. "\n\nreturn "..text)
+      local var_name = text
+      if err then
+        core.log("return didnt work")
+        -- try and guess the last assignment to display var's new value
+        var_name = text:match("(%a[%a%d]*)%s*=[^\n]+$")
+        F,err = load(
+          require_str .. "\n\n" 
+          .. text 
+          .. "\nreturn " .. (var_name or '"done"')
+        )
+      end  
       -- save to history (regardless of load success)
       if (item == nil) or (text ~= item.text) then
         table.insert(misc.exec_history, text)
       end
-      misc.exec_with_requires(text)
+      if F then
+        core.log("%s", misc.str(F(), var_name))
+      else
+        core.error("%s",err)
+      end
+      -- aand restore strict
+      enable_strict_global()
     end, function(text)
       return common.fuzzy_match(
         table.list_concat(
@@ -1112,56 +1102,21 @@ command.add(nil, {
 function string:last_WORD(sep)
   sep = sep or ' '
   local last_WORD = self:find("[^"..sep.."]+$")
-  if last_WORD==nil or last_WORD==#self then
+  if last_WORD==nil or #last_WORD==0 then
     return nil
   end
-  return self:sub(last_WORD), last_WORD
+  return last_WORD
 end
 
 function misc.predict_exec_input(text)
-  local r
-  local last_WORD, last_WORD_start = text:last_WORD()
+  local r = {}
+  
+  local last_WORD = text:last_WORD()
   if last_WORD==nil then
-    last_WORD = ''
-    last_WORD_start = #text+1
+    return nil
   end
   
-  local dot_pos = last_WORD:find('[%.%:]')
   
-  if dot_pos == nil then
-    core.log("no dot")
-    r = table.map(
-      table.keys(_G),
-      function(item)
-        return text:sub(1, last_WORD_start-1)..item
-      end
-    )
-  else
-    local pre_dot = last_WORD:sub(1, dot_pos-1)
-    local value = misc.exec_with_requires(pre_dot)
-    
-    local metatable = value
-    if not misc.is_table(metatable) then
-      metatable = _G[type(value)]
-      if metatable==nil then
-        metatable = value
-      end
-      
-      if not misc.is_table(metatable) then
-        metatable = getmetatable(metatable)
-      end
-    end
-    if misc.is_table(metatable) then
-      r = table.map(
-        table.keys(metatable),
-        function(item)
-          return text:sub(1,last_WORD_start-1)..pre_dot..last_WORD:sub(dot_pos, dot_pos)..item
-        end
-      )
-    end
-  end
-  
-  log(r)
   
   return r
 end

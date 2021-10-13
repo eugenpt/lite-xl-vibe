@@ -332,11 +332,17 @@ end
 -- this doesn't work really.
 local run = core.run
 function core.run(...)
-  local reload = #core.docs == 0
-    
-  local temp = run(...)
+  core.vibe.core_run_run = true
+  core.vibe.need_to_load_workspace = #core.docs == 0
+  core.run = run
+  run(...)
+  
+  core.log('/vibe core run')
+  return temp
+end
 
-  if reload then
+command.add_hook("vibe:after-startup", function()
+  if core.vibe.need_to_load_workspace then
     core.log("trying to load vibe workspace")
     local temp = loadfile(vibeworkspace.savepath())
     vibeworkspace.abs_filename = temp and temp()
@@ -347,11 +353,7 @@ function core.run(...)
   else
     core.log('nah, dont need to load workspace')
   end
-
-  core.run = run
-  core.log('/vibe core run')
-  return temp
-end
+end)
 
 local on_quit_project = core.on_quit_project
 function core.on_quit_project()
