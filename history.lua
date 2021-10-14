@@ -131,6 +131,7 @@ command.add(nil, {
             return { 
               file=core.normalize_to_project_dir(mark.abs_filename) , 
               Text=mark.line_items or mark.line_text , 
+              line_text=mark.line_text,
               line=mark.line, 
               col=mark.col, 
               j = j,
@@ -156,7 +157,8 @@ command.add(nil, {
         dv.doc:set_selection(res.line, res.col)
         dv:scroll_to_line(res.line, false, true)
       end,
-      column_names={'N','Date','File','Text'}
+      column_names={'N','Date','File','Text'},
+      sort_fields={'N','Date','File','line_text'},
     })
     if history.marks_ix and history.marks[history.marks_ix] then
         mv.selected_idx = history.marks_ix
