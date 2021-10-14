@@ -27,6 +27,7 @@ local command = require "core.command"
 local common = require "core.common"
 local keymap = require "core.keymap"
 local Doc = require "core.doc"
+local style = require "core.style"
 
 local misc = require "plugins.lite-xl-vibe.misc"
 local kb = require "plugins.lite-xl-vibe.keyboard"
@@ -384,6 +385,17 @@ command.add(nil, {
 -- MarksView
 -------------------------------------------------------------------------------
 
+function marks.mark_to_results(mark)
+  return {
+    file=core.normalize_to_project_dir(mark.abs_filename) , 
+    text=mark.line_items or {style.code_font, mark.line_text},
+    line_text=mark.line_text,
+    line=mark.line, 
+    col=mark.col, 
+    data=mark,
+    symbol=mark.symbol
+  }
+end
 
 local function fill_results()
   ResultsView.new_and_add({
@@ -392,24 +404,12 @@ local function fill_results()
       local items = {}
       -- global
       for symbol, mark in pairs(marks.global) do
-        table.insert(items, { 
-          file=core.normalize_to_project_dir(mark.abs_filename) , 
-          text=mark.line_items or mark.line_text, 
-          line=mark.line, 
-          col=mark.col, 
-          data=mark,
-          symbol=mark.symbol
-        })
+        table.insert(items, marks.mark_to_results(mark))
       end
       -- local..
       for filename, markss in pairs(marks._local) do
         for symbol, mark in pairs(markss) do
-          table.insert(items, {
-            file=core.normalize_to_project_dir(mark.abs_filename) ,
-            text=mark.line_items or mark.line_text, 
-            line=mark.line, col=mark.col, data=mark, 
-            symbol=mark.symbol
-          } )
+          table.insert(items, marks.mark_to_results(mark))
         end
       end
       -- title: symbol and position
@@ -426,7 +426,8 @@ local function fill_results()
       command.perform("root:close")
       misc.goto_mark(res.data)
     end,
-    column_names = {"Symbol","File","text"}
+    column_names = {"Symbol","File","text"},
+    sort_fields = {"Symbol","File","line_text"},
   })
 end
 

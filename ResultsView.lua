@@ -89,6 +89,11 @@ function ResultsView:new(title, items_fun, on_click_fun, sort_funs, column_names
     end
     items_fun = options.items_fun
     on_click_fun = options.on_click_fun
+    if options.sort_funs == nil then
+      if options.sort_fields then
+        options.sort_funs = create_sort_func_dict(options.sort_fields)
+      end
+    end
     sort_funs = options.sort_funs
     column_names = options.column_names
   end
@@ -104,12 +109,13 @@ function ResultsView:new(title, items_fun, on_click_fun, sort_funs, column_names
     self.sort_funs = sort_funs or { name = default_sort_fun }
   else
     self.column_names = column_names
-    self.sort_funs = sort_funs
-                    or create_sort_func_dict(self.column_names)
+    self.sort_funs = sort_funs or create_sort_func_dict(self.column_names)
   end
   self.sort_mode = -1
   self:fill_results()
 end
+
+
 
 function ResultsView.new_and_add(...)
   -- accepts single table options={
@@ -121,6 +127,8 @@ function ResultsView.new_and_add(...)
   --  column_names = {list of displayed columns}
   --  sort_func = {["sort_name_1"] = sort_fun_1}
   --                , defaults to sorting columns
+  --   also sort_fields may be provided 
+  --    to substitute columns for default sort funs
   --  }
   local mv = ResultsView(...)
   core.root_view:get_active_node_default():add_view(mv)
