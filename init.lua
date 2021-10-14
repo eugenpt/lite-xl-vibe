@@ -202,7 +202,7 @@ function vibe.process_stroke(stroke)
           core.log_quiet('|%s| nmapped to %s', vibe.stroke_seq, misc.str(commands))
         else  
           if not keymap.have_nmap_starting_with(vibe.stroke_seq) then
-            core.log('no commands for ' .. vibe.stroke_seq)
+            core.log('no commands for %s', vibe.stroke_seq)
             vibe.reset_seq()
           else
             vibe.help.update_suggestions()
@@ -270,7 +270,7 @@ function vibe.process_stroke(stroke)
       else
         core.log_quiet('nothing performed..')
         if not keymap.have_nmap_starting_with(vibe.stroke_seq) then
-          core.log_quiet('no commands for ' .. vibe.stroke_seq)
+          core.log_quiet('no commands for %s', vibe.stroke_seq)
           vibe.reset_seq()
         end
       end
