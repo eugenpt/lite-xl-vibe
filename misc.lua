@@ -1321,6 +1321,11 @@ function core.confirm_close_docs(docs, close_fn, ...)
 end
 
 -------------------------------------------------------------------------------
+function misc.gsub_newline(text)
+  local r = text:gsub('\n','')
+  return r
+end
+
 function misc.command_match_sug(text, item)
   return item
         and item.text

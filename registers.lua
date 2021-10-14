@@ -46,9 +46,9 @@ command.add(function() return not core.vibe.flags['recording_macro'] end,{
     start_recording_macro(symbol)
   end,
   ["vibe:macro:play-macro-"..symbol] = function()
-    core.log_quiet('play macro for %s = |%s|', symbol, registers[symbol])
+    core.log_quiet('play macro for %s = |%s|', symbol, core.vibe.registers[symbol])
     core.vibe.reset_seq()
-    core.vibe.run_stroke_seq(registers[symbol])
+    core.vibe.run_stroke_seq(core.vibe.registers[symbol])
   end,
 })
 end
@@ -57,9 +57,9 @@ command.add(function() return core.vibe.flags['recording_macro'] end,{
   ["vibe:macro:stop-recording"] = function()
     -- remove the q
     -- -- TODO: write a proper thing here..
-    registers[core.vibe.recording_register] =
-      registers[core.vibe.recording_register]:sub(1,
-        #registers[core.vibe.recording_register] - 1)
+    core.vibe.registers[core.vibe.recording_register] =
+      core.vibe.registers[core.vibe.recording_register]:sub(1,
+        #core.vibe.registers[core.vibe.recording_register] - 1)
     --
     core.vibe.recording_register = nil
     core.vibe.flags['recording_macro'] = false
@@ -68,52 +68,55 @@ command.add(function() return core.vibe.flags['recording_macro'] end,{
 
 command.add(nil, {
   ["vibe:registers-macro:list-all"] = function()
-    local mv = ResultsView("Registers List", function()
-      local items = {}
-      -- registers
-      for reg, text in pairs(registers) do
-        if text then
-          table.insert(items, {
-            ["title"] = '<'..reg..'>',
-            ["text"] = text,
-          })
+    ResultsView.new_and_add({
+      title="Registers List", 
+      items_fun=function()
+        local items = {}
+        -- registers
+        for reg, text in pairs(core.vibe.registers) do
+          if text then
+            table.insert(items, {
+              ["title"] = '<'..reg..'>',
+              ["text"] = misc.gsub_newline(text),
+            })
+          end
         end
-      end
-      -- clipboard ring
-      for ix,item in pairs(core.vibe.clipboard_ring) do
-        if item then
-          table.insert(items, {
-            ["title"] = '<clipboard-'..tostring(ix)..'>',
-            ["text"] = item,
-          })
+        -- clipboard ring
+        for ix,item in pairs(core.vibe.clipboard_ring) do
+          if item then
+            table.insert(items, {
+              ["title"] = '<clipboard-'..tostring(ix)..'>',
+              ["text"] = misc.gsub_newline(item),
+            })
+          end
         end
+        return items
+      end, 
+      on_click_fun=function(res)
+        system.set_clipboard(res.text, true) -- true for skip the ring
+        command.perform('root:close')
       end
-      return items
-    end, function(res)
-      system.set_clipboard(res.text, true) -- true for skip the ring
-      command.perform('root:close')
-    end)
-    core.root_view:get_active_node_default():add_view(mv)
+    })
   end,
 })
 
 local function register_fuzzy_sort(opts)
   return function(text)
   local items = {}
-  for symbol,register in pairs(registers) do
+  for symbol,register in pairs(core.vibe.registers) do
     table.insert(items, {
-      ["text"]   = symbol..'| '..register,
+      ["text"]   = symbol..'| '..misc.gsub_newline(register),
       ["content"] = register,
       ["symbol"] = symbol,
     })
   end
   if opts['add_ring'] then
-  for i, register in pairs(core.vibe.clipboard_ring) do
-    table.insert(items, {
-      ["text"]   = '<'..tonumber(i)..'>'..'| '..register,
-      ["content"] = register,
-    })
-  end
+    for i, register in pairs(core.vibe.clipboard_ring) do
+      table.insert(items, {
+        ["text"]   = '<'..tonumber(i)..'>'..'| '..misc.gsub_newline(register),
+        ["content"] = register,
+      })
+    end
   end
   return misc.fuzzy_match_key(items, 'text', text)
   end
@@ -125,9 +128,13 @@ command.add("core.docview", {
       -- this might confuse some people,
       --  the register selected may be matched by the input text
       --    and not by the highlighted line in the CommandView
-      local s = misc.command_match_sug(text, item)
-                and item.content
-                or registers[text]
+      local s = core.vibe.registers[text]
+      if misc.command_match_sug(text, item) then
+        s = item.content
+      else
+        core.log("text~=item")
+        core.log("%s ~= %s", text, item.text)
+      end
       if s then
         system.set_clipboard(s, true) -- true for skip ring
         command.perform("vibe:paste")
@@ -138,6 +145,7 @@ command.add("core.docview", {
     end, register_fuzzy_sort({add_ring=true}))
   end,
 })
+
 command.add(misc.has_selection, {
   ["vibe:registers:search-and-copy"] = function()
     core.command_view:enter("Copy to register (clipboard)", function(text, item)
@@ -164,7 +172,7 @@ local function registers_load(_filename)
   local load_f = loadfile(filename)
   local _registers = load_f and load_f()
   if _registers and _registers.clipboard_ring then
-    registers= _registers.registers
+    core.vibe.registers= _registers.registers
     core.vibe.clipboard_ring = _registers.clipboard_ring
     core.vibe.clipboard_ring_max = 0
     for j,_ in pairs(core.vibe.clipboard_ring) do
@@ -183,23 +191,23 @@ local function registers_save(_filename)
   local filename = _filename or registers_filename()
   local fp = io.open(filename, "w")
   if fp then
-    local regs = common.serialize(registers)
+    local regs = common.serialize(core.vibe.registers)
     local ring = common.serialize(core.vibe.clipboard_ring)
     fp:write(string.format("return { registers=%s , clipboard_ring=%s}\n", regs, ring))
     fp:close()
   end
 end
 
-registers_load()
-
-local on_quit_project = core.on_quit_project
-function core.on_quit_project()
-  core.try(registers_save)
-  on_quit_project()
-end
+-- -- those are handled by vibe workspace
+-- registers_load()
+-- local on_quit_project = core.on_quit_project
+-- function core.on_quit_project()
+--   core.try(registers_save)
+--   on_quit_project()
+-- end
 
 local function registers_clear()
-  registers = {}
+  core.vibe.registers = {}
   core.vibe.clipboard_ring = {}
   core.vibe.clipboard_ring_ix = 0
   core.vibe.clipboard_ring_max = 0

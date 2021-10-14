@@ -13,6 +13,8 @@ local vibeworkspace = {}
 vibeworkspace.add_save = {
   ['misc.exec_history'] = {},
   ['marks'] = {},
+  ['registers'] = {},
+  ['clipboard_ring'] = {},
 }
 -- Oh yeah I just did that.
 -- The above initialized is the sth sth I've come up with to save stuff.
