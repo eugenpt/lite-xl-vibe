@@ -1113,32 +1113,11 @@ command.add(nil, {
   end,
 
   ["core:exec-input"] = function()
-    core.command_view:set_text(misc.exec_text)
-    core.command_view:enter("Exec", function(text, item)
-      -- save to history (regardless of load success)
-      if (item == nil) or (text ~= item.text) then
-        table.insert(misc.exec_history, text)
-      end
-      misc.exec_with_requires(text)
-    end, function(text, item)
-      return common.fuzzy_match(
-        table.list_concat(
-          misc.exec_history,
-          config.vibe.exec_input_online_execute and misc.predict_exec_input(text, item) or nil
-        ), 
-        text
-      )
-    end)
-    misc.exec_text = ''
+    misc.exec_input()
   end,
 
   ["core:exec-input-and-insert"] = function()
-    core.command_view:enter("Exec and insert at cursor", function(text)
-      local s = assert(load(misc.require_str .. "\n\nreturn "..text))()
-      core.log('%s', s)
-      local line,col = core.active_view.doc:get_selection()
-      core.active_view.doc:insert(line, col, misc.str(s))
-    end)
+    misc.exec_input(true)
   end,
 --[[
   -- yeah, I do like vim
@@ -1153,6 +1132,35 @@ command.add(nil, {
   end,
 ]]--
 })
+
+function misc.exec_input(insert_result)
+  misc.command_view_enter({
+    init= misc.exec_text or '',
+    title= insert_result and "Exec input and insert result" or "Exec", 
+    submit= function(text, item)
+      -- save to history (regardless of load success)
+      if (item == nil) or (text ~= item.text) then
+        table.insert(misc.exec_history, text)
+      end
+      local res, err = misc.exec_with_requires(text)
+      
+      if res and insert_result then
+        local line,col = core.active_view.doc:get_selection()
+        core.active_view.doc:insert(line, col, misc.str(res))
+      end
+    end, 
+    suggest= function(text, item)
+      return common.fuzzy_match(
+        table.list_concat(
+          misc.exec_history,
+          config.vibe.exec_input_online_execute and misc.predict_exec_input(text, item) or nil
+        ), 
+        text
+      )
+    end
+  })
+  misc.exec_text = ''
+end
 
 function string:last_WORD(sep)
   sep = sep or ' '
