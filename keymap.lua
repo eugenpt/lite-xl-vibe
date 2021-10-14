@@ -137,7 +137,7 @@ keymap.add_nmap {
   ["e"] = "doc:move-to-next-word-end",
   ["E"] = "doc:move-to-next-WORD-end",
   ["0"] = "doc:move-to-start-of-line",
-  ["_"] = "0EB",
+  ["_"] = "doc:move-to-first-line-character",
   ["$"] = "doc:move-to-end-of-line",
   ["C-u"] = "doc:move-to-previous-page",
   ["C-d"] = "doc:move-to-next-page",

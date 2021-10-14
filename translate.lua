@@ -133,6 +133,12 @@ translations["previous-WORD-start"] = translate.previous_WORD_start
 translations["next-WORD-end"] = translate.next_WORD_end
 translations["next-WORD-start"] = translate.next_WORD_start
 
+function translate.first_line_char(doc, line, col)
+  return translate.next_WORD_start(doc, line, 1)
+end
+
+translations["first-line-character"] = translate.first_line_char
+
 -------------------------------------------------------------------------------
 -- symbols
 -------------------------------------------------------------------------------

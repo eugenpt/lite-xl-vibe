@@ -305,7 +305,7 @@ end
 com.inline_search.general_command_fun = function(match_fun)
   return function()
     com.inline_search.match_fun = match_fun
-    core.command_view:enter("Find in project:", function(text, item)
+    core.command_view:enter("Find in project", function(text, item)
       if item then
         misc.goto_mark(item)
       else

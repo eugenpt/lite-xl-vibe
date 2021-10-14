@@ -840,7 +840,8 @@ function misc.open_doc(abs_filename)
 end
 
 function misc.update_mark_line_items(mark)
-  if misc.doc_abs_filename() == mark.abs_filename then
+  if core.normalize_to_project_dir(misc.doc_abs_filename())
+  == core.normalize_to_project_dir(mark.abs_filename) then
     mark.line_items = core.active_view:get_line_draw_items(mark.line)
   else
     core.error(' mark is not in current doc! ')
