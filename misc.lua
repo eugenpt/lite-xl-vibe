@@ -169,6 +169,9 @@ end
 
 
 misc.doc_abs_filename = function(doc)
+  if doc==nil then 
+    doc = core.active_view.doc
+  end
   return doc and (doc.abs_filename or system.absolute_path(doc.filename))
 end
 
@@ -508,6 +511,31 @@ function table:map(fun)
   return ret
 end
 
+function table.list_to_dict_map(list, fun)
+  local ret = {}
+  for _,v in ipairs(list) do
+    ret[v] = fun(v)
+  end
+  return ret
+end
+
+function table:list_filter(fun)
+  local ret
+  for _,v in ipairs(self) do
+    if fun(v) then
+      table.insert(ret, v)
+    end
+  end
+  return ret
+end
+
+function table:take_keys(keys)
+  return table.list_to_dict_map(
+    keys, 
+    function(key) return self[key] end
+  )
+end
+
 function table:map_with_ix(fun)
   local ret = {}
   for k,v in pairs(self) do
@@ -811,6 +839,14 @@ function misc.open_doc(abs_filename)
   core.root_view:open_doc(core.open_doc(abs_filename))
 end
 
+function misc.update_mark_line_items(mark)
+  if misc.doc_abs_filename() == mark.abs_filename then
+    mark.line_items = core.active_view:get_line_draw_items(mark.line)
+  else
+    core.error(' mark is not in current doc! ')
+  end
+end
+
 function misc.goto_mark(mark)
   -- mark = {abs_filename=..,line=..,col=..}
   if misc.doc_abs_filename(doc()) ~= mark.abs_filename then
@@ -818,6 +854,8 @@ function misc.goto_mark(mark)
     misc.open_doc(mark.abs_filename)
   end
   doc():set_selection(mark.line, mark.col)
+  -- dv:scroll_to_line(res.line, false, true)
+  misc.update_mark_line_items(mark)
 end
 
 

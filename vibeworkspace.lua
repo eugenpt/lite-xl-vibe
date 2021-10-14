@@ -12,6 +12,7 @@ core.log("lite-xl-vibe.vibeworkspace")
 local vibeworkspace = {}
 vibeworkspace.add_save = {
   ['misc.exec_history'] = {},
+  ['marks'] = {},
 }
 -- Oh yeah I just did that.
 -- The above initialized is the sth sth I've come up with to save stuff.
@@ -236,7 +237,8 @@ end
 function vibeworkspace.add_save_str()
   local add_save = {}
   for k,v in pairs(vibeworkspace.add_save) do
-    add_save[k] = (v.save and v.save() or misc.get_dotsep(k))
+    local by_name = misc.get_dotsep(k)
+    add_save[k] = v.save and v:save() or (by_name.save and by_name.save() or by_name)
   end
   return common.serialize(add_save)
 end
@@ -244,8 +246,9 @@ end
 function vibeworkspace.load_saved(add_saved)
   for k,v in pairs(add_saved) do
     if vibeworkspace.add_save[k] then
-      if vibeworkspace.add_save[k].load then
-        vibeworkspace.add_save[k].load(v)
+      local load = vibeworkspace.add_save[k].load or misc.get_dotsep(k).load
+      if load then
+        load(v)
       else
         misc.set_dotsep(k,v)
       end

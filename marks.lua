@@ -47,6 +47,43 @@ marks.global = {}
 marks._local = {}
 
 
+function marks.prep_mark(mark)
+  -- I don't save line_items since they have userdata and stuff
+  --    So first time after restart
+  --      when you open all marks through <space>om 
+  --        you'll see just text for loaded marks
+  --      But once you go to a mark, 
+  --        the items will be read from the doc's highlighter 
+  --          and <space>om will show proper line appearance
+  --                              (see misc.goto_mark)
+  return table.take_keys(
+    mark,
+    {'abs_filename','line','col','line_text','symbol','time'}
+  )
+end
+
+function marks.prep_marks_table(marks_table)
+  return table.map(
+    marks_table,
+    marks.prep_mark
+  )
+end
+
+function marks.save()
+  return table.list_to_dict_map(
+    {'global','_local'},
+    function(key)
+      return marks.prep_marks_table(marks[key])
+    end
+  )  
+end
+
+function marks.load(v)
+  marks.global = v and v.global or {}
+  marks._local = v and v._local or {}
+end
+
+
 function marks.set_mark(symbol, global_flag)
   local line,col = doc():get_selection()
   local abs_filename = misc.doc_abs_filename(doc())
@@ -75,11 +112,14 @@ function marks.set_mark(symbol, global_flag)
   core.log("Mark [%s] set", symbol)
 end
 
+
 function marks.goto_global_mark(symbol)
   -- also accepts mark as the argument
   local mark = symbol.abs_filename and symbol or marks.global[symbol]
   if mark then
     misc.goto_mark(mark)
+    core.log("Jumped to (global) mark [%s]", symbol)
+    misc.update_mark_line_items(mark)
   else
     core.vibe.debug_str = 'no mark for '..symbol
   end
@@ -91,6 +131,7 @@ function marks.goto_local_mark(symbol)
   if mark then
     misc.goto_mark(mark)
     core.log("Jumped to (local) mark [%s]", symbol)
+    misc.update_mark_line_items(mark)
   else
     core.vibe.debug_str = 'no mark for ' .. symbol
   end
@@ -296,7 +337,7 @@ function marks.filename()
   return misc.USERDIR .. PATHSEP .. "marks.lua"
 end
 
-function marks.load(_filename)
+function marks.load_from_file(_filename)
   local filename = _filename or marks.filename()
   local load_f = loadfile(filename)
   local _marks = load_f and load_f()
@@ -308,7 +349,7 @@ function marks.load(_filename)
   end  
 end
 
-function marks.save(_filename)
+function marks.save_to_file(_filename)
   local filename = _filename or marks.filename()
   local fp = io.open(filename, "w")
   if fp then
@@ -319,19 +360,24 @@ function marks.save(_filename)
   end
 end
 
+-- -- this is in vibeworkspace now
+-- marks.load_from_file()
 
-marks.load()
+-- local on_quit_project = core.on_quit_project
+-- function core.on_quit_project()
+--   core.try(marks.save_to_file)
+--   on_quit_project()
+-- end
 
-local on_quit_project = core.on_quit_project
-function core.on_quit_project()
-  core.try(marks.save)
-  on_quit_project()
-end
-
+-- local on_enter_project = core.on_enter_project
+-- function core.on_enter_project(new_dir)
+--   on_enter_project(new_dir)
+--   core.try(marks.load_from_file)
+-- end
 
 command.add(nil, {
-  ["vibe:marks:save"] = marks.save,
-  ["vibe:marks:load"] = marks.load,
+  ["vibe:marks:save"] = marks.save_to_file,
+  ["vibe:marks:load"] = marks.load_from_file,
 })
 
 -------------------------------------------------------------------------------
@@ -378,10 +424,7 @@ local function fill_results()
     end, 
     on_click_fun = function(res)
       command.perform("root:close")
-      local dv = core.root_view:open_doc(core.open_doc(res.file))
-      core.root_view.root_node:update_layout()
-      dv.doc:set_selection(res.line, res.col)
-      dv:scroll_to_line(res.line, false, true)
+      misc.goto_mark(res.data)
     end,
     column_names = {"Symbol","File","text"}
   })
