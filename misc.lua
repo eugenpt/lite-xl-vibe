@@ -965,12 +965,19 @@ end
 -------------------------------------------------------------------------------
 -- file with all the requires
 local fp = assert( io.open(misc.local_path() .. PATHSEP .. "all_requires.lua", "rb") )
-local require_str = ''
+misc.require_str = ''
+misc.require_locals = {}
+local temp_name, _
 for line in fp:lines() do
-  require_str = require_str .. '\n' .. line
+  misc.require_str = misc.require_str .. '\n' .. line
+  _,_,temp_name = line:find("local ([^ ]+)")
+  if temp_name then
+    table.insert(misc.require_locals, temp_name)
+  end
 end
-core.log(require_str)
 fp:close()
+
+core.log(misc.require_str)
 
 -------------------------------------------------------------------------------
 -- GLOBALS
@@ -998,6 +1005,37 @@ enable_strict_global()
 
 local noop = function() end
 
+-- https://stackoverflow.com/a/2835433/2624911
+function misc.local_variable_names(num)
+  local names = {}
+  local idx = 1
+  while true do
+    local ln, lv = debug.getlocal(num or 1, idx)
+    if ln ~= nil then
+      table.insert(names, ln)
+    else
+      break
+    end
+    idx = 1 + idx
+  end
+  return names
+end
+function misc.upvalues()
+  local variables = {}
+  local idx = 1
+  local func = debug.getinfo(2, "f").func
+  while true do
+    local ln, lv = debug.getupvalue(func, idx)
+    if ln ~= nil then
+      table.insert(variables, ln)
+      -- variables[ln] = lv
+    else
+      break
+    end
+    idx = 1 + idx
+  end
+  return variables
+end
 
 -------------------------------------------------------------------------------
 -- commands
@@ -1010,20 +1048,27 @@ function misc.exec_with_requires(text)
   -- I do like persistent and changeable globals.
   disable_strict_global()
   -- try with return first to print some value
-  local F, err = load(require_str .. "\n\nreturn "..text)
+  local F, err = load(misc.require_str .. "\n\nreturn "..text)
   local var_name = text
   if err then
     core.log("return didnt work")
     -- try and guess the last assignment to display var's new value
     var_name = text:match("(%a[%a%d]*)%s*=[^\n]+$")
     F,err = load(
-      require_str .. "\n\n" 
+      misc.require_str .. "\n\n" 
       .. text 
       .. "\nreturn " .. (var_name or '"done"')
     )
   end  
   if F then
-    F = assert(F)()
+    local ok
+    ok, F = pcall(function() return assert(F)() end)
+    if not ok then
+      err = F
+      F = nil
+    end
+  end
+  if F then
     core.log("%s", misc.str(F, var_name))
   else
     core.error("%s",err)
@@ -1075,11 +1120,11 @@ command.add(nil, {
         table.insert(misc.exec_history, text)
       end
       misc.exec_with_requires(text)
-    end, function(text)
+    end, function(text, item)
       return common.fuzzy_match(
         table.list_concat(
           misc.exec_history,
-          misc.predict_exec_input(text)
+          config.vibe.exec_input_online_execute and misc.predict_exec_input(text, item) or nil
         ), 
         text
       )
@@ -1089,7 +1134,7 @@ command.add(nil, {
 
   ["core:exec-input-and-insert"] = function()
     core.command_view:enter("Exec and insert at cursor", function(text)
-      local s = assert(load(require_str .. "\n\nreturn "..text))()
+      local s = assert(load(misc.require_str .. "\n\nreturn "..text))()
       core.log('%s', s)
       local line,col = core.active_view.doc:get_selection()
       core.active_view.doc:insert(line, col, misc.str(s))
@@ -1118,7 +1163,7 @@ function string:last_WORD(sep)
   return self:sub(last_WORD), last_WORD
 end
 
-function misc.predict_exec_input(text)
+function misc.predict_exec_input(text, item)
   local r
   local last_WORD, last_WORD_start = text:last_WORD()
   if last_WORD==nil then
@@ -1126,23 +1171,29 @@ function misc.predict_exec_input(text)
     last_WORD_start = #text+1
   end
   
-  local dot_pos = last_WORD:find('[%.%:]')
+  local dot_pos = last_WORD:find('[%.%:][^%.%:]*$')
+  
+  local value = nil
   
   if dot_pos == nil then
     core.log("no dot")
+    r = table.list_concat(table.keys(_G), misc.require_locals)
     r = table.map(
-      table.keys(_G),
+      r,
       function(item)
         return text:sub(1, last_WORD_start-1)..item
       end
     )
   else
+    core.log("dot")
     local pre_dot = last_WORD:sub(1, dot_pos-1)
-    local value = misc.exec_with_requires(pre_dot)
-    
+    core.log("pre_dot=%s", pre_dot)
+    value = misc.exec_with_requires(pre_dot)
+    log(value)
     local metatable = value
     if not misc.is_table(metatable) then
-      metatable = _G[type(value)]
+      metatable = misc.exec_with_requires('_G["'..type(value)..'"]')
+      
       if metatable==nil then
         metatable = value
       end
@@ -1162,6 +1213,12 @@ function misc.predict_exec_input(text)
   end
   
   log(r)
+  
+  -- this would've been cool, but only on suggestion select, 
+  --   which current COmmandView does not support (see also #9)
+  -- if item and item.text == text and last_WORD and #last_WORD>0 then
+  --   log(misc.exec_with_requires(last_WORD))
+  -- end
   
   return r
 end

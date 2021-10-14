@@ -26,4 +26,7 @@ config.vibe.history_max_dt_to_join = 0.5
 -- max number of inline project search items to show
 config.vibe.inline_search_maxN = 100
 
+-- whether or not try and evaluate input-to-be-executed online
+config.vibe.exec_input_online_execute = true
+
 return config

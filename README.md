@@ -1,6 +1,8 @@
 # lite-xl-vibe
 VI(m?) Bindings (with a hint of Emacs) for [lite-xl](https://github.com/lite-xl/lite-xl) (but made mostly compatible with [lite](https://github.com/rxi/lite))
 
+# Short demo:
+![](intro.gif)
 
 ## Installation
 
@@ -31,6 +33,7 @@ Press `i` while in `NORMAL` mode to go back to `INSERT` mode
 # Features
 
 - Help on keystrokes and combinations via `Alt-H`
+- Interactive lua exec shell (command `"core:exec-input"` or `<space>;`) with online suggestions!
 
 - (Book-)Marks, including named ones (`Space+Return`) and one-keystroke ones 
   (`m`+letter to set, `'`/`\``+letter to go to a mark, uppercase for global marks)
