@@ -386,6 +386,8 @@ keymap.add_nmap({
   ["C-="] = "vibe:fileview:create-dir",
   ["nd"] = "vibe:fileview:create-dir",
   ["nf"] = "vibe:fileview:create-file",
+  ["a"] = "vibe:fileview:add-current-dir-to-workspace",
+  ["A"] = "vibe:fileview:add-current-dir-to-workspace",
   -- ["C-k"] = "vibe:fileview:go-up", -- conflicts with next-tab
   ["C-<left>"] = "vibe:fileview:go-back",
   ["C-<right>"] = "vibe:fileview:go-forward",

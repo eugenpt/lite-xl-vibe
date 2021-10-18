@@ -246,31 +246,24 @@ command.add(FileView, {
   
   ["vibe:fileview:delete-item"] = function()
     local item = core.active_view:get_selected_item()
-    misc.command_view_enter({
+    misc.command_view_modal({
       title="Really delete?",
-      init="Yes",
-      suggest={"Yes", "No"},
-      submit=function(text)
-        if text=="Yes" then
-          local ok, err
-          if misc.isdir(item.abs_filename) then
-            ok, err = system.rmdir(item.abs_filename)
-            log(ok)
-            log(err)
-          else
-            ok, err = os.remove(item.abs_filename)
-          end
-          if not ok then
-            log("error while removing "..item.abs_filename)
-            core.error(err)
-          else
-            command.perform("vibe:results:refresh")
-          end
+      Yes = function()
+        local ok, err
+        if misc.isdir(item.abs_filename) then
+          ok, err = system.rmdir(item.abs_filename)
+          log(ok)
+          log(err)
+        else
+          ok, err = os.remove(item.abs_filename)
         end
-      end,
-      validate=function(text)
-        return text=="Yes" or text=="No"
-      end,
+        if not ok then
+          log("error while removing "..item.abs_filename)
+          core.error(err)
+        else
+          command.perform("vibe:results:refresh")
+        end
+      end
     })
   end,
   
@@ -313,6 +306,17 @@ command.add(FileView, {
       end
     })
   end,
+  
+  ["vibe:fileview:add-current-dir-to-workspace"] = function()
+    misc.command_view_modal({
+      title = "Really Add Directory?",
+      Yes = function()
+        core.add_project_directory(system.absolute_path(core.active_view.path))
+        -- TODO: add the name of directory to prioritize
+        core.reschedule_project_scan()
+      end
+    })
+  end,
 })
 
 keymap.add({
@@ -324,6 +328,7 @@ keymap.add({
   ["delete"] = "vibe:fileview:delete-item",
   ["ctrl+n"] = "vibe:fileview:create-file",
   ["ctrl+shift+n"] = "vibe:fileview:create-dir",
+  ["ctrl+shift+a"] = "vibe:fileview:add-current-dir-to-workspace",
 })
 
 return FileView

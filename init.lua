@@ -294,7 +294,15 @@ end
 
 command.add(nil, {
   ["vibe:after-startup"] = function()
+    if config.vibe_starting_mode then
+      core.log("setting initial mode to %s", config.vibe_starting_mode)
+      vibe.mode = config.vibe_starting_mode
+    end
     
+    if config.vibe_startup_strokes then
+      core.log("running config.vibe_startup_strokes=%s", config.vibe_startup_strokes)
+      vibe.run_stroke_seq(config.vibe_startup_strokes)
+    end
   end
 })
 
@@ -306,14 +314,9 @@ core.add_thread(function()
   
   -- wait a bit more..
   -- system.sleep(0.3)
+  
   command.perform("vibe:after-startup")
   
-  vibe.mode = config.vibe_starting_mode or 'insert'
-  
-  if config.vibe_startup_strokes then
-    core.log("running config.vibe_startup_strokes="..config.vibe_startup_strokes)
-    vibe.run_stroke_seq(config.vibe_startup_strokes)
-  end
   core.log("vibe:wait_for_startup finished")
 end, 'vibe:wait_for_startup')
 

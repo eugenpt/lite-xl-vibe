@@ -1439,6 +1439,48 @@ misc.command_view_enter = function(title, options)
   )
 end
 
+function misc.command_view_modal(options)
+  options.title = options.title or "Really delete?"
+  options.options = options.options or  {"Yes", "No"}
+  options.init = options.init or options.options[1]
+  if options.on_answer then
+    if misc.is_table(options.on_answer) then
+    
+    elseif misc.is_function(options.on_answer) then
+    
+    else
+      core.error('Unknown input: on_answer type %s', type(on_answer))
+    end
+  else
+    if options.Yes then
+      options.on_answer = { Yes = options.Yes }
+    else
+      core.error('Unknown input, no on_answer, no Yes')
+    end
+  end
+  misc.command_view_enter({
+    title=options.title,
+    init=options.init,
+    suggest=options.options,
+    submit=function(text)
+      if misc.is_table(options.on_answer) then
+        for k,v in pairs(options.on_answer) do
+          if text==k then
+            v()
+            return
+          end
+        end
+        core.error('modal answer [%s] : no callback!', text)
+      else
+        options.on_answer(text);
+      end
+    end,
+    validate=function(text)
+      return table.find(options.options, text)
+    end,
+  })
+end
+
 -------------------------------------------------------------------------------
 misc.core__set_active_view__orig = core.set_active_view
 function core.set_active_view(view)
