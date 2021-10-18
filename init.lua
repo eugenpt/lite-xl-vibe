@@ -317,6 +317,12 @@ core.add_thread(function()
   
   command.perform("vibe:after-startup")
   
+  if config.vibe_after_startup then
+    core.log('performing config.vibe_after_startup ..')
+    config.vibe_after_startup()
+    core.log('performed config.vibe_after_startup ..')
+  end
+  
   core.log("vibe:wait_for_startup finished")
 end, 'vibe:wait_for_startup')
 

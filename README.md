@@ -82,7 +82,7 @@ First - go to `NORMAL` mode by pressing `Esc`/`Ctrl+[`
 - you'll see `NORMAL` in the bottom left corner of the screen.
 
 To open a file, press `<space>.`, or `<space>of`.
-( Navigation between suggestions uses `Ctrl+n` / `Ctrl+p` )
+( Navigation between suggestions via `Ctrl+n` / `Ctrl+p` )
 
 Usually I open my editor in a folder I need it to be. 
 If not, I usually do `<space>:` to search for commands, 
@@ -91,11 +91,13 @@ and then do `Add Directory`
 Then the `Add Directory:` prompt will show up, 
 where you may enter any path and it will add the dir to your workspace.
 
-Now speaking of workspaces, `vibe` does provide it's own workspaces, but sadly they are not loade by default
+Now speaking of workspaces, `vibe` does provide it's own workspaces, 
+but sadly it's sort of difficult to load them on startup
 
 Once you're done adding dirs to your workspace you may save the workspace using `<space>qS` shortcut 
 
 (this reads as `press space, release, press q, release, press shift, press s, release`)
+(you may load it later using `<space>qL`)
 
 
 Once you want to do some actual editing, you'll need to select files to edit. 
@@ -104,19 +106,24 @@ The easiest way id to press `<space>od`
 (navigate using arrows or `j`/`k`)
 , and then `<return>` or `Ctrl+m`, or `C-m` in vim/vibe terms.
 
-Once you open the directory, you'll see a minimalistic file browser opened in the seelcted dir.
+Once you select and open the directory, 
+you'll see a minimalistic file browser opened there.
 
-It has files, dirs, you may navigate , create files, dirs, rename files/ dirs/ and, surely, open files.
+It has files, dirs, sizes, search, sortings, 
+you may navigate , create files, dirs, rename files/ dirs/ and, surely, open files.
 
 Navigation is using: 
 - `j`/`k` for Down/Up, 
 - `K` is for up-one-folder, 
 - `H`/`L` is for going back/forward
+- `gg`/`G` to go to top/bottom
 - `+` is for creating files , `Ctrl+=` or `C-=` for creating dirs
+- `s` to toggle sort mode, or `S` to select sort mode via command line
+- `/` to search (only matching files will be shown, `<ESC>` to reset search)
 - `<return>`/`Ctrl+m` for opening
 - as always, `Alt-H` will show help on keystrokes
 
-Once ou open some file, you may wanna toggle between files
+Once you open several files, you may wanna toggle between them
 
 If you have several tabs opened, toggling between them goes with `Ctrl+j`/`Ctrl+k`. 
 You may also press `<space>,` and type in filepath of the tab you want to get to.
@@ -146,7 +153,72 @@ config.user_nmap = {
 config.vibe_starting_mode = 'normal'
 
 config.vibe_startup_strokes = '<ESC>L'
+
 ```
+
+but it could've been just that:
+
+```
+config.vibe_after_startup = function()
+  core.vibe.workspace.open_workspace_file("<path to .ws file>")
+end  
+
+```
+
+The beauty of VI/VIM's normal mode navigation and editing is better kept to the VI/VIM themselves, 
+google it and practice for a couple of weeks, 
+to really get the editing with the speed of thought.
+
+## Some random notes on the code/structure/dev-features
+
+### Exec lua input
+
+Press `<space>;` and start typing - you'll see interactive suggestions for lua input
+
+Press `<space>C-;` (`Space` then `Ctrl+;`) and input sth like `23*6574` and press return.
+You'll see `151202` typed where your cursor previously was. 
+Neat, huh?
+
+It does have a lot of bugs.
+
+But interactive suggestions sort of work.
+You may exec `vibe.test=123` and then when you input `vibe.te`, 
+it will suggest you the `vibe.test` you've created, 
+and if you select/input that, you'll see `123` being displayed via `core.log`. 
+Globals are persistent as well.
+
+### hooks
+
+I do have hooks, they may be added to any command using `command.add_hook(com_name, hook)`, 
+see the lines in `misc.lua` around `function command.add_hook`
+
+But the simplest lite-xl-vibe-wide project search of `command.add_hook` will show I barely use it.
+
+### visual mode
+
+Those familiar with vim may notice that I don't really talk about visual mode here
+
+That is mostly because I haven't really implemented it,
+but in a way I did implement enough of it.
+
+What I mean is - if you don't go into visual block (I don't have that), 
+and forgive some discrepancy in vim line mode (I don'thave that either), 
+you may see that whenever there is a selection, 
+lite kinda works like vim in visual mode.
+
+What I did may be seen in `visual_mode.lua`, 
+basically, for every movement 
+I added commands to select/delete/change to that movement 
+whenever there is a selection (commands like `vibe:move-to...`)
+
+(I know, I know, those should've been like `vibe:visual:move-to..` but hey)
+
+
+### General
+
+The whole `init.lua` is a mess, I intend on refactoring it, 
+for now I am in a state where it kinda works 
+and I'm just preparing myself by refactoring smaller pieces first.
 
 ## __
 
