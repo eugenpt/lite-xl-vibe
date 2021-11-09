@@ -50,64 +50,66 @@ function FileView:new(path, history, history_cur_ix)
   self.path = path or core.project_dir
   self.history = history or { path }
   self.history_cur_ix = history_cur_ix or 1
-  FileView.super.new(self,"F|"..self.path, function()
-    local R = misc.list_dir(self.path)
-    self.title = "F|"..self.path
-    local items = {}
-    -- dirs
-    table.insert(items, {
-      abs_filename = misc.path_up(self.path),
-      type = "dir",
-      filename = "..",
-      draw_items = "  ..",
-    })
-    --
-    for _, dir in ipairs(R.dirs) do
-      dir.draw_items = {style.accent , style.icon_font, "d",style.code_font, " ", dir.filename}
-      table.insert(items, dir)
-    end
-    -- files
-    for _, file in ipairs(R.files) do
-      file.draw_items = {style.accent , style.icon_font, "f",style.code_font, " ", file.filename}
-      table.insert(items, file)
-    end
-    for _, item in ipairs(items) do
-      item.search_text = (item.type=="dir" and "Dir" or "File" ) .. item.filename
-      -- columns
-      item.Name = item.draw_items
-      item.Size = item.size and misc.filesize_str(item.size or 0) or ''
-      item.Modified = item.modified and os.date("%Y-%m-%d %X %a", item.modified) or ''
-      item.Ext = item.type=="dir" and "<dir>" or misc.file_ext(item.filename)
-    end
-    return items
-  end, 
   
-  -- Action on click
-  function(res)
-    if res.type == "dir" then
-      local dv = core.active_view
-      dv:goto_path(res.abs_filename)
-    else
-      core.root_view:open_doc(core.open_doc(res.abs_filename))
-    end
-  end, 
-  -- Sort funcs
-  {
-  ['name'] = function(item)
-    return item.type:sub(1,1)..item.search_text
-  end,
-  ['size'] = function(item)
-    return item.size or 0
-  end,
-  ['modified'] = function(item)
-    return item.modified or 0
-  end,
-  ['extension'] = function(item)
-    return item.Ext or ''
-  end
-  },
-  -- columns to display
-  {'Name','Size','Modified','Ext'})
+  FileView.super.new(self,{
+    title="F|"..self.path,
+    items_fun=function()
+      local R = misc.list_dir(self.path)
+      self.title = "F|"..self.path
+      local items = {}
+      -- dirs
+      table.insert(items, {
+        abs_filename = misc.path_up(self.path),
+        type = "dir",
+        filename = "..",
+        draw_items = "  ..",
+      })
+      --
+      for _, dir in ipairs(R.dirs) do
+        dir.draw_items = {style.accent , style.icon_font, "d",style.code_font, " ", dir.filename}
+        table.insert(items, dir)
+      end
+      -- files
+      for _, file in ipairs(R.files) do
+        file.draw_items = {style.accent , style.icon_font, "f",style.code_font, " ", file.filename}
+        table.insert(items, file)
+      end
+      for _, item in ipairs(items) do
+        item.search_text = (item.type=="dir" and "Dir" or "File" ) .. item.filename
+        -- columns
+        item.Name = item.draw_items
+        item.Size = item.size and misc.filesize_str(item.size or 0) or ''
+        item.Modified = item.modified and os.date("%Y-%m-%d %X %a", item.modified) or ''
+        item.Ext = item.type=="dir" and "<dir>" or misc.file_ext(item.filename)
+      end
+      return items
+    end, 
+    
+    on_click_fun=function(res)
+      if res.type == "dir" then
+        local dv = core.active_view
+        dv:goto_path(res.abs_filename)
+      else
+        core.root_view:open_doc(core.open_doc(res.abs_filename))
+      end
+    end, 
+    
+    sort_funs={
+      ['name'] = function(item)
+        return item.type:sub(1,1)..item.search_text
+      end,
+      ['size'] = function(item)
+        return item.size or 0
+      end,
+      ['modified'] = function(item)
+        return item.modified or 0
+      end,
+      ['extension'] = function(item)
+        return item.Ext or ''
+      end
+    },
+    column_names={'Name','Size','Modified','Ext'}
+  })
 end
 
 local function show_directory(path)
