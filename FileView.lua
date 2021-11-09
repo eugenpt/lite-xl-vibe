@@ -6,14 +6,7 @@ dunno really why I do this. Probably because it's fun))
 --
 
 TODOs:
-- title (ResutlsView)
-- Go UP
-  - If C:\..\ , display all active drives
-- file size display
-  - sort
-- file modification sort
-- file extension sort (?)
---
+
 ]]--
 local core = require "core"
 local command = require "core.command"
@@ -29,7 +22,6 @@ local ResultsView = require "plugins.lite-xl-vibe.ResultsView"
 local FileView = ResultsView:extend()
 
 function FileView:save_info()
-  -- not really that helpful
   return { path=self.path, history=self.history, history_cur_ix=self.history_cur_ix }
 end
 
@@ -54,6 +46,7 @@ function FileView:goto_path(path)
 end
 
 function FileView:new(path, history, history_cur_ix)
+  self.module = "FileView"
   self.path = path or core.project_dir
   self.history = history or { path }
   self.history_cur_ix = history_cur_ix or 1
@@ -115,7 +108,6 @@ function FileView:new(path, history, history_cur_ix)
   },
   -- columns to display
   {'Name','Size','Modified','Ext'})
-  self.module = "FileView"
 end
 
 local function show_directory(path)

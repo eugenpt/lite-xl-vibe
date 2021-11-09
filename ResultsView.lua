@@ -59,6 +59,7 @@ function ResultsView:save_info()
 end
 
 function ResultsView.load_info(info)
+  -- bare ResultsView should not be leaded from info
   return nil -- ResultsView(info.title)
 end
 
