@@ -172,7 +172,7 @@ misc.doc_abs_filename = function(doc)
   if doc==nil then 
     doc = core.active_view.doc
   end
-  return doc and (doc.abs_filename or system.absolute_path(doc.filename))
+  return doc and (doc.abs_filename or doc.filename and system.absolute_path(doc.filename))
 end
 
 -- misc.USERDIR = USERDIR
