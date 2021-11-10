@@ -36,7 +36,7 @@ Press `i` while in `NORMAL` mode to go back to `INSERT` mode
 - Interactive lua exec shell (command `"core:exec-input"` or `<space>;`) with online suggestions!
 
 - (Book-)Marks, including named ones (`Space+Return`) and one-keystroke ones 
-  (`m`+letter to set, `'`/`\``+letter to go to a mark, uppercase for global marks)
+  (`m`+letter to set, `'`/`` ` `` +letter to go to a mark, uppercase for global marks)
 - Registers (one for each letter - you can copy to them and paste from them using `"`+letter as prefix for copy/paste command)
 - Clipboard Ring (after paste press `Ctrl+y` to change pasted text to one copied previously)
 - History of cursor positions (`<space>oj` to list all or `<space>sj` to search)
