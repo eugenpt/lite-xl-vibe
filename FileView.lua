@@ -306,8 +306,6 @@ command.add(FileView, {
       title = "Really Add Directory?",
       Yes = function()
         core.add_project_directory(system.absolute_path(core.active_view.path))
-        -- TODO: add the name of directory to prioritize
-        core.reschedule_project_scan()
       end
     })
   end,
