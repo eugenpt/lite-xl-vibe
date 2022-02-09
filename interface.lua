@@ -34,6 +34,12 @@ function StatusView:get_items()
     local indent_label = (indent and indent.type == "hard") and "tabs: " or "spaces: "
     local indent_size = indent and tostring(indent.size) .. (indent.confirmed and "" or "*") or "unknown"
 
+    local line_perc_str = '???'
+    pcall(function() 
+      line_perc_str = string.format("% 3d%%", line / #dv.doc.lines * 100)
+    end)
+    
+    
 
     return {
       dirty and style.accent or style.text, style.icon_font, "f",
@@ -47,7 +53,7 @@ function StatusView:get_items()
       col > config.line_limit and style.accent or style.text, string.format('% 3d',col), " C",
       style.text,
       " ", -- self.separator,
-      string.format("% 3d%%", line / #dv.doc.lines * 100),
+      line_perc_str,
       self.separator2,
       core.vibe.stroke_seq,
       self.separator2,
