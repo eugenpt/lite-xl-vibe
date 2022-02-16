@@ -1511,7 +1511,11 @@ function DocView:get_line_draw_items(idx)
 end
 
 function misc.sleep(n)
-  if n > 0 then os.execute("ping -n " .. tonumber(n+1) .. " localhost > NUL") end
+  local clock = os.clock
+  local t0 = clock()
+   while clock() - t0 <= n do
+  end
+--  if n > 0 then os.execute("ping -n " .. tonumber(n+1) .. " localhost > NUL") end
 end
 
 return misc

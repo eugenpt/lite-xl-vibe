@@ -292,6 +292,7 @@ function vibe:get_mode_str()
   return self and (self.mode == 'insert' and "INSERT" or "NORMAL") or 'nil?'
 end
 
+
 command.add(nil, {
   ["vibe:after-startup"] = function()
     if config.vibe_starting_mode then
