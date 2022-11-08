@@ -145,6 +145,10 @@ keymap.add_nmap {
   ["]"] = "doc:move-to-next-block-end",
   ["gg"] = "vibe:move-to-start-of-doc",
   ["G"] = "vibe:move-to-end-of-doc",
+
+  ["vG"] = "doc:select-to-end-of-doc",
+  ["vgg"] = "doc:select-to-start-of-doc",
+  
   -- well..  also sort of navigation?
   ["C-m"] = { "autocomplete:complete", "command:submit", "doc:move-to-next-line", "dialog:select" },
   -- simple editing

@@ -151,7 +151,11 @@ command.add("core.docview", {
   
   ["vibe:move-to-start-of-doc"] = function()
     if core.vibe.num_arg == '' then
-      command.perform("doc:move-to-start-of-doc")
+      if misc.has_selection() then
+        command.perform("doc:select-to-start-of-doc")
+      else
+        command.perform("doc:move-to-start-of-doc")
+      end
     else
       misc.move_to_line(tonumber(core.vibe.num_arg))
     end
@@ -159,7 +163,11 @@ command.add("core.docview", {
 
   ["vibe:move-to-end-of-doc"] = function()
     if core.vibe.num_arg == '' then
-      command.perform("doc:move-to-end-of-doc")
+      if misc.has_selection() then
+        command.perform("doc:select-to-end-of-doc")
+      else
+        command.perform("doc:move-to-end-of-doc")
+      end
     else
       misc.move_to_line(tonumber(core.vibe.num_arg))
     end

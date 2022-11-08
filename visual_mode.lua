@@ -35,7 +35,7 @@ for bind,coms in pairs(keymap.nmap) do
   local com_name = misc.find_in_list(coms, function(item) return (item:sub(1,#doc_move_to)==doc_move_to) end)
   if com_name then
     
-    local verbose = com_name:find_literal('-start-of-line')
+    local verbose = com_name:find_literal('-start-of-line') or com_name:find_literal('-doc')
     if verbose then
     core.log('[%s] -> %s', bind, misc.str(coms))
     end
