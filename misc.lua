@@ -686,7 +686,7 @@ function misc.filesize_str(size)
   local sfxs = {"B", "KB", "MB", "GB", "TB", "PB"}
   local exp = math.floor(math.log(size+1)/math.log(1024))
   if exp>#sfxs then exp = #sfxs end
-  local v = size/math.pow(2, exp*10)
+  local v = size/(2 ^ (exp*10))
 
   local s = string.format('%.3f', v)
 
