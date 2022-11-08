@@ -111,9 +111,19 @@ end)
 vibe.on_key_pressed__orig = keymap.on_key_pressed
 function keymap.on_key_pressed(k)
   core.log_quiet('key pressed : %s', k)
+
   if dv():is(CommandView) then
     -- only original lite-xl mode in CommandViews
     -- .. for now at least
+    return vibe.on_key_pressed__orig(k)
+  end
+
+  if string.find_literal(k, 'click') then
+    -- no clicks in vibe, at least for now..
+    return vibe.on_key_pressed__orig(k)
+  end
+  if string.find_literal(k, 'wheel') then
+    -- no clicks in vibe, at least for now..
     return vibe.on_key_pressed__orig(k)
   end
   
@@ -135,6 +145,7 @@ end
 
 function vibe.process_stroke(stroke)
     core.log_quiet("process_stroke |%s|", stroke)
+
     -- first - current stroke
     vibe.pre_last_stroke = vibe.last_stroke
     vibe.last_stroke = stroke
