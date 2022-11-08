@@ -73,8 +73,8 @@ function StatusView:get_items()
       self.separator,
       style.code_font,
       dv.doc.crlf and "CRLF" or "  LF",
-      style.text, ' |', string.format('#% 3s',core.vibe.num_arg),
-      style.text, '|', string.format("% 7s",core.vibe.last_stroke), 
+      style.text, ' |', string.format('#%3s',core.vibe.num_arg),
+      style.text, '|', string.format("%7s",core.vibe.last_stroke), 
     }
   end
 
@@ -92,8 +92,8 @@ function StatusView:get_items()
     style.text, self.separator2, #core.docs, " / ",
     #core.project_files, " files",
       style.code_font,
-      style.text, ' |', string.format('#% 3s',core.vibe.num_arg),
-      style.text, '|', string.format("% 7s",core.vibe.last_stroke), 
+      style.text, ' |', string.format('#%3s',core.vibe.num_arg),
+      style.text, '|', string.format("%7s",core.vibe.last_stroke), 
   }
 end
 
@@ -220,7 +220,16 @@ local function draw_text(x, y, color)
   y = y + (dh - (th + style.padding.y) * #lines) / 2
   local w = 0
   for _, line in ipairs(lines) do
-    local text = line.cmd and string.format(line.fmt, keymap.get_binding(line.cmd)) or line.text
+    local text = ""
+    if line.cmd then
+      if keymap.get_binding(line.cmd) then
+        text = string.format(line.fmt, keymap.get_binding(line.cmd))
+      else
+        text = string.format(line.fmt, '--')
+      end
+    else
+      text = line.text
+    end
     w = math.max(w, renderer.draw_text(style.font, text, x + style.padding.x, y, color))
     y = y + th + style.padding.y
   end
