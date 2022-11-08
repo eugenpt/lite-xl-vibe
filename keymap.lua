@@ -183,6 +183,7 @@ keymap.add_nmap {
   ["Y"] = "y$",
   ["yy"] = "0iS-<down><ESC>y<up>",
   ["p"] = "vibe:paste",
+  ["P"] = "jp",
   
   ["*"] = "viw/<CR>n",  -- yeah, <CR> is an input to CommandView
   ["<delete>"] = "vibe:delete",
