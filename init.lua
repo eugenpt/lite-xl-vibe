@@ -109,22 +109,22 @@ command.add_hook("vibe:switch-to-insert-mode", function()
 end)
 
 vibe.on_key_pressed__orig = keymap.on_key_pressed
-function keymap.on_key_pressed(k)
+function keymap.on_key_pressed(k, ...)
   core.log_quiet('key pressed : %s', k)
 
   if dv():is(CommandView) then
     -- only original lite-xl mode in CommandViews
     -- .. for now at least
-    return vibe.on_key_pressed__orig(k)
+    return vibe.on_key_pressed__orig(k, ...)
   end
 
   if string.find_literal(k, 'click') then
     -- no clicks in vibe, at least for now..
-    return vibe.on_key_pressed__orig(k)
+    return vibe.on_key_pressed__orig(k, ...)
   end
   if string.find_literal(k, 'wheel') then
     -- no clicks in vibe, at least for now..
-    return vibe.on_key_pressed__orig(k)
+    return vibe.on_key_pressed__orig(k, ...)
   end
   
   if not vibe.help.is_showing then
