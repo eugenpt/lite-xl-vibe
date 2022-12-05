@@ -310,6 +310,15 @@ local function str_mul(str,num)
   return string.rep(str, num)
 end
 
+function misc.tostring_vararg(...)
+  local r = ""
+  local arg = {...}
+  for i,v in ipairs(arg) do
+    r = r .. tostring(v) .. "\t"
+  end
+  return r
+end
+
 getmetatable('string').__mul = function(s,n)
   if type(s)=='string' then
     if type(n)=='string' then

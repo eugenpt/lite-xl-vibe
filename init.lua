@@ -111,6 +111,7 @@ end)
 vibe.on_key_pressed__orig = keymap.on_key_pressed
 function keymap.on_key_pressed(k, ...)
   core.log_quiet('key pressed : %s', k)
+  core.log_quiet(misc.tostring_vararg(...))
 
   if dv():is(CommandView) then
     -- only original lite-xl mode in CommandViews
