@@ -1,5 +1,5 @@
 # lite-xl-vibe
-Vim Bindings (with a hint of Emacs) for [lite-xl](https://github.com/lite-xl/lite-xl) (but made mostly compatible with [lite](https://github.com/rxi/lite))
+Vi(m?) Bindings (with a hint of Emacs) for [lite-xl](https://github.com/lite-xl/lite-xl) (but made mostly compatible with [lite](https://github.com/rxi/lite))
 
 # Short demo:
 ![](intro.gif)
