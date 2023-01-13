@@ -1,5 +1,5 @@
 # lite-xl-vibe
-VI(m?) Bindings (with a hint of Emacs) for [lite-xl](https://github.com/lite-xl/lite-xl) (but made mostly compatible with [lite](https://github.com/rxi/lite))
+Vi(m?) Bindings (with a hint of Emacs) for [lite-xl](https://github.com/lite-xl/lite-xl) (but made mostly compatible with [lite](https://github.com/rxi/lite))
 
 # Short demo:
 ![](intro.gif)
@@ -8,21 +8,21 @@ VI(m?) Bindings (with a hint of Emacs) for [lite-xl](https://github.com/lite-xl/
 
 For lite-xl just clone the repo as plugins subfolder
 ```
-git clone git@github.com:eugenpt/lite-xl-vibe.git ~/.config/lite-xl/plugins/lite-xl-vibe
+git clone https://github.com/eugenpt/lite-xl-vibe.git ~/.config/lite-xl/plugins/lite-xl-vibe
 ```
 
 For lite, clone into plugins subfolder under lite installed path
 
 ```
-git clone git@github.com:eugenpt/lite-xl-vibe.git <lite>/data/plugins/lite-xl-vibe
+git clone https://github.com/eugenpt/lite-xl-vibe.git <lite>/data/plugins/lite-xl-vibe
 ```
 
 
 # Intro
 
-If you don't know what VIM is, .. you really should. Also - how did you find this page??
+If you don't know what Vim is, .. you really should. Also - how did you find this page??
 
-If you do know what VIM is - this plugin provides basic support of VIM bindings.
+If you do know what Vim is - this plugin provides basic support of Vim bindings.
 
 Press `Esc`/`Ctrl+[` to go into `NORMAL` mode, to navigate, select, do whatever you want (except for actual input)
 
@@ -165,7 +165,7 @@ end
 
 ```
 
-The beauty of VI/VIM's normal mode navigation and editing is better kept to the VI/VIM themselves, 
+The beauty of vi/Vim's normal mode navigation and editing is better kept to the VI/Vim themselves, 
 google it and practice for a couple of weeks, 
 to really get the editing with the speed of thought.
 
@@ -187,7 +187,7 @@ it will suggest you the `vibe.test` you've created,
 and if you select/input that, you'll see `123` being displayed via `core.log`. 
 Globals are persistent as well.
 
-### hooks
+### Hooks
 
 I do have hooks, they may be added to any command using `command.add_hook(com_name, hook)`, 
 see the lines in `misc.lua` around `function command.add_hook`
