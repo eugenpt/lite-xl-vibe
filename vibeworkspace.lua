@@ -349,8 +349,7 @@ end
 command.add_hook("vibe:after-startup", function()
   if core.vibe.need_to_load_workspace then
     core.log("trying to load vibe workspace")
-    local temp = loadfile(vibeworkspace.savepath())
-    vibeworkspace.abs_filename = temp and temp()
+    vibeworkspace.abs_filename = vibeworkspace.savepath()
     core.log("abs_filename=%s", vibeworkspace.abs_filename)
 
     core.try(vibeworkspace.open_workspace_file)
