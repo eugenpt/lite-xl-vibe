@@ -321,7 +321,7 @@ command.add(nil, {
 
 core.add_thread(function()
   while core.vibe.core_run_run==nil do
-    misc.sleep(1)
+    coroutine.yield(1)
   end
   core.log("vibe:wait_for_startup finished waiting")
   
