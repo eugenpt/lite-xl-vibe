@@ -567,4 +567,4 @@ keymap.add_nmap({
 })
 
 
-keymap.add_nmap(config.user_nmap or {})
+keymap.add_nmap_override(config.user_nmap or {})

@@ -1,10 +1,7 @@
-
 local core = require "core"
 local command = require "core.command"
 local common = require "core.common"
 local config = require "core.config"
-local DocView = require "core.docview"
-local keymap = require "core.keymap"
 local style = require "core.style"
 local translate = require "core.doc.translate"
 
@@ -18,11 +15,6 @@ end
 local function doc()
   return core.active_view.doc
 end
-
-local function is_mode_fun(mode)
-  return function() return core.vibe.mode==mode end
-end
-
 
 local com = {}
 
@@ -51,17 +43,17 @@ command.add(nil, {
   ["vibe:repeat"] = function()
     -- I was deleting the last stroke seq here
     --  (the one activating this repeat command)
-    -- but that's wrong 
+    -- but that's wrong
     --  (for one I could in theory run it via CommandView)
     --   so I moved the deletion to vibe.process_stroke
     core.log('vibe:repeat seq=|%s|', core.vibe.last_executed_seq)
     core.vibe.run_stroke_seq(core.vibe.last_executed_seq)
   end,
-  
+
   ["vibe:open-scratch-buffer"] = function()
     core.root_view:open_doc(core.open_doc(misc.scratch_filepath()))
   end,
-  
+
   ["vibe:switch-to-last-tab"] = function()
     misc.last_active_view.vibe_parent_node:set_active_view(misc.last_active_view)
   end,
@@ -75,7 +67,7 @@ command.add(misc.has_selection, {
     command.perform("doc:copy")
     if core.vibe.target_register then
       core.vibe.registers[core.vibe.target_register] = system.get_clipboard()
-      core.vibe.debug_str = "copied to "..core.vibe.target_register
+      core.vibe.debug_str = "copied to " .. core.vibe.target_register
       -- aand zero it back for further actions
       core.vibe.target_register = nil
     else
@@ -111,7 +103,7 @@ command.add(nil, {
     core.command_view:enter("Switch to tab:", function(text, item)
       if item then
         core.root_view:open_doc(item.doc)
-      else 
+      else
         local filename = system.absolute_path(common.home_expand(text))
         core.root_view:open_doc(core.open_doc(filename))
       end
@@ -119,8 +111,8 @@ command.add(nil, {
       local items = {}
       for _, doc in ipairs(core.docs) do
         table.insert(items, {
-          ["text"]   = misc.doc_abs_filename(doc),
-          ["doc"] = doc,
+          ["text"] = misc.doc_abs_filename(doc),
+          ["doc"]  = doc,
         })
       end
       return misc.fuzzy_match_key(items, 'text', text)
@@ -134,10 +126,10 @@ command.add(nil, {
       node:set_active_view(core.vibe.tabs_list_view)
     else
       core.vibe.tabs_list_view = ResultsView.new_and_add({
-        title="Opened Files", 
-        items_fun=misc.get_tabs_list, 
-        on_click_fun=function(res)
-          local dv = core.root_view:open_doc(res.doc)
+        title = "Opened Files",
+        items_fun = misc.get_tabs_list,
+        on_click_fun = function(res)
+          core.root_view:open_doc(res.doc)
         end
       })
     end
@@ -148,7 +140,7 @@ command.add("core.docview", {
   ["vibe:rotate-clipboard-ring"] = function()
     misc.clipboard_ring_rotate()
   end,
-  
+
   ["vibe:move-to-start-of-doc"] = function()
     if core.vibe.num_arg == '' then
       if misc.has_selection() then
@@ -174,13 +166,17 @@ command.add("core.docview", {
   end,
 
   ["vibe:delete-symbol-under-cursor"] = function()
-      local doc = core.active_view and core.active_view.doc
-      if doc then
-        local line,col,line2,col2 = doc:get_selection()
-        doc:set_selection(line,col)
+    local doc = core.active_view and core.active_view.doc
+    if doc then
+      local line, col, line2, col2 = doc:get_selection()
+      if line2 ~= line or col2 ~= col then
+        doc:delete_to(line2, col2)
+      else
+        doc:set_selection(line, col)
         doc:delete_to(translate.next_char)
-        doc:set_selection(line,col,line2,col2)
+        doc:set_selection(line, col, line2, col2)
       end
+    end
   end,
 
   ["vibe:repeat-find-in-line"] = function()
@@ -188,21 +184,21 @@ command.add("core.docview", {
       core.vibe.debug_str = 'no last line search..'
       return
     end
-    doc():move_to(function(doc,line,col)
+    doc():move_to(function(doc, line, col)
       return misc.find_in_line(
-        core.vibe.last_line_find["symbol"], 
+        core.vibe.last_line_find["symbol"],
         core.vibe.last_line_find["backwards"],
         core.vibe.last_line_find["include"],
         doc, line, col
       )
     end, dv())
   end,
-  
+
   ["vibe:paste"] = function()
     core.log('vibe:paste')
     local text
     if core.vibe.target_register
-       and core.vibe.registers[core.vibe.target_register] then
+        and core.vibe.registers[core.vibe.target_register] then
       system.set_clipboard(core.vibe.registers[core.vibe.target_register], true)
       -- aand zero it back for further actions
       core.vibe.target_register = nil
@@ -221,9 +217,9 @@ command.add("core.docview", {
 command.add(nil, {
   ["core:exec-history"] = function()
     ResultsView.new_and_add({
-      title="Execution History",
-      items=misc.exec_history,
-      on_click_fun=function(res)
+      title = "Execution History",
+      items = misc.exec_history,
+      on_click_fun = function(res)
         misc.exec_text = res.text
         command.perform('root:close')
         command.perform("core:exec-input")
@@ -251,18 +247,19 @@ local function find_all_matches_in_file(t, abs_filename, fn)
       -- Insert maximum 256 characters. If we insert more, for compiled files, which can have very long lines
       -- things tend to get sluggish. If our line is longer than 80 characters, begin to truncate the thing.
       local start_index = math.max(s - 80, 1)
-      table.insert(t, { 
-        abs_filename = abs_filename, 
-        text = core.normalize_to_project_dir(abs_filename)..' | '..(start_index > 1 and "..." or "") .. line:sub(start_index, 256 + start_index), 
-        line = n, 
-        col = s 
+      table.insert(t, {
+        abs_filename = abs_filename,
+        text = core.normalize_to_project_dir(abs_filename) ..
+            ' | ' .. (start_index > 1 and "..." or "") .. line:sub(start_index, 256 + start_index),
+        line = n,
+        col = s
       })
       core.redraw = true
       if #t >= config.vibe.inline_search_maxN then
         return
       end
     end
-    if n % 100 == 0 then 
+    if n % 100 == 0 then
       coroutine.yield()
     end
     n = n + 1
@@ -271,7 +268,7 @@ local function find_all_matches_in_file(t, abs_filename, fn)
   fp:close()
 end
 
-local function project_search(thread_name, list, text, fn)
+local function project_search(_, list, _, fn)
   local i = 1
   for dir_name, file in core.get_project_files() do
     if com.inline_search.stop_flag then
@@ -301,10 +298,11 @@ function com.inline_search:update_q(q)
     if q == nil then
       return
     end
-    local thread_name = 'inline_search'..tostring(system.get_time)
+    local thread_name = 'inline_search' .. tostring(system.get_time)
     -- restart search
     core.add_thread(function()
-      project_search(thread_name, core.command_view.suggestions, q, function(s) return com.inline_search.match_fun(s,q) end)
+      project_search(thread_name, core.command_view.suggestions, q,
+        function(s) return com.inline_search.match_fun(s, q) end)
     end, thread_name)
     com.inline_search.thread_name = thread_name
   end
@@ -313,40 +311,40 @@ end
 com.inline_search.general_command_fun = function(match_fun)
   return function()
     com.inline_search.match_fun = match_fun
-    core.command_view:enter("Find in project", function(text, item)
-      if item then
-        misc.goto_mark(item)
-      else
-      
-      end
-    end, 
-    --suggest
-    function(text)
-      com.inline_search:update_q(text)
-    end, 
-    -- cancel
-    function()
-      com.inline_search:update_q()
-  end)
+    core.command_view:enter("Find in project", function(_, item)
+        if item then
+          misc.goto_mark(item)
+        else
+
+        end
+      end,
+      --suggest
+      function(text)
+        com.inline_search:update_q(text)
+      end,
+      -- cancel
+      function()
+        com.inline_search:update_q()
+      end)
   end
 end
 
 
 command.add(nil, {
   ["vibe:inline-project-search"] = com.inline_search.general_command_fun(
-        function(s, q) return s:lower():find(q, nil, true) end),
+    function(s, q) return s:lower():find(q, nil, true) end),
   ["vibe:inline-project-fuzzy-search"] = com.inline_search.general_command_fun(
-        function(s, q) return common.fuzzy_match(s, q) and 1 end),
+    function(s, q) return common.fuzzy_match(s, q) and 1 end),
 })
 
-if rawget(_G,"regex") then
-command.add(nil, {
-  ["vibe:inline-project-regex-search"] = com.inline_search.general_command_fun(
-        function(s, q) 
-          local re = regex.compile(q, "i")
-          return regex.cmatch(re, s) 
-        end),
-})
+if rawget(_G, "regex") then
+  command.add(nil, {
+    ["vibe:inline-project-regex-search"] = com.inline_search.general_command_fun(
+      function(s, q)
+        local re = regex.compile(q, "i")
+        return regex.cmatch(re, s)
+      end),
+  })
 end
 
 return com
